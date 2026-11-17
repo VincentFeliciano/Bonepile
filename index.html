@@ -688,6 +688,33 @@ if (typeof document !== "undefined") {
       { k: "bass", at: 0.8, notes: [33], dur: 0.08, vol: 0.5 }, { k: "bass", at: 0.98, notes: [31], dur: 0.1, vol: 0.4 }] },
     door: { name: "Creaky door", cat: "Spooky", knobs: { bits: 5, down: 2, arp: 1, arpHz: 23 }, layers: [
       { k: "tone", wave: "pulse12", notes: [50], bend: 9, dur: 0.8, vol: 0.06 }, { k: "noise", short: true, rate: 0.3, dur: 0.8, vol: 0.05 }] },
+    // detailed sounds: real stone and real-sounding laughs (clean, no crunch unless you add it)
+    dragHeavy: { name: "Heavy stone drag", cat: "Stone drags", knobs: { room: 0.25 }, layers: [
+      { k: "drag", dur: 1.4, tone: 380, rough: 0.7, rate: 18, rumble: 0.8, pebbles: 1, atk: 0.12, rel: 0.2, vol: 0.4 }] },
+    dragSlab: { name: "Slab slides open", cat: "Stone drags", knobs: { room: 0.4, roomSize: 2.2 }, layers: [
+      { k: "drag", dur: 2.4, tone: 320, sweep: -3, rough: 0.75, rate: 14, ease: 0.5, rumble: 1, pebbles: 0.6, stop: 1, atk: 0.2, rel: 0.08, vol: 0.4 }] },
+    dragGrind: { name: "Stone grind", cat: "Stone drags", knobs: { room: 0.15 }, layers: [
+      { k: "drag", dur: 1.2, tone: 650, rough: 0.9, rate: 30, rumble: 0.4, pebbles: 2.5, vol: 0.35 }] },
+    dragShort: { name: "Short scrape", cat: "Stone drags", layers: [
+      { k: "drag", dur: 0.3, tone: 520, rough: 0.6, rate: 35, rumble: 0.3, pebbles: 1, atk: 0.03, rel: 0.08, vol: 0.4 }] },
+    dragDoor: { name: "Temple door", cat: "Stone drags", knobs: { room: 0.55, roomSize: 3 }, layers: [
+      { k: "drag", dur: 3.2, tone: 240, sweep: -4, rough: 0.8, rate: 10, ease: 0.35, rumble: 1.4, pebbles: 0.5, stop: 1.3, atk: 0.4, rel: 0.1, vol: 0.42 }] },
+    dragLid: { name: "Coffin lid", cat: "Stone drags", knobs: { room: 0.2 }, layers: [
+      { k: "drag", dur: 0.9, tone: 700, sweep: 2, rough: 0.5, rate: 26, rumble: 0.2, pebbles: 0.8, stop: 0.6, vol: 0.35 }] },
+    realHearty: { name: "Hearty ha ha", cat: "Real laughs", layers: [
+      { k: "throat", vowel: "a", base: 50, syl: 5, sylDur: 0.13, gap: 0.08, h: 0.9, hLen: 0.06, contour: -3, drift: -5, accent: "first", accentSt: 2, jitter: 0.6, breath: 0.2, fade: 0.3, inhale: 0.6, vol: 0.2 }] },
+    realEvil: { name: "Evil mwa-ha-ha", cat: "Real laughs", knobs: { room: 0.35, roomSize: 2 }, layers: [
+      { k: "throat", vowel: "a", from: "u", base: 43, syl: 5, sylDur: 0.16, first: 2.6, gap: 0.1, h: 0.8, hLen: 0.07, contour: -2, drift: -3, accel: 0.3, growl: 0.35, accent: "first", accentSt: 4, tail: 2.5, breath: 0.15, vol: 0.2 }] },
+    realCackle: { name: "Witch cackle", cat: "Real laughs", knobs: { room: 0.15 }, layers: [
+      { k: "throat", vowel: "e", size: 0.75, base: 64, syl: 9, sylDur: 0.075, gap: 0.04, h: 0.7, hLen: 0.035, contour: -4, drift: -7, accel: -0.3, jitter: 0.8, vib: 0.4, vibHz: 9, breath: 0.25, fade: 0.2, vol: 0.17 }] },
+    realGiggle: { name: "Giggle", cat: "Real laughs", layers: [
+      { k: "throat", vowel: "i", size: 0.8, base: 67, syl: 7, sylDur: 0.06, gap: 0.05, h: 1.1, hLen: 0.04, contour: 2, drift: -4, swing: 0.2, breath: 0.4, jitter: 0.5, fade: 0.3, vol: 0.15 }] },
+    realChuckle: { name: "Chuckle", cat: "Real laughs", layers: [
+      { k: "throat", vowel: "uh", base: 47, syl: 4, sylDur: 0.08, gap: 0.09, h: 0.8, hLen: 0.04, contour: -2, step: -0.5, breath: 0.3, fade: 0.4, vol: 0.18 }] },
+    realBelly: { name: "Belly laugh", cat: "Real laughs", knobs: { room: 0.15 }, layers: [
+      { k: "throat", vowel: "a", size: 1.15, base: 45, syl: 8, sylDur: 0.11, gap: 0.06, h: 1, hLen: 0.05, contour: -3, drift: -6, accel: -0.2, accent: "odd", accentSt: 2, swing: 0.15, growl: 0.15, breath: 0.25, inhale: 1, vol: 0.2 }] },
+    realSkull: { name: "Hollow skull laugh", cat: "Real laughs", knobs: { room: 0.6, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "o", size: 1.35, base: 41, syl: 6, sylDur: 0.14, gap: 0.1, h: 0.6, contour: -2, drift: -4, growl: 0.5, vib: 0.3, vibHz: 5, breath: 0.2, tail: 2, vol: 0.2 }] },
     // "ha ha ha": an h of breath then an "ah", with a cadence you can shape
     haSteady: { name: "Ha ha ha", cat: "Ha ha", knobs: { bits: 5, down: 2 }, layers: [
       { k: "vox", wave: "pulse25", base: 57, syl: 6, sylDur: 0.1, gap: 0.09, h: 0.9, hLen: 0.04, harm: 12, harmVol: 0.25, contour: -2, accent: "first", jitter: 0.3, curve: 0.9, vol: 0.13 }] },
@@ -768,8 +795,17 @@ if (typeof document !== "undefined") {
     { k: "vStep", g: "Cadence", label: "Pitch step per syllable", min: -4, max: 4, step: 0.5, def: 0, rnd: [-2, 1] },
     { k: "vH", g: "Cadence", label: "Extra H sound", min: 0, max: 2, step: 0.05, def: 0, rnd: [0, 1.2] },
     { k: "vTail", g: "Cadence", label: "Last syllable length", min: 0.5, max: 5, step: 0.1, def: 1, rnd: [0.8, 3] },
+    { k: "rSize", g: "Real voice", label: "Voice size", min: 0.5, max: 2, step: 0.05, def: 1, rnd: [0.75, 1.4] },
+    { k: "rInhale", g: "Real voice", label: "Extra gasp at the end", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 1] },
+    { k: "sWeight", g: "Stone", label: "Weight (rumble)", min: 0, max: 3, step: 0.05, def: 1, rnd: [0.3, 2] },
+    { k: "sRough", g: "Stone", label: "Roughness", min: 0, max: 1.6, step: 0.05, def: 1, rnd: [0.5, 1.4] },
+    { k: "sPebbles", g: "Stone", label: "Grit and pebbles", min: 0, max: 4, step: 0.1, def: 1, rnd: [0.2, 2.5] },
+    { k: "sSpeed", g: "Stone", label: "Scrape speed", min: 0.3, max: 3, step: 0.05, def: 1, rnd: [0.6, 1.8] },
+    { k: "sStop", g: "Stone", label: "Extra thud at the end", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 1] },
     { k: "echo", g: "Space", label: "Echo", min: 0, max: 0.8, step: 0.05, def: 0, rnd: [0, 0.4] },
     { k: "echoTime", g: "Space", label: "Echo time", min: 0.04, max: 0.5, step: 0.01, def: 0.18, rnd: [0.06, 0.3] },
+    { k: "room", g: "Space", label: "Temple reverb", min: 0, max: 1, step: 0.05, def: 0, rnd: [0, 0.5] },
+    { k: "roomSize", g: "Space", label: "Room size", min: 0.3, max: 4, step: 0.1, def: 1.5, rnd: [0.8, 3] },
     { k: "wobble", g: "Space", label: "Variation", min: 0, max: 3, step: 0.1, def: 1, rnd: [0, 2] },
   ];
   const SFX_KEY = "bonepile-sfx";
@@ -792,11 +828,18 @@ if (typeof document !== "undefined") {
   }
   // the chain a sound plays through: bit crush and sample-rate drop, then an echo
   function sfxBus(a, K, peak) {
-    let out = master; const nodes = [];
+    let dest = master; const nodes = [];
+    if (K.room > 0 && a.createConvolver) { // a temple room around the sound
+      const post = a.createGain(), cv = a.createConvolver(), wet = a.createGain();
+      cv.buffer = roomBuf(a, K.roomSize); wet.gain.value = K.room * 1.2;
+      post.connect(master); post.connect(cv); cv.connect(wet); wet.connect(master);
+      dest = post; nodes.push(post, cv, wet);
+    }
+    let out = dest;
     if (K.echo > 0) {
       const dry = a.createGain(), d = a.createDelay(1), fb = a.createGain(), wet = a.createGain();
       d.delayTime.value = K.echoTime; fb.gain.value = K.echo; wet.gain.value = 0.8;
-      dry.connect(master); dry.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(master);
+      dry.connect(dest); dry.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(dest);
       out = dry; nodes.push(dry, d, fb, wet);
     }
     if ((K.bits < 16 || K.down > 1) && a.createScriptProcessor) {
@@ -850,13 +893,184 @@ if (typeof document !== "undefined") {
     }
     return last;
   }
+  // ---- detailed sounds: real filters and smooth envelopes, for stone and human voices ----
+  function whiteBuf(a) {
+    if (noiseBufs.w) return noiseBufs.w;
+    const len = a.sampleRate * 2, b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return (noiseBufs.w = b);
+  }
+  function noiseSrc(a, t0, len) {
+    const s = a.createBufferSource(); s.buffer = whiteBuf(a); s.loop = true;
+    s.start(t0, Math.random() * 1.5); s.stop(t0 + len + 0.05); return s;
+  }
+  function filt(a, type, f, q) { const b = a.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+  const clampHz = (a, f) => Math.min(a.sampleRate * 0.45, Math.max(20, f));
+  // how loud a filter lets a frequency through (same maths as the browser's biquad)
+  function biqMag(type, fc, q, f, sr) {
+    const w0 = 2 * Math.PI * fc / sr, c = Math.cos(w0), al = Math.sin(w0) / (2 * q);
+    const b = type === "bandpass" ? [al, 0, -al] : [(1 - c) / 2, 1 - c, (1 - c) / 2], A = [1 + al, -2 * c, 1 - al];
+    const w = 2 * Math.PI * f / sr, re = (k, z) => k[0] + k[1] * Math.cos(w) + k[2] * Math.cos(2 * w), im = k => -(k[1] * Math.sin(w) + k[2] * Math.sin(2 * w));
+    return Math.hypot(re(b), im(b)) / Math.hypot(re(A), im(A));
+  }
+  // the buzz of vocal cords: a sawtooth-like wave whose overtones fall away
+  const GLOT = []; for (let n = 1; n < 64; n++) GLOT[n] = Math.pow(n, -1.15) * (n % 2 ? 1 : 0.85);
+  const GLOT_PK = (() => { let p = 0; for (let i = 0; i < 512; i++) { let v = 0; for (let n = 1; n < 64; n++) v += GLOT[n] * Math.sin(2 * Math.PI * n * i / 512); p = Math.max(p, Math.abs(v)); } return p; })();
+  function glottal(a) {
+    if (waves.glot) return waves.glot;
+    const re = new Float32Array(64), im = new Float32Array(64);
+    for (let n = 1; n < 64; n++) im[n] = GLOT[n];
+    return (waves.glot = a.createPeriodicWave(re, im));
+  }
+  // a temple room: a burst of dark noise that dies away, used as a reverb
+  const rooms = {};
+  function roomBuf(a, sec) {
+    const key = sec.toFixed(1); if (rooms[key]) return rooms[key];
+    const len = Math.max(64, Math.round(a.sampleRate * sec)), b = a.createBuffer(2, len, a.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = b.getChannelData(c); let lp = 0;
+      for (let i = 0; i < len; i++) { const t = i / len; lp += (Math.random() * 2 - 1 - lp) * (0.6 - 0.45 * t); d[i] = lp * Math.pow(1 - t, 2.5) * 0.5; }
+    }
+    return (rooms[key] = b);
+  }
+  // stone dragging on stone: rough noise that catches and lurches many times a second (stick and
+  // slip), a low rumble under it, grit popping off, and a thud when it stops
+  function stoneDrag(L, K, common, at, vol) {
+    const a = audio(); if (!a) return at;
+    const T = K.length, out = common.out || master, sr = a.sampleRate;
+    const len = Math.max(0.05, (+L.dur || 1) * T), t0 = a.currentTime + at;
+    const shift = Math.pow(2, K.pitch / 12 + K.grit), tone = clampHz(a, (+L.tone || 450) * shift);
+    const tone2 = clampHz(a, tone * Math.pow(2, ((+L.sweep || 0) + K.slide) / 12));
+    const rough = Math.min(0.97, (+L.rough || 0.6) * K.sRough), rate = Math.max(2, (+L.rate || 22) * K.sSpeed);
+    const rumble = (+L.rumble || 0) * K.sWeight, peb = (+L.pebbles || 0) * K.sPebbles, stop = Math.min(2.5, (+L.stop || 0) + K.sStop);
+    const atk = Math.min(len * 0.6, (+L.atk || 0.06) + K.attack), rel = Math.min(len - atk - 0.005, (+L.rel || 0.12) * K.decay / 1.3), ease = Math.min(1, +L.ease || 0);
+    const env = a.createGain(), g = env.gain; env.connect(out);
+    g.setValueAtTime(0, t0); g.linearRampToValueAtTime(vol, t0 + atk);
+    g.setValueAtTime(vol, t0 + Math.max(atk, len - rel)); g.linearRampToValueAtTime(0, t0 + len);
+    // the scrape
+    const src = noiseSrc(a, t0, len), bp = filt(a, "bandpass", tone, 0.8), lp = filt(a, "lowpass", clampHz(a, tone * 2.5), 0.5), grain = a.createGain(), norm = a.createGain();
+    bp.frequency.setValueAtTime(tone, t0); bp.frequency.exponentialRampToValueAtTime(tone2, t0 + len);
+    lp.frequency.setValueAtTime(clampHz(a, tone * 2.5), t0); lp.frequency.exponentialRampToValueAtTime(clampHz(a, tone2 * 2.5), t0 + len);
+    norm.gain.value = 1 / (0.36 * Math.sqrt(1.96 * (tone + tone2) / 2 / (sr / 2)));
+    src.connect(bp); bp.connect(lp); lp.connect(norm); norm.connect(grain); grain.connect(env);
+    const floor = 1 - rough, gg = grain.gain; gg.setValueAtTime(1.3 * floor, t0);
+    for (let t = 0, n = 0; t < len && n < 600; n++) {
+      const r = rate * (ease ? Math.min(1, 0.3 + 0.7 * t / (len * ease)) : 1);
+      gg.setValueAtTime(1.3 * (floor + rough * (0.45 + 0.55 * Math.random())), t0 + t);
+      gg.setTargetAtTime(1.3 * floor, t0 + t + 0.002, 0.3 / r);
+      t += (0.5 + Math.random()) / r;
+    }
+    // the rumble of the weight
+    if (rumble > 0) {
+      const fc = clampHz(a, 115 * Math.sqrt(shift)), rs = noiseSrc(a, t0, len), l1 = filt(a, "lowpass", fc, 0.9), l2 = filt(a, "lowpass", fc * 1.3, 0.6), rg = a.createGain();
+      rg.gain.value = rumble * 0.8 / (0.04 * Math.sqrt(fc / 120)); rs.connect(l1); l1.connect(l2); l2.connect(rg); rg.connect(env);
+    }
+    // grit popping off
+    const np = Math.min(90, Math.round(peb * len * 10));
+    if (np) {
+      const hp = filt(a, "highpass", clampHz(a, 2400 * shift), 0.7); hp.connect(env);
+      for (let i = 0; i < np; i++) {
+        const ts = t0 + atk * 0.5 + Math.random() * Math.max(0.01, len - atk * 0.5 - 0.03), s = noiseSrc(a, ts, 0.03), pg = a.createGain();
+        pg.gain.setValueAtTime(0, ts); pg.gain.linearRampToValueAtTime(0.8 + Math.random() * 1.6, ts + 0.001);
+        pg.gain.exponentialRampToValueAtTime(0.001, ts + 0.006 + Math.random() * 0.02);
+        s.connect(pg); pg.connect(hp);
+      }
+    }
+    // the thud when it stops
+    if (stop > 0) {
+      const ts = t0 + len - Math.min(0.04, rel), o = a.createOscillator(), og = a.createGain(), sq = Math.sqrt(shift);
+      o.type = "sine"; o.frequency.setValueAtTime(clampHz(a, 72 * sq), ts); o.frequency.exponentialRampToValueAtTime(clampHz(a, 38 * sq), ts + 0.25);
+      og.gain.setValueAtTime(0, ts); og.gain.linearRampToValueAtTime(vol * stop * 1.6, ts + 0.006); og.gain.exponentialRampToValueAtTime(0.0005, ts + 0.45);
+      o.connect(og); og.connect(out); o.start(ts); o.stop(ts + 0.5);
+      const s = noiseSrc(a, ts, 0.15), kf = filt(a, "lowpass", clampHz(a, 380 * sq), 1), kg = a.createGain();
+      kg.gain.setValueAtTime(0, ts); kg.gain.linearRampToValueAtTime(vol * stop * 12, ts + 0.003); kg.gain.exponentialRampToValueAtTime(0.0005, ts + 0.14);
+      s.connect(kf); kf.connect(kg); kg.connect(out);
+      return ts - a.currentTime + 0.45;
+    }
+    return at + len;
+  }
+  // a human-ish throat: the buzz of vocal cords and breath, shaped by the mouth's three resonances
+  const FORMANTS = { a: [800, 1200, 2700], e: [500, 1750, 2550], i: [300, 2200, 3000], o: [520, 900, 2500], u: [330, 820, 2350], uh: [620, 1200, 2550] };
+  const VOWEL_F = { oo: "u", oh: "o", ah: "a", ee: "i" }, F_AMP = [1, 0.6, 0.25], F_Q = [7, 11, 16];
+  function throat(L, K, common, at, vol) {
+    const a = audio(); if (!a) return at;
+    const T = K.length, W = K.wobble, out = common.out || master, now = a.currentTime, sr = a.sampleRate;
+    const n = Math.max(1, Math.min(32, Math.round(+L.syl || 1) + K.vSyl));
+    const vk = K.vVowel !== "orig" ? VOWEL_F[K.vVowel] : L.vowel, vow = FORMANTS[vk] || FORMANTS.a, from = FORMANTS[L.from];
+    const fs = 1 / Math.max(0.3, (+L.size || 1) * K.rSize), fq = (V, j) => clampHz(a, V[j] * fs);
+    // the mouth: three resonances and a little low body, all fed by one input
+    const mouth = a.createGain(), sum = a.createGain(); sum.connect(out);
+    const bank = vow.map((_, j) => { const b = filt(a, "bandpass", fq(vow, j), F_Q[j]), bg = a.createGain(); bg.gain.value = F_AMP[j]; mouth.connect(b); b.connect(bg); bg.connect(sum); return b; });
+    const body = filt(a, "lowpass", clampHz(a, 1400 * fs), 0.7), bodyG = a.createGain(); bodyG.gain.value = 0.12; mouth.connect(body); body.connect(bodyG); bodyG.connect(sum);
+    // how loud a voice at pitch f comes through the mouth, so every vowel and pitch plays at `vol`
+    const level = f => {
+      let p = 0;
+      for (let h = 1; h < 64 && h * f < sr / 2; h++) {
+        let re = 0; for (let j = 0; j < 3; j++) re += F_AMP[j] * biqMag("bandpass", fq(vow, j), F_Q[j], h * f, sr);
+        re += 0.12 * biqMag("lowpass", clampHz(a, 1400 * fs), 0.7, h * f, sr);
+        p += Math.pow(GLOT[h] / GLOT_PK * re, 2) / 2;
+      }
+      return Math.max(0.02, Math.sqrt(p));
+    };
+    const NZ = 1 / 0.065;
+    const vib = (+L.vib || 0) + K.vib, vibHz = (+L.vibHz || 6) * K.vibHz / 8;
+    let lfoG = null, lfo = null;
+    if (vib > 0) { lfo = a.createOscillator(); lfoG = a.createGain(); lfo.frequency.value = vibHz; lfoG.gain.value = vib * 100; lfo.connect(lfoG); lfo.start(now + at); }
+    const accel = (+L.accel || 0) + K.vRhythm, breath = (L.breath === undefined ? 0.15 : +L.breath) * K.vBreath, growl = Math.min(2, (+L.growl || 0) + K.vGrowl);
+    const tempo = K.vTempo, swing = Math.min(0.8, (+L.swing || 0) + K.vSwing), stepSt = (+L.step || 0) + K.vStep;
+    const accent = K.vAccent !== "orig" ? K.vAccent : L.accent || "none", h = (+L.h || 0) + K.vH, tail = (+L.tail || 1) * K.vTail, first = +L.first || 1;
+    const hit = i => accent === "first" ? i === 0 : accent === "odd" ? i % 2 === 0 : accent === "three" ? i % 3 === 0 : accent === "last" ? i === n - 1 : false;
+    const shape = (gp, tv, d, v, atkV) => { gp.setValueAtTime(0, tv); gp.linearRampToValueAtTime(v, tv + atkV); gp.linearRampToValueAtTime(v * 0.7, tv + Math.max(atkV + 0.002, d * 0.55)); gp.linearRampToValueAtTime(0, tv + d); };
+    let t = at, last = at;
+    for (let i = 0; i < n; i++) {
+      const f = n > 1 ? i / (n - 1) : 0, sp = Math.max(0.2, 1 + accel * (f - 0.5) * 2) / tempo, sw = n > 1 ? (i % 2 ? 1 - swing : 1 + swing) : 1;
+      const d = Math.max(0.03, (+L.sylDur || 0.1) * T * K.vLen * sp * (1 + (Math.random() * 2 - 1) * 0.15 * W) * (i === n - 1 ? tail : 1) * (i === 0 ? first : 1));
+      const acc = hit(i);
+      const m = (+L.base || 50) + K.pitch + ((+L.drift || 0) + K.vDrift) * f + stepSt * i + (acc ? (+L.accentSt || 2) : 0) + (Math.random() * 2 - 1) * (+L.jitter || 0) * W * K.vRough;
+      const bend = ((+L.contour || 0) + K.vContour) * (L.alt && i % 2 ? -1 : 1) + K.slide;
+      const v = vol * (1 - (+L.fade || 0) * f) * (acc ? 1.35 : 1) * (1 + (Math.random() - 0.5) * 0.2 * W);
+      const hl = h > 0 ? Math.min(d * 0.6, (+L.hLen || 0.05) * T * K.vLen) : 0, ts = now + t, tv = ts + hl * 0.8;
+      // the mouth shape: snap to the vowel, or slide into it on the first syllable ("mwa-ha")
+      bank.forEach((b, j) => { b.frequency.setValueAtTime(i === 0 && from ? fq(from, j) : fq(vow, j), ts); if (i === 0 && from) b.frequency.linearRampToValueAtTime(fq(vow, j), tv + d * 0.5); });
+      if (hl) { // the "h": breath through the open mouth
+        const s = noiseSrc(a, ts, hl + 0.03), hg = a.createGain();
+        hg.gain.setValueAtTime(0, ts); hg.gain.linearRampToValueAtTime(v * h * 0.8 * NZ * K.noiseVol, ts + hl * 0.35);
+        hg.gain.setValueAtTime(v * h * 0.8 * NZ * K.noiseVol, ts + hl * 0.8); hg.gain.linearRampToValueAtTime(0, ts + hl + 0.02);
+        s.connect(hg); hg.connect(mouth);
+      }
+      const f0 = clampHz(a, hz(m)), f1 = clampHz(a, hz(m + bend)), atkV = Math.min(d * 0.4, 0.012 + (+L.atk || 0) + K.attack);
+      const voices = [[1, f0, f1]]; if (growl > 0) voices.push([growl * 0.6, f0 / 2, f1 / 2]);
+      for (const [gm, fa, fb] of voices) {
+        const o = a.createOscillator(), vg = a.createGain();
+        o.setPeriodicWave(glottal(a)); o.frequency.setValueAtTime(fa, tv); o.frequency.exponentialRampToValueAtTime(Math.max(20, fb), tv + d);
+        shape(vg.gain, tv, d, v * gm / level((fa + fb) / 2), atkV);
+        if (lfoG) lfoG.connect(o.detune);
+        o.connect(vg); vg.connect(mouth); o.start(tv); o.stop(tv + d + 0.02);
+      }
+      if (breath > 0) { // air leaking through the voice
+        const s = noiseSrc(a, tv, d), bg = a.createGain(); shape(bg.gain, tv, d, v * breath * 0.5 * NZ * K.noiseVol, atkV); s.connect(bg); bg.connect(mouth);
+      }
+      last = tv - now + d;
+      t += (d + hl * 0.8 + (+L.gap || 0.08) * T * K.vGap * sp) * sw;
+    }
+    // a gasp of breath back in after the laugh
+    const inh = Math.min(2, (+L.inhale || 0) + K.rInhale);
+    if (inh > 0) {
+      const ti = now + last + 0.08, dl = 0.35 * T, s = noiseSrc(a, ti, dl), bf = filt(a, "bandpass", clampHz(a, 1700 * fs), 1.2), ig = a.createGain();
+      ig.gain.setValueAtTime(0, ti); ig.gain.linearRampToValueAtTime(vol * inh * 0.6 / 0.19 * K.noiseVol, ti + dl * 0.85); ig.gain.linearRampToValueAtTime(0, ti + dl);
+      s.connect(bf); bf.connect(ig); ig.connect(out);
+      last += 0.08 + dl;
+    }
+    if (lfo) lfo.stop(now + last + 0.1);
+    return last;
+  }
   function playSfx(name, opts = {}, conf = null) { // returns how long the sound lasts, in seconds
     const s = SFX[name]; if (!s) return 0;
     if (s.buzz) buzz(s.buzz);
     const a = audio(); if (!a) return 0;
     conf = conf || sfxConf(name);
     const K = conf.knobs, T = K.length, base = opts.at || 0, W = K.wobble, st = Math.pow(2, K.pitch / 12);
-    const mix = L => (L.k === "noise" ? K.noiseVol : L.k === "bass" ? K.bass : K.tone) * K.vol;
+    const mix = L => (L.k === "noise" || L.k === "drag" ? K.noiseVol : L.k === "bass" ? K.bass : K.tone) * K.vol;
     const peak = conf.layers.reduce((p, L) => Math.max(p, (+L.vol || 0) * mix(L)), 0);
     const bus = sfxBus(a, K, peak);
     let end = 0;
@@ -881,6 +1095,8 @@ if (typeof document !== "undefined") {
         continue;
       }
       if (L.k === "vox") { end = Math.max(end, vox(L, K, common, at, vol)); continue; }
+      if (L.k === "throat") { end = Math.max(end, throat(L, K, common, at, vol)); continue; }
+      if (L.k === "drag") { end = Math.max(end, stoneDrag(L, K, common, at, vol)); continue; }
       if (L.k === "noise") {
         const g = st * Math.pow(2, K.grit), rate = ((+L.rate || 1) + Math.random() * (+L.rj || 0) * W) * g;
         const to = (L.to || K.slide) ? (+L.to || +L.rate || 1) * g * Math.pow(2, K.slide / 12) : 0;
@@ -895,7 +1111,7 @@ if (typeof document !== "undefined") {
       }
     }
     if (bus.nodes.length) {
-      const tail = K.echo > 0 ? Math.min(4, K.echoTime * Math.log(0.01) / Math.log(K.echo)) : 0;
+      const tail = (K.echo > 0 ? Math.min(4, K.echoTime * Math.log(0.01) / Math.log(K.echo)) : 0) + (K.room > 0 ? K.roomSize : 0);
       setTimeout(() => bus.nodes.forEach(n => { try { n.disconnect(); } catch (_) {} }), (end - base + tail + 0.4) * 1000 + base * 1000);
     }
     return Math.max(0, end - base);

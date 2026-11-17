@@ -20,6 +20,7 @@ body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospa
 #stats #gold { color: var(--gold); }
 #mute { padding: 4px; border: none; background: transparent; box-shadow: none; clip-path: none; color: var(--line); line-height: 0; }
 #mute .cross { display: none; }
+#pause { padding: 4px; border: none; background: transparent; box-shadow: none; clip-path: none; color: var(--line); line-height: 0; }
 #music { padding: 4px; border: none; background: transparent; box-shadow: none; clip-path: none; color: var(--line); line-height: 0; }
 #music .cross { display: none; }
 #music.off { color: var(--muted); }
@@ -77,6 +78,12 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #hearts.hurt { animation: hurt .6s steps(6, end); }
 @keyframes hurt { 0%, 33%, 66% { opacity: .2; } 16%, 50%, 83%, 100% { opacity: 1; } }
 #menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #0c1a1c no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid var(--line); padding: 16px; text-align: center; z-index: 4; }
+#paused { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #0c1a1c no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid var(--line); padding: 16px; text-align: center; z-index: 5; }
+#paused h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 16px; line-height: 1.5; color: var(--gold); font-weight: normal; }
+#paused p { margin: 0; color: var(--line); }
+#resume { min-width: 14em; min-height: 52px; }
+#paused .prow { display: flex; gap: 10px; }
+#paused .lab { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); text-decoration: none; padding: 10px; }
 #menu h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
 #menu p, #dailyText { margin: 0; color: var(--line); }
 #labLink { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); text-decoration: none; padding: 10px; }
@@ -108,6 +115,7 @@ button:focus-visible { outline: none; border-color: var(--glow); }
     <span>ROUND <b id="round">1</b></span>
     <span>QUOTA <b id="quota">0/40</b></span>
     <span>BEST <b id="best">-</b></span>
+    <button id="pause" type="button" aria-label="Pause"><svg viewBox="0 0 12 12" width="24" height="24" fill="currentColor" shape-rendering="crispEdges"><rect x="2" y="2" width="3" height="8"/><rect x="7" y="2" width="3" height="8"/></svg></button>
     <button id="music" type="button" aria-label="Music on" aria-pressed="false"><svg viewBox="0 0 12 12" width="24" height="24" fill="currentColor" shape-rendering="crispEdges"><rect x="6" y="1" width="1" height="8"/><rect x="7" y="1" width="2" height="1"/><rect x="8" y="2" width="2" height="1"/><rect x="9" y="3" width="1" height="2"/><rect x="3" y="7" width="3" height="1"/><rect x="2" y="8" width="5" height="2"/><rect x="3" y="10" width="3" height="1"/><rect class="cross" x="1" y="1" width="1" height="1"/><rect class="cross" x="2" y="2" width="1" height="1"/><rect class="cross" x="3" y="3" width="1" height="1"/><rect class="cross" x="4" y="4" width="1" height="1"/><rect class="cross" x="8" y="8" width="1" height="1"/><rect class="cross" x="9" y="9" width="1" height="1"/><rect class="cross" x="10" y="10" width="1" height="1"/></svg></button>
     <button id="mute" type="button" aria-label="Sound on" aria-pressed="false"><svg viewBox="0 0 12 12" width="24" height="24" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="3" y="2" width="2" height="1"/><rect x="1" y="3" width="4" height="1"/><rect x="0" y="4" width="5" height="1"/><rect x="0" y="5" width="5" height="1"/><rect x="0" y="6" width="5" height="1"/><rect x="0" y="7" width="5" height="1"/><rect x="1" y="8" width="4" height="1"/><rect x="3" y="9" width="2" height="1"/><rect x="4" y="10" width="1" height="1"/><rect class="wave" x="8" y="3" width="1" height="1"/><rect class="wave" x="6" y="4" width="1" height="1"/><rect class="wave" x="9" y="4" width="1" height="1"/><rect class="wave" x="7" y="5" width="1" height="1"/><rect class="wave" x="9" y="5" width="1" height="1"/><rect class="wave" x="7" y="6" width="1" height="1"/><rect class="wave" x="9" y="6" width="1" height="1"/><rect class="wave" x="6" y="7" width="1" height="1"/><rect class="wave" x="9" y="7" width="1" height="1"/><rect class="wave" x="8" y="8" width="1" height="1"/><rect class="cross" x="6" y="3" width="1" height="1"/><rect class="cross" x="10" y="3" width="1" height="1"/><rect class="cross" x="7" y="4" width="1" height="1"/><rect class="cross" x="9" y="4" width="1" height="1"/><rect class="cross" x="8" y="5" width="1" height="1"/><rect class="cross" x="7" y="6" width="1" height="1"/><rect class="cross" x="9" y="6" width="1" height="1"/><rect class="cross" x="6" y="7" width="1" height="1"/><rect class="cross" x="10" y="7" width="1" height="1"/></svg></button>
   </div>
@@ -121,6 +129,14 @@ button:focus-visible { outline: none; border-color: var(--glow); }
       <div id="dailyText"></div>
       <button id="again" type="button">Play again</button>
       <button id="overDaily" type="button">Daily temple</button>
+    </div>
+    <div id="paused" hidden>
+      <h2>Paused</h2>
+      <p>The skull waits. The discs hold still.</p>
+      <button id="resume" type="button">Resume</button>
+      <div class="prow"><button id="pSound" type="button">Sound on</button><button id="pMusic" type="button">Music on</button></div>
+      <button id="pNew" type="button">New run</button>
+      <a class="lab" href="lab.html">Sound lab</a>
     </div>
     <div id="menu" hidden>
       <h2>Start a new run?</h2>
@@ -405,7 +421,7 @@ if (typeof document !== "undefined") {
   function newGame(daily = false) {
     if (typeof daily !== "boolean") daily = false;
     st = { daily: daily ? todayKey() : "", earned: 0, gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
-    $("sac").hidden = true; $("menu").hidden = true;
+    $("sac").hidden = true; $("menu").hidden = true; $("paused").hidden = true;
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
     if (/[?&]relics=all\b/.test(location.search)) { RELICS.forEach(r => st.relics.add(r.id)); st.charges = ORACLE_MAX; } // testing aid
@@ -1027,9 +1043,9 @@ if (typeof document !== "undefined") {
   }
   function skinAll() {
     if (!document.querySelectorAll) return;
-    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#power)").forEach(b => skin(b, "bone"));
+    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#pause):not(#power)").forEach(b => skin(b, "bone"));
     skin($("power"), "oracle");
-    document.querySelectorAll("#over, #shop, #sac, #menu").forEach(p => skin(p, "stone"));
+    document.querySelectorAll("#over, #shop, #sac, #menu, #paused").forEach(p => skin(p, "stone"));
   }
   const reskin = () => setTimeout(skinAll, 0);
 
@@ -1135,12 +1151,30 @@ if (typeof document !== "undefined") {
   }
   function openMenu() {
     if (st.over) return newGame(!!st.daily);
+    if (st.paused) { st.paused = false; $("paused").hidden = true; }
     st.menu = true; drag = null;
     const b = dailyBest(todayKey());
     $("menuDailyText").textContent = b ? `Today's best: ${b.gold} gold, round ${b.round}${b.word ? ", " + b.word : ""}.` : "Same discs for everyone today. Your best is saved here.";
     $("menu").hidden = false; reskin();
   }
   function closeMenu() { st.menu = false; $("menu").hidden = true; }
+  // pause: freeze the column and its timers, stop the music
+  function pauseShow() {
+    $("pSound").textContent = muted ? "Sound off" : "Sound on";
+    $("pMusic").textContent = musicVol() > 0 ? "Music on" : "Music off";
+  }
+  function pauseGame() {
+    if (!st || st.over || st.shopOpen || st.sac || st.menu || st.paused) return false;
+    st.paused = true; st.pausedAt = performance.now(); drag = null; musicStop();
+    pauseShow(); $("paused").hidden = false; reskin();
+    return true;
+  }
+  function resumeGame() {
+    if (!st.paused) return;
+    const gap = performance.now() - st.pausedAt;
+    st.spawnAt += gap; st.lastOffer += gap; if (st.pending) st.pending.t += gap;
+    st.paused = false; $("paused").hidden = true; musicStart();
+  }
 
   // A cursed disc's time ran out: the discs touching it go dark.
   function curse(d) {
@@ -1218,7 +1252,7 @@ if (typeof document !== "undefined") {
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
-    if (st.over || st.sac || st.menu || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
+    if (st.over || st.sac || st.menu || st.paused || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     const found = findWords(st.stack);
     if (!found.length) {
       speak("The skull is not satisfied."); sfx.refuse();
@@ -1279,7 +1313,7 @@ if (typeof document !== "undefined") {
   let flash = 0;
 
   function update(dt, now) {
-    if (st.over || st.shopOpen || st.sac || st.menu) return;
+    if (st.over || st.shopOpen || st.sac || st.menu || st.paused) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
     // quota met: the round ends now. The falling disc vanishes and no chains are checked.
     if (st.roundDone) { st.falling = null; st.checkChain = false; }
@@ -1440,7 +1474,7 @@ if (typeof document !== "undefined") {
     return null;
   }
   app.addEventListener("pointerdown", e => {
-    if (st.over || st.shopOpen || st.sac || st.menu || e.target.closest("button")) return;
+    if (st.over || st.shopOpen || st.sac || st.menu || st.paused || e.target.closest("button")) return;
     const r = cv.getBoundingClientRect();
     const d = stackedDiscAt(e.clientX - r.left, e.clientY - r.top);
     if (!d) return;
@@ -1624,7 +1658,16 @@ if (typeof document !== "undefined") {
   $("power").addEventListener("click", usePower);
   $("mute").addEventListener("click", () => setMuted(!muted));
   $("music").addEventListener("click", toggleMusic); musicState();
-  if (document.addEventListener) document.addEventListener("visibilitychange", () => { if (document.hidden) musicStop(); else if (st && !st.over) musicStart(); });
+  // leaving the app pauses the game; coming back leaves it paused until Resume
+  if (document.addEventListener) document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { if (!pauseGame()) musicStop(); }
+    else if (st && !st.over && !st.paused) musicStart();
+  });
+  $("pause").addEventListener("click", () => { if (st.paused) resumeGame(); else pauseGame(); });
+  $("resume").addEventListener("click", resumeGame);
+  $("pSound").addEventListener("click", () => { setMuted(!muted); pauseShow(); });
+  $("pMusic").addEventListener("click", () => { toggleMusic(); pauseShow(); });
+  $("pNew").addEventListener("click", openMenu);
   setMuted(muted);
   // browsers only allow sound after a tap: wake the audio on the first one
   armAudio();

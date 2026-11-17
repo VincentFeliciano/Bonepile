@@ -67,6 +67,18 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #over, #shop { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; background: rgba(0,0,0,.94); border: 3px solid var(--line); padding: 16px; text-align: center; }
 #over { align-items: center; }
 #over h2, #shop h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
+#row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 16px; }
+#hearts, #sacCost { display: flex; gap: 3px; line-height: 0; }
+#hearts svg, #sacCost svg { width: 14px; height: 12px; }
+#hearts.hurt { animation: hurt .6s steps(6, end); }
+@keyframes hurt { 0%, 33%, 66% { opacity: .2; } 16%, 50%, 83%, 100% { opacity: 1; } }
+#sac { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.94); border: 3px solid var(--blood); padding: 16px; text-align: center; z-index: 3; }
+#sac h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--blood); font-weight: normal; }
+#sac p { margin: 0; }
+#sacPick { display: flex; align-items: center; gap: 14px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 10px; }
+#sacPick button { width: 44px; height: 44px; padding: 0; font-size: 14px; }
+#sacCost svg { width: 21px; height: 18px; }
+#sacYes { border-color: var(--blood); color: #fff; background: #3a0c0c; min-width: 12em; }
 #next { min-height: 10px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; text-align: center; color: var(--muted); letter-spacing: 0.1em; }
 #shop { align-items: stretch; z-index: 2; }
 #shop p { margin: 0; }
@@ -89,13 +101,21 @@ button:focus-visible { outline: none; border-color: var(--glow); }
     <button id="mute" type="button" aria-label="Sound on" aria-pressed="false"><svg viewBox="0 0 12 12" width="24" height="24" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="3" y="2" width="2" height="1"/><rect x="1" y="3" width="4" height="1"/><rect x="0" y="4" width="5" height="1"/><rect x="0" y="5" width="5" height="1"/><rect x="0" y="6" width="5" height="1"/><rect x="0" y="7" width="5" height="1"/><rect x="1" y="8" width="4" height="1"/><rect x="3" y="9" width="2" height="1"/><rect x="4" y="10" width="1" height="1"/><rect class="wave" x="8" y="3" width="1" height="1"/><rect class="wave" x="6" y="4" width="1" height="1"/><rect class="wave" x="9" y="4" width="1" height="1"/><rect class="wave" x="7" y="5" width="1" height="1"/><rect class="wave" x="9" y="5" width="1" height="1"/><rect class="wave" x="7" y="6" width="1" height="1"/><rect class="wave" x="9" y="6" width="1" height="1"/><rect class="wave" x="6" y="7" width="1" height="1"/><rect class="wave" x="9" y="7" width="1" height="1"/><rect class="wave" x="8" y="8" width="1" height="1"/><rect class="cross" x="6" y="3" width="1" height="1"/><rect class="cross" x="10" y="3" width="1" height="1"/><rect class="cross" x="7" y="4" width="1" height="1"/><rect class="cross" x="9" y="4" width="1" height="1"/><rect class="cross" x="8" y="5" width="1" height="1"/><rect class="cross" x="7" y="6" width="1" height="1"/><rect class="cross" x="9" y="6" width="1" height="1"/><rect class="cross" x="6" y="7" width="1" height="1"/><rect class="cross" x="10" y="7" width="1" height="1"/></svg></button>
   </div>
   <div id="msg">Feed the skull words. Spin discs once they land.</div>
-  <div id="next"></div>
+  <div id="row2"><div id="hearts" aria-label="Hearts"></div><div id="next"></div></div>
   <div id="wrap">
     <canvas id="cv"></canvas>
     <div id="over" hidden>
       <h2>The skull claims the column</h2>
       <div id="overText"></div>
       <button id="again" type="button">Play again</button>
+    </div>
+    <div id="sac" hidden>
+      <h2>The column is full</h2>
+      <p id="sacText">The skull will clear it for blood. Each disc costs half a heart.</p>
+      <div id="sacPick"><button id="sacLess" type="button" aria-label="Fewer discs">-</button><span id="sacN"></span><button id="sacMore" type="button" aria-label="More discs">+</button></div>
+      <div id="sacCost"></div>
+      <button id="sacYes" type="button">Sacrifice</button>
+      <button id="sacNo" type="button">Give up</button>
     </div>
     <div id="shop" hidden>
       <h2 id="shopTitle">Round cleared</h2>
@@ -189,7 +209,7 @@ const RELICS = [
   { id: "maw", name: "Hungry Maw", desc: "5+ letter words also crumble the disc below", base: 30 },
   { id: "long", name: "Long Tongue", desc: "6+ letter words pay double", base: 35 },
   { id: "slow", name: "Slow Sand", desc: "Discs fall 25% slower", base: 30 },
-  { id: "pact", name: "Blood Pact", desc: "Chains climb +1x per link instead of +0.5x", base: 30 },
+  { id: "pact", name: "Chain Oath", desc: "Chains climb +1x per link instead of +0.5x", base: 30 },
   { id: "mercy", name: "Mercy", desc: "Smashing costs half", base: 20 },
   { id: "lens", name: "Grave Lens", desc: "See three discs ahead instead of two", base: 15 },
   { id: "ward", name: "Ward", desc: "Curses take 3 more drops to spread", base: 20 },
@@ -236,6 +256,20 @@ function bestSpin(stack) {
   }
   for (let hi = stack.length - 1; hi >= 0; hi--) dfs(hi, hi, "", [], false);
   return best;
+}
+
+// Hearts: the blood the skull takes when the column fills. Each disc cleared costs half a heart.
+const START_HEARTS = 3, MAX_HEARTS = 5;
+const HEART_PRICE = 30; // shop: restore one heart, + RELIC_PRICE_STEP per round
+const HEART = [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."];
+function heartSvg(kind) { // kind: "full", "half" or "empty"
+  let r = "";
+  HEART.forEach((row, y) => [...row].forEach((c, x) => {
+    if (c !== "#") return;
+    const red = kind === "full" || (kind === "half" && x <= 3);
+    r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${red ? "#c83030" : "#484848"}"/>`;
+  }));
+  return `<svg viewBox="0 0 7 6" shape-rendering="crispEdges">${r}</svg>`;
 }
 
 // Chains: words that form on their own after a clear pay 1 + CHAIN_STEP x link.
@@ -315,7 +349,8 @@ if (typeof document !== "undefined") {
   let st;
 
   function newGame() {
-    st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0 };
+    st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
+    $("sac").hidden = true;
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
     if (/[?&]relics=all\b/.test(location.search)) { RELICS.forEach(r => st.relics.add(r.id)); st.charges = ORACLE_MAX; } // testing aid
@@ -344,6 +379,7 @@ if (typeof document !== "undefined") {
     const lookahead = has("lens") ? 3 : 2;
     $("next").textContent = "NEXT  " + st.queue.slice(0, lookahead).map(d => d.locked ? `[${d.faces[0]}]` : d.cursed ? `${d.faces.join("")}!` : d.faces.join("")).join("   ");
     $("help").hidden = st.relics.size > 0;
+    renderHearts();
   }
   function say(t) { $("msg").textContent = t; }
 
@@ -439,6 +475,11 @@ if (typeof document !== "undefined") {
       chip({ at: 0.02, wave: "pulse12", notes: [72, 76, 79, 84, 88, 91, 96, 100], step: 0.045, dur: 0.5, vol: 0.05 });
       buzz(30);
     },
+    blood() { // a heartbeat, then a wet crunch
+      chip({ wave: "triangle", notes: [36], bend: -6, dur: 0.12, vol: 0.55 }); chip({ at: 0.16, wave: "triangle", notes: [36], bend: -6, dur: 0.12, vol: 0.55 });
+      crunch({ at: 0.32, rate: 0.35, to: 0.1, dur: 0.35, vol: 0.4 }); chip({ at: 0.32, wave: "pulse12", notes: [55, 54, 53, 52, 51, 50], step: 0.05, vol: 0.08 });
+      buzz([60, 80, 60, 120, 150]);
+    },
     charge() { chip({ wave: "square", notes: [72, 76, 79, 84], step: 0.05, dur: 0.35, vol: 0.09 }); },
     buy() { chip({ wave: "square", notes: [72, 79], step: 0.08, dur: 0.28, vol: 0.1 }); chip({ wave: "triangle", notes: [48], dur: 0.2, vol: 0.35 }); },
   };
@@ -463,7 +504,7 @@ if (typeof document !== "undefined") {
   }
   // Oracle Stone: spin the landed discs into the best word on the board, once per round.
   function usePower() {
-    if (st.over || st.shopOpen) return;
+    if (st.over || st.shopOpen || st.sac) return;
     if (!st.charges) { say("The Oracle Stone sleeps. Offer a word with a locked or cursed disc to wake it."); return; }
     if (st.oracleUsedRound === st.round) { say("The Oracle Stone has spoken this round. It answers again next round."); return; }
     if (st.pending || st.checkChain || st.spinning) return;
@@ -642,7 +683,7 @@ if (typeof document !== "undefined") {
   function refillQueue() { while (st.queue.length < 3) st.queue.push(nextDisc()); }
 
   function spawn(now) {
-    if (st.stack.length >= ROWS) return gameOver();
+    if (st.stack.length >= ROWS) return st.halves > 0 ? openSac() : gameOver();
     const d = st.queue.shift(); refillQueue();
     d.y = ROWS; st.falling = d; st.spawnedRound++;
     glowRune("lens"); glowRune("slow", 250);
@@ -651,6 +692,49 @@ if (typeof document !== "undefined") {
     else if (d.cursed) laugh(`The skull laughs. A cursed disc: use it within ${d.curse} drops.`);
     hud();
   }
+
+  // ---------- blood sacrifice ----------
+  // The column hit the top. Pay half a heart per disc to have the skull clear discs off the top.
+  function renderHearts(hurt) {
+    const box = $("hearts"); let h = "";
+    for (let i = 0; i < st.hearts; i++) h += heartSvg(st.halves >= i * 2 + 2 ? "full" : st.halves === i * 2 + 1 ? "half" : "empty");
+    box.innerHTML = h;
+    box.setAttribute("aria-label", `${st.halves / 2} of ${st.hearts} hearts`);
+    if (hurt && box.classList) { box.classList.remove("hurt"); void box.offsetWidth; box.classList.add("hurt"); }
+  }
+  function sacMax() { return Math.min(st.halves, st.stack.length); }
+  function sacShow() {
+    const n = st.sacN;
+    $("sacN").textContent = `${n} disc${n === 1 ? "" : "s"}`;
+    let h = "";
+    for (let i = 0; i < Math.floor(n / 2); i++) h += heartSvg("full");
+    if (n % 2) h += heartSvg("half");
+    $("sacCost").innerHTML = h;
+    $("sacCost").setAttribute("aria-label", `costs ${n / 2} heart${n === 2 ? "" : "s"}`);
+    $("sacText").textContent = `The skull will clear the top of the column for blood. Each disc costs half a heart. You have ${st.halves / 2} heart${st.halves === 2 ? "" : "s"}.`;
+    $("sacLess").disabled = n <= 1; $("sacMore").disabled = n >= sacMax();
+  }
+  function openSac() {
+    st.sac = true; st.falling = null; drag = null;
+    st.sacN = Math.min(4, sacMax());
+    sacShow(); $("sac").hidden = false; sfx.refuse(); skullClass("open", 900);
+  }
+  function sacrifice() {
+    if (!st.sac) return;
+    const n = Math.min(st.sacN, sacMax()), now = performance.now();
+    const gone = st.stack.slice(-n);
+    st.stack = st.stack.slice(0, st.stack.length - n);
+    gone.forEach(d => st.crumble.push({ d, y: d.y, t: now }));
+    st.halves -= n; st.sac = false; $("sac").hidden = true;
+    st.spawnAt = now + 900; st.checkChain = true;
+    renderHearts(true); sfx.blood(); skullClass("fed", 450);
+    say(`The skull drinks. ${n} disc${n === 1 ? "" : "s"} gone for ${n / 2} heart${n === 2 ? "" : "s"}.`);
+    hud();
+  }
+  $("sacLess").addEventListener("click", () => { st.sacN = Math.max(1, st.sacN - 1); sfx.turn(); sacShow(); });
+  $("sacMore").addEventListener("click", () => { st.sacN = Math.min(sacMax(), st.sacN + 1); sfx.turn(); sacShow(); });
+  $("sacYes").addEventListener("click", sacrifice);
+  $("sacNo").addEventListener("click", () => { st.sac = false; $("sac").hidden = true; gameOver(); });
 
   function gameOver() {
     st.over = true; st.falling = null; sfx.over();
@@ -689,6 +773,19 @@ if (typeof document !== "undefined") {
       });
       list.appendChild(b);
     }
+    // a heart, when you're missing some
+    if (st.halves < st.hearts * 2) {
+      const price = HEART_PRICE + RELIC_PRICE_STEP * (st.round - 1);
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "relic"; b.id = "relic-heart"; b.disabled = st.gold < price;
+      b.innerHTML = `<b>Heart of the Temple</b><i>${price} gold</i><span>Restore one heart</span>`;
+      b.addEventListener("click", () => {
+        if (st.gold < price) return;
+        st.gold -= price; st.shown = st.gold; st.halves = Math.min(st.hearts * 2, st.halves + 2); sfx.charge();
+        startRound(st.round + 1);
+      });
+      list.appendChild(b);
+    }
     // the Oracle Stone: rare, expensive, and fills you to ORACLE_MAX charges
     if (st.charges < ORACLE_MAX && Math.random() < 1 / ORACLE_SHOP_ODDS) {
       const price = ORACLE_PRICE + RELIC_PRICE_STEP * (st.round - 1);
@@ -712,7 +809,7 @@ if (typeof document !== "undefined") {
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
-    if (st.over || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
+    if (st.over || st.sac || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     const found = findWords(st.stack);
     if (!found.length) {
       say("The skull is not satisfied."); sfx.refuse();
@@ -773,7 +870,7 @@ if (typeof document !== "undefined") {
   let flash = 0;
 
   function update(dt, now) {
-    if (st.over || st.shopOpen) return;
+    if (st.over || st.shopOpen || st.sac) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
     // quota met: the round ends now. The falling disc vanishes and no chains are checked.
     if (st.roundDone) { st.falling = null; st.checkChain = false; }
@@ -873,7 +970,7 @@ if (typeof document !== "undefined") {
       const face = d.faces[((k % n) + n) % n];
       // pixel letters don't squash well, so the turning-away faces just fade to a carved outline colour
       if (c > 0.45) {
-        ctx.fillStyle = c > 0.8 ? C.k : c0;
+        ctx.fillStyle = c > 0.8 ? C.k : d.locked ? C.d : C.teal1;
         ctx.font = `${face.length > 2 ? 8 * P : fs}px ${FONT}`;
         ctx.fillText(face, lx, ty);
       }
@@ -920,7 +1017,7 @@ if (typeof document !== "undefined") {
     return null;
   }
   app.addEventListener("pointerdown", e => {
-    if (st.over || st.shopOpen || e.target.closest("button")) return;
+    if (st.over || st.shopOpen || st.sac || e.target.closest("button")) return;
     const r = cv.getBoundingClientRect();
     const d = stackedDiscAt(e.clientX - r.left, e.clientY - r.top);
     if (!d) return;

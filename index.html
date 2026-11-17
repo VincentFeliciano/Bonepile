@@ -1358,6 +1358,22 @@ if (typeof document !== "undefined") {
       ctx.fillRect(xb - (i + 1) * P, ya + inset, P, h - 2 * inset);
     }
   }
+  // a 5-row pixel alphabet for thin discs, where the 7-row font would touch the edges
+  const MINI = {A: "0111010001111111000110001", B: "1111010001111101000111110", C: "0111110000100001000001111", D: "1111010001100011000111110", E: "1111110000111101000011111", F: "1111110000111101000010000", G: "0111110000100111000101111", H: "1000110001111111000110001", I: "1111100100001000010011111", J: "0011100010000101001001100", K: "1001010100110001010010010", L: "1000010000100001000011111", M: "1000111011101011000110001", N: "1000111001101011001110001", O: "0111010001100011000101110", P: "1111010001111101000010000", Q: "0111010001101011001001101", R: "1111010001111101001010001", S: "0111110000011100000111110", T: "1111100100001000010000100", U: "1000110001100011000101110", V: "1000110001100010101000100", W: "1000110001101011101110001", X: "1000101010001000101010001", Y: "1000101010001000010000100", Z: "1111100010001000100011111", "#": "0101011111010101111101010"};
+  function miniText(t, cx, y0) {
+    const P = PX, w = t.length * 6 - 1; let x = cx - Math.floor(w / 2) * P;
+    for (const ch of t) { const g = MINI[ch]; if (g) for (let i = 0; i < 25; i++) if (g[i] === "1") ctx.fillRect(x + (i % 5) * P, y0 + Math.floor(i / 5) * P, P, P); x += 6 * P; }
+  }
+  // letters sit centred on the bone face (the bottom row is shadow), with a row of bone above and below
+  function discText(t, cx, top, faceRows, big) {
+    const P = PX;
+    const fs = big && t.length <= 2 && faceRows >= 16 ? 16 * P : t.length <= 2 && faceRows >= 9 ? 8 * P : 0;
+    if (!fs && [...t].every(ch => MINI[ch])) { miniText(t, cx, top + Math.floor((faceRows - 5) / 2) * P); return; }
+    const f = fs || 8 * P, rows = f / P * 7 / 8;
+    ctx.font = `${f}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    const m = ctx.measureText ? ctx.measureText("H") : null, asc = m && isFinite(m.actualBoundingBoxAscent) && m.actualBoundingBoxAscent > 0 ? m.actualBoundingBoxAscent : rows * P;
+    ctx.fillText(t, cx, top + Math.max(0, Math.floor((faceRows - rows) / 2)) * P + snap(asc));
+  }
   // Discs are slices of old bone: ivory in the middle, yellowing to the ends, pitted and cracked.
   function drawDisc(d, y, alpha = 1, broken = 0, hl = false) {
     const P = PX, now = performance.now();
@@ -1382,13 +1398,13 @@ if (typeof document !== "undefined") {
       for (let i = 0; i < 9; i++) { ctx.fillStyle = r() < 0.6 ? c1 : c0; ctx.fillRect(snap(x0 + ex + r() * (x1 - x0 - 2 * ex)), top + P + snap(r() * (h - 3 * P)), P, P); }
       if (r() < 0.6) { ctx.fillStyle = c0; let kx = snap(x0 + ex + r() * (x1 - x0 - 2 * ex - 6 * P)), ky = top + snap(r() * (h - 2 * P)); for (let i = 0; i < 5; i++) { ctx.fillRect(kx, ky, P, P); kx += P; ky += r() < 0.5 ? P : -P; ky = Math.max(top, Math.min(top + h - 2 * P, ky)); } }
     }
-    const fs = h / P >= 20 ? 16 * P : 8 * P;
+    const fs = h / P >= 20 ? 16 * P : 8 * P, faceRows = Math.round(h / P) - 1;
     ctx.font = `${fs}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const ty = top + snap(ry) + P;
     if (d.locked || d.dark) {
       ctx.fillStyle = C.w;
       if (armed) { ctx.font = `${8 * P}px ${FONT}`; ctx.fillText(`SMASH -${smashCost()}`, cx, ty); }
-      else if (d.locked) ctx.fillText(d.faces[0], cx, ty);
+      else if (d.locked) discText(d.faces[0], cx, top, faceRows, true);
       ctx.restore();
       return;
     }
@@ -1414,8 +1430,7 @@ if (typeof document !== "undefined") {
       // pixel letters don't squash well, so the turning-away faces just fade to a carved outline colour
       if (c > 0.45) {
         ctx.fillStyle = c > 0.8 ? C.k : d.locked ? C.d : C.teal1;
-        ctx.font = `${face.length > 2 ? 8 * P : fs}px ${FONT}`;
-        ctx.fillText(face, lx, ty);
+        discText(face, lx, top, faceRows, true);
       }
       const ad = a + step / 2, cd = Math.cos(ad);
       if (cd > 0.05) { ctx.fillStyle = c1; ctx.fillRect(snap(cx + Math.sin(ad) * (R - ex) * 0.92), top + 2 * P, P, h - 4 * P); }

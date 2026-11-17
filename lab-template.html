@@ -29,6 +29,7 @@ select { -webkit-appearance: none; appearance: none; width: 100%; font-family: "
 #hint { margin: 10px 2px 0; color: var(--line); font-size: 19px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips button { min-height: 44px; font-size: 20px; padding: 4px 12px; }
+.chips .cat { flex-basis: 100%; margin: 10px 0 0; font-size: 8px; color: var(--moss); letter-spacing: 0.08em; }
 .chips button.on { background: var(--glow); box-shadow: inset -4px -4px 0 #3f8a2c, inset 4px 4px 0 #b8f59a; }
 .knob { padding: 6px 0 4px; }
 .knob + .knob { border-top: 2px dotted var(--teal2); }
@@ -116,10 +117,13 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   armAudio();
 
   const NAMES = Object.keys(SFX);
-  const CHOICE = { orig: "Original", square: "50%", pulse25: "25%", pulse12: "12.5%", triangle: "Soft", long: "Long", short: "Short" };
-  const HINT = { wave: "Pulse width: thinner is buzzier.", noise: "Short is the metallic NES loop." };
+  const CHOICE = { orig: "Original", square: "50%", pulse25: "25%", pulse12: "12.5%", triangle: "Soft", long: "Long", short: "Short", oo: "OO", oh: "OH", ah: "AH", ee: "EE" };
+  const HINT = { wave: "Pulse width: thinner is buzzier.", noise: "Short is the metallic NES loop.", vVowel: "Shapes laughs, cries, screams and the skull's voice. Start from a voice above." };
+  const hasVoice = () => sfxConf(cur).layers.some(L => L.k === "vox" || L.k === "babble");
   const sign = v => (v > 0 ? "+" : "") + v;
   const FMT = {
+    vSyl: v => v ? sign(v) : "same", vLen: v => v.toFixed(2) + "x", vGap: v => v.toFixed(1) + "x", vRhythm: v => v ? (v < 0 ? "faster " : "slower ") + Math.round(Math.abs(v) * 100) + "%" : "steady",
+    vContour: v => sign(v) + " st", vDrift: v => sign(v) + " st", vRough: v => Math.round(v * 100) + "%", vBreath: v => Math.round(v * 100) + "%", vGrowl: v => v ? Math.round(v * 100) + "%" : "off",
     vol: v => Math.round(v * 100) + "%", tone: v => Math.round(v * 100) + "%", bass: v => Math.round(v * 100) + "%", noiseVol: v => Math.round(v * 100) + "%",
     pitch: v => sign(v) + " st", slide: v => sign(v) + " st", length: v => v.toFixed(2) + "x", grit: v => sign(+v.toFixed(1)) + " oct",
     attack: v => Math.round(v * 1000) + " ms", decay: v => v.toFixed(1), bits: v => v >= 16 ? "off" : v + " bit", down: v => v <= 1 ? "off" : "1/" + v,
@@ -167,7 +171,9 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   function render() {
     const K = knobs(), box = $("knobs"); box.textContent = "";
     let panel = null, group = null;
+    const voice = hasVoice();
     for (const d of SFX_KNOBS) {
+      if (d.g === "Voice" && !voice) continue;
       if (d.g !== group) {
         group = d.g; panel = document.createElement("div"); panel.className = "panel";
         const ph = document.createElement("div"); ph.className = "ph";
@@ -225,7 +231,11 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       save(); render(); play();
     }); };
   addChip("", "Original");
-  for (const id of Object.keys(SFX_PRESETS)) addChip(id, SFX_PRESETS[id].name);
+  const cats = []; for (const id of Object.keys(SFX_PRESETS)) { const c = SFX_PRESETS[id].cat || ""; if (!cats.includes(c)) cats.push(c); }
+  for (const c of cats) {
+    if (c) { const h = document.createElement("div"); h.className = "cat px"; h.textContent = c.toUpperCase(); pre.append(h); }
+    for (const id of Object.keys(SFX_PRESETS)) if ((SFX_PRESETS[id].cat || "") === c) addChip(id, SFX_PRESETS[id].name);
+  }
 
   $("sound").addEventListener("change", e => pick(e.target.value));
   $("prev").addEventListener("click", () => { pick(NAMES[(NAMES.indexOf(cur) + NAMES.length - 1) % NAMES.length]); play(); });

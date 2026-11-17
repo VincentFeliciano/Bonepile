@@ -42,6 +42,13 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
 /* Relic icons ("runes"): one line-drawn badge per relic bought, sitting where the help text was. They glow when the relic triggers. */
 #runes { display: grid; grid-template-columns: repeat(4, 30px); gap: 4px; }
 #runes[hidden] { display: none; }
+#left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* The active relic: a round stone with a double ring, apart from the square passive tablets. */
+.rune.power { width: 38px; height: 38px; border-radius: 50%; box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 4.5px var(--line); }
+.rune.power svg { width: 24px; height: 24px; }
+.rune.power { position: relative; }
+.rune.power.spent { opacity: 0.3; border-style: dashed; }
+#charges { position: absolute; right: -14px; bottom: -2px; font-size: 11px; font-weight: bold; }
 .rune { width: 30px; height: 30px; padding: 0; border: 2px solid var(--line); border-radius: 5px; display: grid; place-items: center; background: var(--bg); color: var(--fg); box-shadow: inset 0 0 0 2px var(--bg), inset 0 0 0 3px var(--line); }
 .rune svg { width: 20px; height: 20px; }
 .rune.new { animation: runeIn .45s ease-out; }
@@ -92,7 +99,10 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
     </div>
   </div>
   <div id="bar">
-    <button id="restart" type="button">Restart</button>
+    <div id="left">
+      <button id="restart" type="button">Restart</button>
+      <button id="power" class="rune power spent" type="button" title="Oracle Stone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 10.6v2.8M10.6 12h2.8"/><path d="M5.2 8A7.6 7.6 0 0 1 18.4 7M18.8 16A7.6 7.6 0 0 1 5.6 17"/><path d="M18.4 7l.3-3.3M18.4 7l-3.2-.8M5.6 17l-.3 3.3M5.6 17l3.2.8"/></svg><span id="charges"></span></button>
+    </div>
     <button id="skull" type="button" aria-label="Offer words to the skull">
       <svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
         <path d="M32 3C17 3 8 13 8 26c0 7 3 12 8 15v7h32v-7c5-3 8-8 8-15C56 13 47 3 32 3z" fill="#fff"/>
@@ -132,8 +142,9 @@ function isWord(w) {
   if (w.length < 3) return false;
   if (WORDS.has(w)) return true;
   const has = s => s.length >= 3 && WORDS.has(s);
-  const dbl = s => s.length >= 4 && s[s.length-1] === s[s.length-2] && has(s.slice(0, -1));
-  if (w.endsWith("ies") && has(w.slice(0, -3) + "y")) return true;
+  // doubled final consonant before an ending: stopped, runner. Never a doubled vowel (castleeing).
+  const dbl = s => s.length >= 4 && s[s.length-1] === s[s.length-2] && /[bcdfgklmnprstvz]/.test(s[s.length-1]) && /[^aeiou][aeiou].$/.test(s.slice(0, -1)) && has(s.slice(0, -1));
+  if (w.endsWith("ies") && !/[aeiou]$/.test(w.slice(0, -3)) && has(w.slice(0, -3) + "y")) return true; // city/cities, not delay/delaies
   if (w.endsWith("es") && /(s|x|z|ch|sh)$/.test(w.slice(0, -2)) && has(w.slice(0, -2))) return true;
   if (w.endsWith("s") && !w.endsWith("ss") && has(w.slice(0, -1))) return true;
   for (const suf of ["ed", "er"]) {
@@ -174,6 +185,7 @@ const RUNE_ICONS = {
   pact: "<circle cx=\"12\" cy=\"2.6\" r=\"1.1\"/><path d=\"M11 3.8h2v3.2h-2zM7 7.3h10M10.6 7.6h2.8v7.6L12 18l-1.4-2.8z\"/><path d=\"M12 19.2c.9 1 1.4 1.7 1.4 2.2a1.4 1.4 0 0 1-2.8 0c0-.5.5-1.2 1.4-2.2z\" fill=\"currentColor\"/>",
   mercy: "<path d=\"M7 13V7.5a1.2 1.2 0 0 1 2.4 0V12M9.4 11.2V5a1.2 1.2 0 0 1 2.4 0v6.2M11.8 11.2V5.8a1.2 1.2 0 0 1 2.4 0v5.4M14.2 11.5V8a1.2 1.2 0 0 1 2.4 0v6c0 4-2.5 7-6 7-2.3 0-3.8-1.3-5.2-3.6l-1.8-3a1.2 1.2 0 0 1 2-1.3L7 15\"/><path d=\"M11.6 16.2a1 1 0 1 1 1-1\"/>",
   lens: "<path d=\"M2.5 13s3.6-5 9.5-5 9.5 5 9.5 5-3.6 5-9.5 5-9.5-5-9.5-5z\"/><circle cx=\"12\" cy=\"13\" r=\"2.4\" fill=\"currentColor\"/><path d=\"M12 2.5V5M6.6 4l1.3 2M17.4 4l-1.3 2M10 18l-1.4 3.3\"/>",
+  oracle: "<circle cx=\"12\" cy=\"12\" r=\"3.4\"/><path d=\"M12 10.6v2.8M10.6 12h2.8\"/><path d=\"M5.2 8A7.6 7.6 0 0 1 18.4 7M18.8 16A7.6 7.6 0 0 1 5.6 17\"/><path d=\"M18.4 7l.3-3.3M18.4 7l-3.2-.8M5.6 17l-.3 3.3M5.6 17l3.2.8\"/>",
   ward: "<circle cx=\"12\" cy=\"12\" r=\"4.6\"/><path d=\"M12 9.6a2.4 2.4 0 1 1-2.4 2.4\"/><path d=\"M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3M4.8 4.8l2.1 2.1M17.1 17.1l2.1 2.1M4.8 19.2l2.1-2.1M17.1 6.9l2.1-2.1\"/>",
 };
 const RELICS = [
@@ -186,6 +198,49 @@ const RELICS = [
   { id: "lens", name: "Grave Lens", desc: "See three discs ahead instead of two", base: 15 },
   { id: "ward", name: "Ward", desc: "Curses take 3 more drops to spread", base: 20 },
 ];
+
+// Oracle Stone: a tap-to-use power. Tap it to spend a charge: it spins the discs into the best word.
+// Earn a charge by offering a word that uses a locked or cursed disc, or buy a full set of charges
+// in the shop (rare and costly). Charges cap at ORACLE_MAX, and only one can be used per round.
+const ORACLE_MAX = 3;
+const ORACLE_PRICE = 120;      // + RELIC_PRICE_STEP per round, like relics
+const ORACLE_SHOP_ODDS = 3;    // offered in about 1 shop in 3, and only when you're not full
+
+// The best word any spin of the landed discs can make: tries every face of every touching run,
+// pruned by word prefixes (and the s/es/ies/ed/er/ing/ly endings isWord accepts).
+// Returns { hi, lo, word, picks: [[stackIndex, faceIndex], ...] } or null. Locked words count triple.
+let PREFIX = null;
+const ENDINGS = ["s", "es", "ies", "ed", "er", "ing", "ly"];
+function canGrow(q) {
+  if (!PREFIX) { PREFIX = new Set(); for (const w of WORDS) for (let k = 1; k <= w.length; k++) PREFIX.add(w.slice(0, k)); }
+  if (PREFIX.has(q)) return true;
+  for (let k = Math.max(2, q.length - 4); k < q.length; k++) {
+    const stem = q.slice(0, k); let tail = q.slice(k);
+    if (!PREFIX.has(stem)) continue;
+    if (tail.length > 1 && tail[0] === stem[stem.length - 1]) tail = tail.slice(1); // doubled consonant (stopped)
+    if (ENDINGS.some(e => e.startsWith(tail))) return true;
+  }
+  return false;
+}
+function bestSpin(stack) {
+  let best = null;
+  const score = (len, locked) => goldFor(len) * (locked ? LOCKED_MULT : 1);
+  function dfs(hi, i, word, picks, locked) {
+    const d = stack[i];
+    if (!d || d.dark) return;
+    const faces = d.locked ? [0] : d.faces.map((_, k) => k);
+    for (const k of faces) {
+      const w = word + d.faces[k].toLowerCase();
+      if (w.length > 11 || !canGrow(w)) continue;
+      const p = [...picks, [i, k]], lk = locked || !!d.locked;
+      // the Oracle only reveals list words and their plurals, never loose guesses like coraling
+      if (w.length >= 3 && isWord(w) && (WORDS.has(w) || /s$/.test(w)) && (!best || score(w.length, lk) > best.score)) best = { hi, lo: i, word: w.toUpperCase(), picks: p, score: score(w.length, lk) };
+      if (i > 0) dfs(hi, i - 1, w, p, lk);
+    }
+  }
+  for (let hi = stack.length - 1; hi >= 0; hi--) dfs(hi, hi, "", [], false);
+  return best;
+}
 
 // Chains: words that form on their own after a clear pay 1 + CHAIN_STEP x link.
 const CHAIN_STEP = 0.5;
@@ -253,7 +308,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {
@@ -264,10 +319,10 @@ if (typeof document !== "undefined") {
   let st;
 
   function newGame() {
-    st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [] };
+    st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0 };
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
-    if (/[?&]relics=all\b/.test(location.search)) RELICS.forEach(r => st.relics.add(r.id)); // testing aid
+    if (/[?&]relics=all\b/.test(location.search)) { RELICS.forEach(r => st.relics.add(r.id)); st.charges = ORACLE_MAX; } // testing aid
     renderRunes();
     startRound(1);
   }
@@ -275,7 +330,8 @@ if (typeof document !== "undefined") {
 
   function startRound(n) {
     Object.assign(st, { round: n, roundGold: 0, spawnedRound: 0, stack: [], falling: null, queue: [], pending: null,
-      chain: 0, checkChain: false, roundDone: false, shopOpen: false, lastOffer: 0 });
+      chain: 0, checkChain: false, roundDone: false, shopOpen: false, lastOffer: 0, spinning: false });
+    powerState();
     for (let i = 0; i < 3; i++) { const d = makeDisc(Math.random, false); d.y = i; st.stack.push(d); }
     refillQueue();
     st.spawnAt = performance.now() + 900;
@@ -296,10 +352,43 @@ if (typeof document !== "undefined") {
   function say(t) { $("msg").textContent = t; }
 
   // ---------- relic icons ----------
+  function powerState() {
+    const pw = $("power"); if (!pw || !pw.classList) return;
+    pw.classList.toggle("spent", !st.charges || st.oracleUsedRound === st.round);
+    $("charges").textContent = st.charges ? "x" + st.charges : "";
+    pw.setAttribute("aria-label", `Oracle Stone, ${st.charges} charge${st.charges === 1 ? "" : "s"}. Tap to spin the discs into the best word.`);
+  }
+  function gainCharge() {
+    if (st.charges >= ORACLE_MAX) return;
+    st.charges++; powerState(); glowRune("oracle", HILITE_MS);
+    setTimeout(() => say(`The Oracle Stone gains a charge (${st.charges} of ${ORACLE_MAX}). Tap it to find the best word.`), HILITE_MS + 900);
+  }
+  // Oracle Stone: spin the landed discs into the best word on the board, once per round.
+  function usePower() {
+    if (st.over || st.shopOpen) return;
+    if (!st.charges) { say("The Oracle Stone sleeps. Offer a word with a locked or cursed disc to wake it."); return; }
+    if (st.oracleUsedRound === st.round) { say("The Oracle Stone has spoken this round. It answers again next round."); return; }
+    if (st.pending || st.checkChain || st.spinning) return;
+    const b = bestSpin(st.stack);
+    if (!b) { say("The Oracle Stone finds no word in these stones."); return; }
+    st.charges--; st.oracleUsedRound = st.round; st.spinning = true; powerState(); glowRune("oracle");
+    say("The Oracle Stone turns the discs...");
+    b.picks.forEach(([i, k], n) => {
+      const d = st.stack[i];
+      setTimeout(() => {
+        if (d.locked) return;
+        const len = d.faces.length, cur = Math.round(d.target);
+        d.target = cur + len + ((k - cur) % len + len) % len; // one full turn, then settle on the letter
+      }, n * ORACLE_STAGGER_MS);
+    });
+    setTimeout(() => { st.spinning = false; say(`The Oracle Stone reveals ${b.word}. Offer it to the skull.`); }, b.picks.length * ORACLE_STAGGER_MS + 450);
+  }
+  const ORACLE_STAGGER_MS = 90;
   function renderRunes(fresh) {
     const box = $("runes"); box.innerHTML = "";
-    box.hidden = st.relics.size === 0;
-    for (const id of st.relics) {
+    const passive = [...st.relics];
+    box.hidden = passive.length === 0;
+    for (const id of passive) {
       const r = RELICS.find(x => x.id === id);
       const b = document.createElement("button");
       b.type = "button"; b.className = "rune" + (id === fresh ? " new" : ""); b.id = "rune-" + id;
@@ -311,9 +400,9 @@ if (typeof document !== "undefined") {
   }
   // Flash a relic's icon when it does something. delay lets it line up with the skull swallowing.
   function glowRune(id, delay = 0) {
-    if (!has(id)) return;
+    if (id !== "oracle" && !has(id)) return;
     const go = () => {
-      const b = document.getElementById("rune-" + id); if (!b) return;
+      const b = document.getElementById(id === "oracle" ? "power" : "rune-" + id); if (!b) return;
       b.classList.remove("glow", "new"); void b.offsetWidth; b.classList.add("glow");
     };
     delay ? setTimeout(go, delay) : go();
@@ -389,6 +478,20 @@ if (typeof document !== "undefined") {
       });
       list.appendChild(b);
     }
+    // the Oracle Stone: rare, expensive, and fills you to ORACLE_MAX charges
+    if (st.charges < ORACLE_MAX && Math.random() < 1 / ORACLE_SHOP_ODDS) {
+      const price = ORACLE_PRICE + RELIC_PRICE_STEP * (st.round - 1);
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "relic"; b.id = "relic-oracle"; b.disabled = st.gold < price;
+      b.innerHTML = `<b>Oracle Stone (rare)</b><i>${price} gold</i><span>${ORACLE_MAX} charges. Tap the stone to spin the discs into the best word, once per round</span>`;
+      b.addEventListener("click", () => {
+        if (st.gold < price) return;
+        st.gold -= price; st.shown = st.gold; st.charges = ORACLE_MAX;
+        startRound(st.round + 1);
+        glowRune("oracle", 500);
+      });
+      list.appendChild(b);
+    }
     $("shop").hidden = false;
   }
 
@@ -397,7 +500,7 @@ if (typeof document !== "undefined") {
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
-    if (st.over || st.pending || st.shopOpen || st.checkChain) return;
+    if (st.over || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     const found = findWords(st.stack);
     if (!found.length) {
       say("The skull is not satisfied.");
@@ -427,6 +530,7 @@ if (typeof document !== "undefined") {
       addCoins(g, k, now + HILITE_MS + 250 + k * 250);
     });
     st.roundGold += total; st.lastOffer = now;
+    if ([...discs].some(d => d.locked || d.cursed)) gainCharge();
     const pre = mult > 1 ? `Chain x${mult}! ` : "";
     if (mult > 1) glowRune("pact", HILITE_MS);
     const met = !st.roundDone && st.roundGold >= quotaFor(st.round);
@@ -779,6 +883,7 @@ if (typeof document !== "undefined") {
   }
 
   $("skull").addEventListener("click", submit);
+  $("power").addEventListener("click", usePower);
   $("restart").addEventListener("click", newGame);
   $("again").addEventListener("click", newGame);
   $("skip").addEventListener("click", () => startRound(st.round + 1));

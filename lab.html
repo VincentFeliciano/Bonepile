@@ -647,13 +647,14 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       dry.connect(dest); dry.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(dest);
       out = dry; nodes.push(dry, d, fb, wet);
     }
-    if ((K.bits < 16 || K.down > 1) && a.createScriptProcessor) {
-      const sp = a.createScriptProcessor(256, 1, 1), lv = Math.pow(2, K.bits - 1), hold = Math.round(K.down), pk = Math.max(0.02, peak);
+    const hf = hiFi(), bits = hf ? Math.min(16, K.bits + 4) : K.bits, down = hf ? Math.max(1, K.down / 2) : K.down; // 16-bit softens the crunch
+    if ((bits < 16 || down > 1) && a.createScriptProcessor) {
+      const sp = a.createScriptProcessor(256, 1, 1), lv = Math.pow(2, bits - 1), hold = Math.round(down), pk = Math.max(0.02, peak);
       let held = 0, n = 0;
       sp.onaudioprocess = e => {
         const x = e.inputBuffer.getChannelData(0), y = e.outputBuffer.getChannelData(0);
         for (let i = 0; i < x.length; i++) {
-          if (n++ % hold === 0) held = K.bits < 16 ? Math.max(-pk, Math.min(pk, Math.round(x[i] / pk * lv) / lv * pk)) : x[i];
+          if (n++ % hold === 0) held = bits < 16 ? Math.max(-pk, Math.min(pk, Math.round(x[i] / pk * lv) / lv * pk)) : x[i];
           y[i] = held;
         }
       };
@@ -1244,7 +1245,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     if (!confirm("Put every sound back the way the game had it?")) return;
     user = {}; save(); render(); say("Every sound is back to the original.");
   });
-  const STYLE_NOTE = { "16": "16-bit: smoother, fuller sounds with a little room. Music follows too.", "8": "8-bit: the original chip sounds, exactly as before." };
+  const STYLE_NOTE = { "16": "16-bit: smoother, fuller sounds with a little room, and a softer crunch. Music follows too.", "8": "8-bit: the original chip sounds, exactly as before." };
   function showStyle() {
     const s = hiFi() ? "16" : "8";
     document.querySelectorAll("#style button").forEach(b => b.classList.toggle("on", b.dataset.s === s));

@@ -123,9 +123,9 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   const sign = v => (v > 0 ? "+" : "") + v;
   const FMT = {
     vSyl: v => v ? sign(v) : "same", vLen: v => v.toFixed(2) + "x", vGap: v => v.toFixed(1) + "x", vRhythm: v => v ? (v < 0 ? "faster " : "slower ") + Math.round(Math.abs(v) * 100) + "%" : "steady",
-    vContour: v => sign(v) + " st", vDrift: v => sign(v) + " st", vRough: v => Math.round(v * 100) + "%", vBreath: v => Math.round(v * 100) + "%", vGrowl: v => v ? Math.round(v * 100) + "%" : "off",
-    vTempo: v => v.toFixed(2) + "x", vSwing: v => v ? (v > 0 ? "long-short " : "short-long ") + Math.round(Math.abs(v) * 100) + "%" : "even", vStep: v => v ? sign(v) + " st" : "off",
-    vH: v => v ? Math.round(v * 100) + "%" : "off", vTail: v => v.toFixed(1) + "x",
+    vContour: v => sign(v) + " st", vDrift: v => sign(v) + " st", vRough: v => Math.round(v * 100) + "%", vBreath: v => Math.round(v * 100) + "%", vGrowl: v => v ? "+" + Math.round(v * 100) + "%" : "as is",
+    vTempo: v => v.toFixed(2) + "x", vSwing: v => v ? (v > 0 ? "long-short " : "short-long ") + Math.round(Math.abs(v) * 100) + "%" : "as is", vStep: v => v ? sign(v) + " st" : "as is",
+    vH: v => v ? "+" + Math.round(v * 100) + "%" : "as is", vTail: v => v.toFixed(1) + "x",
     vol: v => Math.round(v * 100) + "%", tone: v => Math.round(v * 100) + "%", bass: v => Math.round(v * 100) + "%", noiseVol: v => Math.round(v * 100) + "%",
     pitch: v => sign(v) + " st", slide: v => sign(v) + " st", length: v => v.toFixed(2) + "x", grit: v => sign(+v.toFixed(1)) + " oct",
     attack: v => Math.round(v * 1000) + " ms", decay: v => v.toFixed(1), bits: v => v >= 16 ? "off" : v + " bit", down: v => v <= 1 ? "off" : "1/" + v,

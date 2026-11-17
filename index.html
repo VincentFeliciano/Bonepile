@@ -172,7 +172,7 @@ const CURSE_CHANCE = 1 / 25;
 const CURSE_DROPS = 4;
 
 // Rounds: earn the quota before the column fills. Quota climbs each round.
-function quotaFor(round) { return 30 * round + 10 * round * round; } // 40, 100, 180, 280, 400...
+function quotaFor(round) { return 20 + 20 * round; } // 40, 60, 80, 100, 120...
 
 // Relics: bought between rounds. price = base + RELIC_PRICE_STEP x (round - 1)
 const RELIC_PRICE_STEP = 10;
@@ -497,6 +497,7 @@ if (typeof document !== "undefined") {
 
   // ---------- the offering: letters drift into the skull's mouth, it swallows, then pays ----------
   const HILITE_MS = 850;
+  const ROUND_END_MS = 1000; // once the quota is met, the round-cleared panel opens this long after the payout (and once the coins land)
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
@@ -563,6 +564,8 @@ if (typeof document !== "undefined") {
   function update(dt, now) {
     if (st.over || st.shopOpen) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
+    // quota met: the round ends now. The falling disc vanishes and no chains are checked.
+    if (st.roundDone) { st.falling = null; st.checkChain = false; }
     // chain: once the column has settled after a clear, any word that formed pays a growing multiplier
     if (st.checkChain && !st.pending && st.stack.every((d, i) => d.y === i)) {
       st.checkChain = false;
@@ -570,7 +573,7 @@ if (typeof document !== "undefined") {
       if (found.length) { st.chain++; offer(found, 1 + st.chain * (has("pact") ? 1 : CHAIN_STEP)); }
       else st.chain = 0;
     }
-    if (st.roundDone && !st.falling && !st.pending && !st.checkChain && !coins.length && now - st.lastOffer > 1500) { openShop(); return; }
+    if (st.roundDone && !st.pending && !coins.length && now - st.lastOffer > ROUND_END_MS) { openShop(); return; }
     // settle stacked discs downwards (gravity after a crumble)
     st.stack.forEach((d, i) => { if (d.y > i) d.y = Math.max(i, d.y - dt * 12); else d.y = i; });
     for (const d of st.stack) d.rot += (d.target - d.rot) * Math.min(1, dt * 18);

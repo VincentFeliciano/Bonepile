@@ -2551,7 +2551,6 @@ if (typeof document !== "undefined") {
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
     "Gray discs are <b>locked</b> but pay triple. <b>Cursed</b> discs darken their neighbors if you wait too long.",
     "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",
-    "Empty my well and I will laugh, and send you <b>three discs</b> at once. Now. Feed me.",
   ];
   let introOpen = true, introMode = "launch", introI = -1, typeT = null, typed = true;
   const introEl = $("intro"), iSkull = $("introSkull");
@@ -2601,7 +2600,6 @@ if (typeof document !== "undefined") {
     if (introI < 0 && seenIntro()) return closeIntro();
     if (introI >= STEPS.length - 1) { introLaugh(); return closeIntro(); }
     introSay(introI + 1);
-    if (introI === STEPS.length - 1) introLaugh();
   });
   $("introBack").addEventListener("click", () => {
     if (introI < 0) return introSay(0);

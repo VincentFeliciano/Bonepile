@@ -409,26 +409,51 @@ function makeDisc(rand = Math.random, allowLocked = true) {
 
 function front(d) { if (d.dark) return "#"; const n = d.faces.length; return d.faces[((Math.round(d.target) % n) + n) % n]; }
 
+// The letter a disc shows in a column: 0 is the front, -1 the letter to its left, +1 to its right.
+// Locked discs have one letter, on the front only. Dark discs read as nothing.
+function faceAt(d, off = 0) {
+  if (!d || d.dark) return null;
+  if (d.locked) return off ? null : d.faces[0];
+  const n = d.faces.length, k = Math.round(d.target) + off;
+  return d.faces[((k % n) + n) % n];
+}
+
 // stack[0] is the bottom disc. The word reads top to bottom.
-// Returns the longest valid word in any run of touching discs not in `used`, or null.
-function bestRun(stack, used = new Set()) {
+// Returns the longest valid word in one column (off) in any run of touching discs not in `used`, or null.
+function bestRun(stack, used = new Set(), off = 0) {
   let best = null;
   for (let hi = stack.length - 1; hi >= 0; hi--) {
     let w = "";
     for (let lo = hi; lo >= 0 && !used.has(lo); lo--) {
-      w += front(stack[lo]);
-      if (w.length >= 3 && (!best || w.length > best.word.length) && isWord(w)) best = { hi, lo, word: w };
+      const ch = off ? faceAt(stack[lo], off) : front(stack[lo]);
+      if (!ch || ch === "#") break;
+      w += ch;
+      if (w.length >= 3 && (!best || w.length > best.word.length) && isWord(w)) best = { hi, lo, word: w, off, offs: Array(w.length).fill(off) };
     }
   }
   return best;
 }
 
-// Every word in the stack: take the longest, then the longest in what's left, and so on.
-function findWords(stack) {
-  const used = new Set(), found = [];
-  for (let r; (r = bestRun(stack, used)); ) {
-    found.push(r);
-    for (let i = r.lo; i <= r.hi; i++) used.add(i);
+// Every word in the stack. The front column first: take the longest, then the longest in what's left.
+// Then the side columns the same way, and the diagonals across three discs (an X shares its middle).
+// Side and diagonal words may cross front words: they use the same letters.
+// `all` is for an offering you make yourself; chains that form on their own read the front only.
+function findWords(stack, all = false) {
+  const found = [];
+  for (const off of all ? [0, -1, 1] : [0]) {
+    const used = new Set();
+    for (let r; (r = bestRun(stack, used, off)); ) {
+      found.push(r);
+      for (let i = r.lo; i <= r.hi; i++) used.add(i);
+    }
+  }
+  for (let hi = all ? stack.length - 1 : -1; hi >= 2; hi--) {
+    for (const offs of [[-1, 0, 1], [1, 0, -1]]) {
+      const ch = offs.map((o, j) => faceAt(stack[hi - j], o));
+      if (ch.some(c => !c)) continue;
+      const w = ch.join("");
+      if (isWord(w)) found.push({ hi, lo: hi - 2, word: w, off: "x", offs });
+    }
   }
   return found.sort((a, b) => b.hi - a.hi);
 }
@@ -447,7 +472,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {
@@ -2024,7 +2049,8 @@ if (typeof document !== "undefined") {
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
     if (st.over || st.sac || st.menu || st.paused || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
-    const found = findWords(st.stack);
+    stopFlings();
+    const found = findWords(st.stack, true);
     if (!found.length) {
       speak("The skull is not satisfied."); sfx.refuse();
       flash = performance.now();
@@ -2060,9 +2086,11 @@ if (typeof document !== "undefined") {
     if (met) st.roundDone = true;
     // each offered letter lifts off its disc and drifts into the mouth, top of the column first
     const cr = cv.getBoundingClientRect();
-    const order = [...discs].sort((a, b) => b.y - a.y);
-    const gap = Math.min(45, 320 / order.length);
-    order.forEach((d, i) => offerings.push({ ch: front(d), x: cr.left + wellX + wellW / 2, y: cr.top + rowY(d.y) + cellH / 2, t0: now + i * gap, dur: HILITE_MS - 330 }));
+    const letters = new Map(); // one flying letter per disc and column
+    found.forEach(r => r.offs.forEach((o, j) => { const d = st.stack[r.hi - j]; if (d) letters.set(`${r.hi - j}:${o}`, { d, o, ch: faceAt(d, o) || front(d) }); }));
+    const order = [...letters.values()].sort((a, b) => b.d.y - a.d.y || a.o - b.o);
+    const gap = Math.min(45, 320 / Math.max(1, order.length)), sideX = wellW * 0.37;
+    order.forEach((l, i) => offerings.push({ ch: l.ch, x: cr.left + wellX + wellW / 2 + l.o * sideX, y: cr.top + rowY(l.d.y) + cellH / 2, t0: now + i * gap, dur: HILITE_MS - 330 }));
     say(`${pre}The skull accepts ${parts.join(", ")}.`);
     skullClass("open");
     setTimeout(() => {
@@ -2105,7 +2133,8 @@ if (typeof document !== "undefined") {
     if (st.roundDone && !st.pending && !coins.length && now - st.lastOffer > ROUND_END_MS) { openShop(); return; }
     // settle stacked discs downwards (gravity after a crumble)
     st.stack.forEach((d, i) => { if (d.y > i) d.y = Math.max(i, d.y - dt * 12); else d.y = i; });
-    for (const d of st.stack) d.rot += (d.target - d.rot) * Math.min(1, dt * 18);
+    spinFlung(dt, now);
+    for (const d of st.stack) if (!d.fling) d.rot += (d.target - d.rot) * Math.min(1, dt * 18);
     if (st.falling || st.rain.length) {
       const sp = speedFor(st.round + Math.floor(st.spawnedRound / 8)) * (has("slow") ? 0.75 : 1) * ROWS / BASE_ROWS;
       // lowest first, so each disc lands on the one below it
@@ -2278,7 +2307,8 @@ if (typeof document !== "undefined") {
     const d = stackedDiscAt(e.clientX - r.left, e.clientY - r.top);
     if (!d) return;
     if (d.locked || d.dark) { tapHeavy(d); return; }
-    drag = { d, tapped: d, x: e.clientX, y: e.clientY, start: d.target, axis: null };
+    if (d.fling) { d.fling = 0; d.target = d.rot; }
+    drag = { d, tapped: d, x: e.clientX, y: e.clientY, start: d.target, axis: null, trail: [{ t: performance.now(), rot: d.rot }] };
     try { app.setPointerCapture(e.pointerId); } catch (_) {}
   });
   // Locked or dark disc: first tap asks, second tap within 2s smashes it for gold.
@@ -2312,14 +2342,36 @@ if (typeof document !== "undefined") {
       drag.d.rot = drag.start - dx / stepPx;
       if (Math.round(drag.d.rot) !== was) sfx.turn();
       drag.d.target = drag.d.rot;
+      const t = performance.now(); drag.trail.push({ t, rot: drag.d.rot });
+      while (drag.trail.length > 2 && t - drag.trail[0].t > 90) drag.trail.shift();
     }
   });
   app.addEventListener("pointerup", () => {
     if (!drag) return;
-    if (drag.axis === "x" && drag.d) drag.d.target = Math.round(drag.d.rot);
+    if (drag.axis === "x" && drag.d) {
+      const d = drag.d, a = drag.trail[0], t = performance.now(), dt = (t - a.t) / 1000;
+      const v = dt > 0.008 && t - drag.trail[drag.trail.length - 1].t < 80 ? (d.rot - a.rot) / dt : 0; // faces per second
+      if (Math.abs(v) >= FLING_MIN) { d.fling = Math.sign(v) * Math.min(FLING_MAX, Math.abs(v) * FLING_BOOST); d.target = d.rot; }
+      else d.target = Math.round(d.rot);
+    }
     else if (!drag.axis && drag.tapped) { drag.tapped.target = Math.round(drag.tapped.target) + 1; sfx.turn(); }
     drag = null;
   });
+  // A hard swipe flings the disc: it spins on, slowing by friction, and settles on a letter.
+  const FLING_MIN = 7, FLING_MAX = 45, FLING_BOOST = 1.15, FLING_DRAG = 1.0, FLING_BRAKE = 2.0, FLING_STOP = 1.6;
+  let lastTick = 0;
+  function spinFlung(dt, now) {
+    for (const d of st.stack) {
+      if (!d.fling) continue;
+      const was = Math.round(d.rot);
+      d.rot += d.fling * dt;
+      const s = Math.abs(d.fling) * Math.exp(-FLING_DRAG * dt) - FLING_BRAKE * dt; // friction slows it, faster at speed
+      if (s <= FLING_STOP) { d.target = d.fling > 0 ? Math.ceil(d.rot - 0.05) : Math.floor(d.rot + 0.05); d.fling = 0; } // clicks into the next letter it was heading for
+      else { d.fling = Math.sign(d.fling) * s; d.target = d.rot; }
+      if (Math.round(d.rot) !== was && now - lastTick > 45) { lastTick = now; sfx.turn(); }
+    }
+  }
+  function stopFlings() { for (const d of st.stack) if (d.fling) { d.fling = 0; d.target = Math.round(d.rot); } }
   app.addEventListener("pointercancel", () => { if (drag && drag.d) drag.d.target = Math.round(drag.d.rot); drag = null; });
 
   // ---------- coin reward: a pile builds beside the word, then flies to GOLD ----------
@@ -2493,8 +2545,8 @@ if (typeof document !== "undefined") {
   const STEPS = [
     "Welcome, mortal. I am the keeper of this temple, and I am <b>hungry</b>.",
     "Discs of <b>bone</b> fall into my well. Each one carries <b>six letters</b> around its rim.",
-    "Once a disc lands, <b>swipe</b> it to spin it, or <b>tap</b> it to turn one step.",
-    "Line up letters <b>reading down</b> the column to spell a word. Three letters or more.",
+    "Once a disc lands, <b>swipe</b> it to spin it, or <b>tap</b> it to turn one step. Swipe hard and it spins on its own.",
+    "Line up letters <b>reading down</b> the column to spell a word, three letters or more. Words down the <b>side letters</b>, or crossing in an <b>X</b>, count too.",
     "Then <b>tap me</b> to offer your words. Longer words pay more gold.",
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
     "Gray discs are <b>locked</b> but pay triple. <b>Cursed</b> discs darken their neighbors if you wait too long.",

@@ -72,6 +72,11 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #hearts svg, #sacCost svg { width: 14px; height: 12px; }
 #hearts.hurt { animation: hurt .6s steps(6, end); }
 @keyframes hurt { 0%, 33%, 66% { opacity: .2; } 16%, 50%, 83%, 100% { opacity: 1; } }
+#menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.94); border: 3px solid var(--line); padding: 16px; text-align: center; z-index: 4; }
+#menu h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
+#menu p, #dailyText { margin: 0; color: var(--line); }
+#menuFree, #menuDaily { min-width: 14em; }
+#menuDaily, #overDaily { border-color: var(--glow); }
 #sac { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.94); border: 3px solid var(--blood); padding: 16px; text-align: center; z-index: 3; }
 #sac h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--blood); font-weight: normal; }
 #sac p { margin: 0; }
@@ -107,7 +112,16 @@ button:focus-visible { outline: none; border-color: var(--glow); }
     <div id="over" hidden>
       <h2>The skull claims the column</h2>
       <div id="overText"></div>
+      <div id="dailyText"></div>
       <button id="again" type="button">Play again</button>
+      <button id="overDaily" type="button">Daily temple</button>
+    </div>
+    <div id="menu" hidden>
+      <h2>Start a new run?</h2>
+      <button id="menuFree" type="button">Endless run</button>
+      <button id="menuDaily" type="button">Daily temple</button>
+      <p id="menuDailyText"></p>
+      <button id="menuBack" type="button">Back</button>
     </div>
     <div id="sac" hidden>
       <h2>The column is full</h2>
@@ -297,6 +311,14 @@ function gearSvg(id) {
   return r;
 }
 
+// Daily temple: everyone gets the same discs each day. Each round has its own seed, so round 3 is the
+// same for everyone however many discs they used in rounds 1 and 2.
+function seeded(seed) { // mulberry32
+  return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function hashStr(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function todayKey(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+
 // Chains: words that form on their own after a clear pay 1 + CHAIN_STEP x link.
 const CHAIN_STEP = 0.5;
 
@@ -373,9 +395,10 @@ if (typeof document !== "undefined") {
   let W = 0, H = 0, PX = 3, cellH = 40, wellW = 200, wellX = 0, wellTop = 0;
   let st;
 
-  function newGame() {
-    st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
-    $("sac").hidden = true;
+  function newGame(daily = false) {
+    if (typeof daily !== "boolean") daily = false;
+    st = { daily: daily ? todayKey() : "", earned: 0, gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
+    $("sac").hidden = true; $("menu").hidden = true;
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
     if (/[?&]relics=all\b/.test(location.search)) { RELICS.forEach(r => st.relics.add(r.id)); st.charges = ORACLE_MAX; } // testing aid
@@ -386,16 +409,18 @@ if (typeof document !== "undefined") {
   const has = id => st.relics.has(id);
 
   function startRound(n) {
+    st.drand = st.daily ? seeded(hashStr(`bonepile:${st.daily}:${n}`)) : Math.random;
     Object.assign(st, { round: n, roundGold: 0, spawnedRound: 0, stack: [], falling: null, queue: [], pending: null,
       chain: 0, checkChain: false, roundDone: false, shopOpen: false, lastOffer: 0, spinning: false });
     powerState();
-    for (let i = 0; i < 3; i++) { const d = makeDisc(Math.random, false); d.y = i; st.stack.push(d); }
+    for (let i = 0; i < 3; i++) { const d = makeDisc(st.drand, false); d.y = i; st.stack.push(d); }
     refillQueue();
     st.spawnAt = performance.now() + 900;
     $("shop").hidden = true;
     st.boss = bossFor(n);
     const gear = $("gear"); if (gear) gear.innerHTML = st.boss ? gearSvg(st.boss.id) : "";
-    if (st.boss) setTimeout(() => laugh(`Boss round: ${st.boss.name}. ${st.boss.desc} The skull demands ${quotaFor(n)} gold.`), 300);
+    if (st.boss) setTimeout(() => laugh(`Boss: ${st.boss.name}. ${st.boss.desc}`), 300);
+    else if (n === 1 && st.daily) say(`Daily temple, ${st.daily}. Everyone gets the same discs today.`);
     else say(n === 1 ? `The skull demands ${quotaFor(n)} gold before the column fills.` : `Round ${n}. The skull demands ${quotaFor(n)} gold.`);
     hud();
   }
@@ -706,10 +731,13 @@ if (typeof document !== "undefined") {
   function nextDisc() {
     const all = [...st.stack, ...st.queue, ...(st.falling ? [st.falling] : [])];
     const boss = st.boss && st.boss.id, lockedNow = all.filter(x => x.locked).length;
-    let d = makeDisc(Math.random, lockedNow < LOCKED_MAX);
-    if (boss === "warden" && !d.locked && lockedNow < 2 && Math.random() < 3 * LOCKED_CHANCE) d = { faces: [LOCKED_LETTERS[Math.floor(Math.random() * LOCKED_LETTERS.length)]], rot: 0, target: 0, locked: true };
+    const R = st.drand;
+    let d = makeDisc(R, lockedNow < LOCKED_MAX);
+    // draw these every time so the daily sequence doesn't depend on what's already in the column
+    const r1 = R(), r2 = R(), r3 = R();
+    if (boss === "warden" && !d.locked && lockedNow < 2 && r1 < 3 * LOCKED_CHANCE) d = { faces: [LOCKED_LETTERS[Math.floor(r2 * LOCKED_LETTERS.length)]], rot: 0, target: 0, locked: true };
     const cursedNow = all.filter(x => x.cursed).length;
-    if (!d.locked && cursedNow < (boss === "rot" ? 2 : 1) && Math.random() < CURSE_CHANCE * (boss === "rot" ? 4 : 1)) { d.cursed = true; d.curse = CURSE_DROPS + (has("ward") ? 3 : 0); }
+    if (!d.locked && cursedNow < (boss === "rot" ? 2 : 1) && r3 < CURSE_CHANCE * (boss === "rot" ? 4 : 1)) { d.cursed = true; d.curse = CURSE_DROPS + (has("ward") ? 3 : 0); }
     return d;
   }
   function refillQueue() { while (st.queue.length < 3) st.queue.push(nextDisc()); }
@@ -771,8 +799,26 @@ if (typeof document !== "undefined") {
   function gameOver() {
     st.over = true; st.falling = null; sfx.over();
     $("overText").textContent = `Round ${st.round}: ${st.roundGold} of ${quotaFor(st.round)} gold. Best word: ${st.best || "none"}.`;
+    $("dailyText").textContent = st.daily ? dailyResult() : "";
     $("over").hidden = false;
   }
+  // best daily result for today, kept on this device
+  function dailyBest(key) { try { return JSON.parse(localStorage.getItem("bonepile-daily-" + key) || "null"); } catch (_) { return null; } }
+  function dailyResult() {
+    const key = st.daily, prev = dailyBest(key), now = { gold: st.earned, round: st.round, word: st.best || "" };
+    const better = !prev || now.gold > prev.gold;
+    const keep = better ? { ...now, word: (prev && prev.word.length > now.word.length) ? prev.word : now.word } : { ...prev, word: now.word.length > prev.word.length ? now.word : prev.word };
+    try { localStorage.setItem("bonepile-daily-" + key, JSON.stringify(keep)); } catch (_) {}
+    return `Daily temple ${key}: ${now.gold} gold earned, reached round ${now.round}. ` + (better ? "A new best for today!" : `Today's best: ${prev.gold} gold, round ${prev.round}.`) + (keep.word ? ` Best word today: ${keep.word}.` : "");
+  }
+  function openMenu() {
+    if (st.over) return newGame(!!st.daily);
+    st.menu = true; drag = null;
+    const b = dailyBest(todayKey());
+    $("menuDailyText").textContent = b ? `Today's best: ${b.gold} gold, round ${b.round}${b.word ? ", " + b.word : ""}.` : "Same discs for everyone today. Your best is saved here.";
+    $("menu").hidden = false;
+  }
+  function closeMenu() { st.menu = false; $("menu").hidden = true; }
 
   // A cursed disc's time ran out: the discs touching it go dark.
   function curse(d) {
@@ -790,7 +836,7 @@ if (typeof document !== "undefined") {
     let won = "";
     if (st.boss) {
       const bonus = bossBonus(st.round);
-      st.gold += bonus; st.shown = st.gold;
+      st.gold += bonus; st.earned += bonus; st.shown = st.gold;
       if (st.hearts < MAX_HEARTS) st.hearts++;
       st.halves = Math.min(st.hearts * 2, st.halves + 2);
       renderHearts(); hud();
@@ -850,7 +896,7 @@ if (typeof document !== "undefined") {
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
-    if (st.over || st.sac || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
+    if (st.over || st.sac || st.menu || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     const found = findWords(st.stack);
     if (!found.length) {
       say("The skull is not satisfied."); sfx.refuse();
@@ -869,7 +915,7 @@ if (typeof document !== "undefined") {
     const mods = { vowels: has("vowels"), long: has("long"), chain: mult };
     found.forEach((r, k) => {
       const g = runGold(st.stack, r, mods);
-      st.gold += g; total += g;
+      st.gold += g; st.earned += g; total += g;
       if (!st.best || r.word.length > st.best.length) st.best = r.word;
       const locked = st.stack.slice(r.lo, r.hi + 1).some(d => d.locked);
       parts.push(r.word + (locked ? ` (x${LOCKED_MULT})` : ""));
@@ -911,7 +957,7 @@ if (typeof document !== "undefined") {
   let flash = 0;
 
   function update(dt, now) {
-    if (st.over || st.shopOpen || st.sac) return;
+    if (st.over || st.shopOpen || st.sac || st.menu) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
     // quota met: the round ends now. The falling disc vanishes and no chains are checked.
     if (st.roundDone) { st.falling = null; st.checkChain = false; }
@@ -1072,7 +1118,7 @@ if (typeof document !== "undefined") {
     return null;
   }
   app.addEventListener("pointerdown", e => {
-    if (st.over || st.shopOpen || st.sac || e.target.closest("button")) return;
+    if (st.over || st.shopOpen || st.sac || st.menu || e.target.closest("button")) return;
     const r = cv.getBoundingClientRect();
     const d = stackedDiscAt(e.clientX - r.left, e.clientY - r.top);
     if (!d) return;
@@ -1256,8 +1302,12 @@ if (typeof document !== "undefined") {
   setMuted(muted);
   // browsers only allow sound after a tap: wake the audio on the first one
   window.addEventListener("pointerdown", () => { if (!muted) audio(); }, { once: true });
-  $("restart").addEventListener("click", newGame);
-  $("again").addEventListener("click", newGame);
+  $("restart").addEventListener("click", openMenu);
+  $("again").addEventListener("click", () => newGame(!!st.daily));
+  $("overDaily").addEventListener("click", () => newGame(true));
+  $("menuFree").addEventListener("click", () => newGame(false));
+  $("menuDaily").addEventListener("click", () => newGame(true));
+  $("menuBack").addEventListener("click", closeMenu);
   $("skip").addEventListener("click", () => startRound(st.round + 1));
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(() => resize()).observe($("wrap"));
@@ -1268,7 +1318,7 @@ if (typeof document !== "undefined") {
     update(dt, now); draw(now); drawFx(now);
     requestAnimationFrame(loop);
   }
-  resize(); newGame(); requestAnimationFrame(loop);
+  resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
 }
 </script>
 </body>

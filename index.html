@@ -632,13 +632,74 @@ if (typeof document !== "undefined") {
   // crunchy starting points the lab can drop onto any sound
   // crunchy starting points the lab can drop onto any sound (layers, plus knobs for the grit)
   const SFX_PRESETS = {
-    hit: { name: "Hit", knobs: { bits: 5, down: 3 }, layers: [{ k: "noise", rate: 0.9, to: 0.2, dur: 0.12, vol: 0.45 }, { k: "bass", notes: [45], bend: -18, dur: 0.1, vol: 0.4 }] },
-    boom: { name: "Explosion", knobs: { bits: 4, down: 6 }, layers: [{ k: "noise", rate: 0.5, to: 0.05, dur: 0.7, vol: 0.6 }, { k: "noise", short: true, rate: 0.25, dur: 0.4, vol: 0.2 }, { k: "bass", notes: [33], bend: -12, dur: 0.5, vol: 0.5 }] },
-    coin: { name: "Coin", knobs: { bits: 6 }, layers: [{ k: "tone", wave: "square", notes: [83, 88], step: 0.06, dur: 0.3, vol: 0.1 }] },
-    jump: { name: "Jump", knobs: { bits: 6, down: 2 }, layers: [{ k: "tone", wave: "pulse25", notes: [60], bend: 14, dur: 0.22, vol: 0.12 }] },
-    blip: { name: "Blip", layers: [{ k: "tone", wave: "pulse12", notes: [84], dur: 0.05, vol: 0.1 }] },
-    thump: { name: "Bass thump", knobs: { bits: 6, down: 2 }, layers: [{ k: "bass", notes: [36], bend: -10, dur: 0.18, vol: 0.6 }, { k: "noise", rate: 0.12, dur: 0.06, vol: 0.25 }] },
-    toll: { name: "Crypt bell", knobs: { echo: 0.45, echoTime: 0.22, bits: 6 }, layers: [{ k: "tone", wave: "pulse12", notes: [57, 45], step: 0.03, dur: 0.6, vol: 0.12 }, { k: "bass", notes: [33], dur: 0.5, vol: 0.4 }] },
+    hit: { name: "Hit", cat: "Basics", knobs: { bits: 5, down: 3 }, layers: [{ k: "noise", rate: 0.9, to: 0.2, dur: 0.12, vol: 0.45 }, { k: "bass", notes: [45], bend: -18, dur: 0.1, vol: 0.4 }] },
+    boom: { name: "Explosion", cat: "Basics", knobs: { bits: 4, down: 6 }, layers: [{ k: "noise", rate: 0.5, to: 0.05, dur: 0.7, vol: 0.6 }, { k: "noise", short: true, rate: 0.25, dur: 0.4, vol: 0.2 }, { k: "bass", notes: [33], bend: -12, dur: 0.5, vol: 0.5 }] },
+    coin: { name: "Coin", cat: "Basics", knobs: { bits: 6 }, layers: [{ k: "tone", wave: "square", notes: [83, 88], step: 0.06, dur: 0.3, vol: 0.1 }] },
+    jump: { name: "Jump", cat: "Basics", knobs: { bits: 6, down: 2 }, layers: [{ k: "tone", wave: "pulse25", notes: [60], bend: 14, dur: 0.22, vol: 0.12 }] },
+    blip: { name: "Blip", cat: "Basics", layers: [{ k: "tone", wave: "pulse12", notes: [84], dur: 0.05, vol: 0.1 }] },
+    thump: { name: "Bass thump", cat: "Basics", knobs: { bits: 6, down: 2 }, layers: [{ k: "bass", notes: [36], bend: -10, dur: 0.18, vol: 0.6 }, { k: "noise", rate: 0.12, dur: 0.06, vol: 0.25 }] },
+    toll: { name: "Crypt bell", cat: "Basics", knobs: { echo: 0.45, echoTime: 0.22, bits: 6 }, layers: [{ k: "tone", wave: "pulse12", notes: [57, 45], step: 0.03, dur: 0.6, vol: 0.12 }, { k: "bass", notes: [33], dur: 0.5, vol: 0.4 }] },
+    // smashes, bombs, crashes and spooky sounds
+    glass: { name: "Glass smash", cat: "Smashes", knobs: { bits: 6 }, layers: [
+      { k: "noise", rate: 3, to: 1.4, dur: 0.3, vol: 0.4 }, { k: "noise", short: true, at: 0.03, rate: 2, dur: 0.12, vol: 0.15 },
+      { k: "tone", at: 0.05, wave: "pulse12", notes: [96, 91, 100, 94, 98], step: 0.035, dur: 0.3, vol: 0.05 }] },
+    bone: { name: "Bone crack", cat: "Smashes", knobs: { bits: 5, down: 3 }, layers: [
+      { k: "noise", short: true, rate: 1.2, dur: 0.05, vol: 0.4 }, { k: "noise", at: 0.03, rate: 0.5, to: 0.2, dur: 0.15, vol: 0.3 },
+      { k: "bass", notes: [40], bend: -10, dur: 0.08, vol: 0.4 }] },
+    stone: { name: "Stone smash", cat: "Smashes", knobs: { bits: 4, down: 4 }, layers: [
+      { k: "noise", rate: 0.4, to: 0.08, dur: 0.45, vol: 0.5 }, { k: "noise", short: true, at: 0.05, rate: 0.8, dur: 0.1, vol: 0.2 },
+      { k: "bass", notes: [31], bend: -8, dur: 0.35, vol: 0.55 }] },
+    pot: { name: "Clay pot", cat: "Smashes", knobs: { bits: 5, down: 3 }, layers: [
+      { k: "noise", rate: 1, to: 0.4, dur: 0.2, vol: 0.4 }, { k: "noise", short: true, at: 0.08, rate: 0.9, dur: 0.06, vol: 0.2 },
+      { k: "noise", short: true, at: 0.14, rate: 0.7, dur: 0.05, vol: 0.15 }, { k: "bass", notes: [43], bend: -6, dur: 0.1, vol: 0.3 }] },
+    bigboom: { name: "Big bomb", cat: "Bombs", knobs: { bits: 4, down: 6, echo: 0.3 }, layers: [
+      { k: "noise", rate: 0.4, to: 0.03, dur: 1.2, vol: 0.6 }, { k: "noise", short: true, at: 0.02, rate: 0.2, dur: 0.5, vol: 0.2 },
+      { k: "bass", notes: [28], bend: -14, dur: 1, vol: 0.6 }] },
+    grenade: { name: "Grenade", cat: "Bombs", knobs: { bits: 4, down: 5 }, layers: [
+      { k: "tone", wave: "pulse12", notes: [84], dur: 0.05, vol: 0.06 },
+      { k: "noise", at: 0.08, rate: 0.7, to: 0.06, dur: 0.6, vol: 0.55 }, { k: "bass", at: 0.08, notes: [33], bend: -12, dur: 0.5, vol: 0.5 }] },
+    cannon: { name: "Cannon", cat: "Bombs", knobs: { bits: 5, down: 4, echo: 0.4, echoTime: 0.25 }, layers: [
+      { k: "bass", notes: [36], bend: -20, dur: 0.25, vol: 0.6 }, { k: "noise", rate: 1, to: 0.1, dur: 0.35, vol: 0.5 }] },
+    distant: { name: "Distant blast", cat: "Bombs", knobs: { bits: 5, down: 6, echo: 0.5, echoTime: 0.3, attack: 0.03 }, layers: [
+      { k: "noise", rate: 0.2, to: 0.05, dur: 0.9, vol: 0.4 }, { k: "bass", notes: [26], bend: -6, dur: 0.8, vol: 0.4 }] },
+    metal: { name: "Metal crash", cat: "Crashes", knobs: { bits: 4, down: 2 }, layers: [
+      { k: "noise", short: true, rate: 1.5, to: 0.5, dur: 0.6, vol: 0.4 }, { k: "noise", rate: 0.8, to: 0.2, dur: 0.5, vol: 0.3 },
+      { k: "tone", wave: "pulse12", notes: [70, 69], step: 0.25, dur: 0.5, bend: -5, vol: 0.05 }] },
+    rubble: { name: "Falling rubble", cat: "Crashes", knobs: { bits: 4, down: 4 }, layers: [
+      ...[[0, 0.5, 0.45], [0.09, 0.35, 0.35], [0.2, 0.6, 0.3], [0.33, 0.4, 0.22], [0.5, 0.3, 0.15]].map(([at, rate, vol]) => ({ k: "noise", at, rate, to: rate * 0.5, dur: 0.12, vol })),
+      { k: "bass", notes: [31], dur: 0.1, vol: 0.45 }] },
+    wood: { name: "Wood crash", cat: "Crashes", knobs: { bits: 5, down: 3 }, layers: [
+      { k: "noise", rate: 0.9, to: 0.3, dur: 0.25, vol: 0.45 }, { k: "noise", short: true, at: 0.1, rate: 0.6, dur: 0.1, vol: 0.2 },
+      { k: "bass", notes: [45], bend: -15, dur: 0.15, vol: 0.45 }] },
+    tumble: { name: "Bones tumble", cat: "Crashes", knobs: { bits: 4, down: 4 }, layers: [
+      ...[[0, 0.8], [0.06, 0.65], [0.11, 0.9], [0.19, 0.7], [0.24, 0.85], [0.32, 0.6]].map(([at, rate], i) => ({ k: "noise", short: true, at, rate, rj: 0.2, dur: 0.04, vol: 0.25 - i * 0.025 })),
+      { k: "bass", notes: [38], nj: 5, dur: 0.05, vol: 0.2 }] },
+    ghost: { name: "Ghost whoosh", cat: "Spooky", knobs: { attack: 0.2, vib: 0.6, vibHz: 5, echo: 0.4, bits: 6 }, layers: [
+      { k: "noise", rate: 0.2, to: 0.9, dur: 0.9, vol: 0.2 }, { k: "tone", wave: "triangle", notes: [62], bend: -10, dur: 0.9, vol: 0.07 }] },
+    chime: { name: "Cursed chime", cat: "Spooky", knobs: { echo: 0.5, echoTime: 0.28, vib: 0.2, vibHz: 6, bits: 6 }, layers: [
+      { k: "tone", wave: "pulse12", notes: [79, 74, 70, 67], step: 0.14, dur: 0.8, vol: 0.08 }] },
+    drone: { name: "Crypt drone", cat: "Spooky", knobs: { vib: 0.3, vibHz: 3, attack: 0.25, decay: 0.6, bits: 6, down: 2 }, layers: [
+      { k: "bass", notes: [29], dur: 1.6, vol: 0.4 }, { k: "tone", wave: "pulse25", notes: [41], bend: 1, dur: 1.6, vol: 0.05 }] },
+    whisper: { name: "Whisper", cat: "Spooky", knobs: { bits: 6, echo: 0.3 }, layers: [
+      { k: "noise", rate: 2, to: 1.4, dur: 0.9, vol: 0.12 },
+      { k: "babble", wave: "triangle", base: 60, spread: 3, syl: 6, sylDur: 0.06, gap: 0.04, cons: 1, vol: 0.03 }] },
+    heartbeat: { name: "Heartbeat", cat: "Spooky", knobs: { bits: 6, down: 2 }, layers: [
+      { k: "bass", notes: [33], dur: 0.08, vol: 0.55 }, { k: "bass", at: 0.18, notes: [31], dur: 0.1, vol: 0.45 },
+      { k: "bass", at: 0.8, notes: [33], dur: 0.08, vol: 0.5 }, { k: "bass", at: 0.98, notes: [31], dur: 0.1, vol: 0.4 }] },
+    door: { name: "Creaky door", cat: "Spooky", knobs: { bits: 5, down: 2, arp: 1, arpHz: 23 }, layers: [
+      { k: "tone", wave: "pulse12", notes: [50], bend: 9, dur: 0.8, vol: 0.06 }, { k: "noise", short: true, rate: 0.3, dur: 0.8, vol: 0.05 }] },
+    // "ha ha ha": an h of breath then an "ah", with a cadence you can shape
+    haSteady: { name: "Ha ha ha", cat: "Ha ha", knobs: { bits: 5, down: 2 }, layers: [
+      { k: "vox", wave: "pulse25", base: 57, syl: 6, sylDur: 0.1, gap: 0.09, h: 0.9, hLen: 0.04, harm: 12, harmVol: 0.25, contour: -2, accent: "first", jitter: 0.3, curve: 0.9, vol: 0.13 }] },
+    haRoll: { name: "Rolling ha ha", cat: "Ha ha", knobs: { bits: 5, down: 2 }, layers: [
+      { k: "vox", wave: "pulse25", base: 62, syl: 10, sylDur: 0.07, gap: 0.045, h: 0.8, hLen: 0.03, accel: -0.4, drift: -6, swing: 0.2, accent: "odd", contour: -2, harm: 12, harmVol: 0.2, curve: 0.9, vol: 0.12 }] },
+    haEvil: { name: "Slow evil ha", cat: "Ha ha", knobs: { bits: 4, down: 3, echo: 0.3, echoTime: 0.2 }, layers: [
+      { k: "vox", wave: "square", base: 48, syl: 6, sylDur: 0.15, gap: 0.13, h: 1, hLen: 0.05, accel: 0.6, drift: -7, accent: "first", accentSt: 3, growl: 0.4, tail: 2.6, contour: -3, curve: 0.8, vol: 0.13 },
+      { k: "bass", notes: [29], dur: 1.6, vol: 0.2 }] },
+    haChuckle: { name: "Low chuckle", cat: "Ha ha", knobs: { bits: 5, down: 3 }, layers: [
+      { k: "vox", wave: "square", base: 45, syl: 4, sylDur: 0.07, gap: 0.08, h: 0.5, step: -1, growl: 0.2, contour: -2, curve: 1, vol: 0.12 }] },
+    haManiac: { name: "Maniac ha", cat: "Ha ha", knobs: { bits: 5, down: 2 }, layers: [
+      { k: "vox", wave: "pulse25", base: 64, syl: 14, sylDur: 0.06, gap: 0.03, h: 0.9, hLen: 0.03, accel: -0.5, drift: 10, swing: 0.25, accent: "three", vib: 0.3, vibHz: 12, contour: 2, curve: 0.9, vol: 0.11 }] },
     // voices: laughs, cries and screams
     cackle: { name: "Cackle", cat: "Laughs", knobs: { bits: 5, down: 3 }, layers: [
       { k: "vox", wave: "pulse25", base: 64, syl: 7, sylDur: 0.07, gap: 0.035, contour: -3, drift: -9, jitter: 0.6, harm: 12, harmVol: 0.3, breath: 0.5, fade: 0.3, vol: 0.12 }] },
@@ -668,7 +729,7 @@ if (typeof document !== "undefined") {
       { k: "noise", rate: 0.25, to: 0.12, dur: 0.8, vol: 0.3 }] },
     howl: { name: "Ghoul howl", cat: "Screams", knobs: { bits: 5, down: 3, echo: 0.45, echoTime: 0.22 }, layers: [
       { k: "vox", wave: "triangle", base: 55, syl: 2, sylDur: 0.5, gap: 0, contour: 9, alt: true, vib: 0.5, vibHz: 6, harm: 12, harmVol: 0.3, breath: 0.4, atk: 0.08, curve: 0.5, vol: 0.14 }] },
-    rattle: { name: "Bone rattle", knobs: { bits: 4, down: 4 }, layers: [{ k: "noise", short: true, rate: 0.7, dur: 0.05, vol: 0.2 }, { k: "noise", short: true, at: 0.07, rate: 0.6, dur: 0.05, vol: 0.18 }, { k: "noise", short: true, at: 0.13, rate: 0.75, dur: 0.06, vol: 0.15 }, { k: "bass", notes: [40], nj: 4, dur: 0.05, vol: 0.2 }] },
+    rattle: { name: "Bone rattle", cat: "Basics", knobs: { bits: 4, down: 4 }, layers: [{ k: "noise", short: true, rate: 0.7, dur: 0.05, vol: 0.2 }, { k: "noise", short: true, at: 0.07, rate: 0.6, dur: 0.05, vol: 0.18 }, { k: "noise", short: true, at: 0.13, rate: 0.75, dur: 0.06, vol: 0.15 }, { k: "bass", notes: [40], nj: 4, dur: 0.05, vol: 0.2 }] },
   };
   // the knobs every sound has; at their defaults a sound plays exactly as written above
   const SFX_KNOBS = [
@@ -701,6 +762,12 @@ if (typeof document !== "undefined") {
     { k: "vRough", g: "Voice", label: "Wobbly pitch", min: 0, max: 4, step: 0.1, def: 1, rnd: [0.3, 2.5] },
     { k: "vBreath", g: "Voice", label: "Breath", min: 0, max: 3, step: 0.1, def: 1, rnd: [0.2, 2] },
     { k: "vGrowl", g: "Voice", label: "Growl", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 0.8] },
+    { k: "vTempo", g: "Cadence", label: "Tempo", min: 0.4, max: 2.5, step: 0.05, def: 1, rnd: [0.7, 1.6] },
+    { k: "vSwing", g: "Cadence", label: "Swing (long-short)", min: -0.6, max: 0.6, step: 0.05, def: 0, rnd: [-0.3, 0.3] },
+    { k: "vAccent", g: "Cadence", label: "Accent", choices: ["orig", "none", "first", "odd", "three", "last"], def: "orig" },
+    { k: "vStep", g: "Cadence", label: "Pitch step per syllable", min: -4, max: 4, step: 0.5, def: 0, rnd: [-2, 1] },
+    { k: "vH", g: "Cadence", label: "H sound", min: 0, max: 2, step: 0.05, def: 0, rnd: [0, 1.2] },
+    { k: "vTail", g: "Cadence", label: "Last syllable length", min: 0.5, max: 5, step: 0.1, def: 1, rnd: [0.8, 3] },
     { k: "echo", g: "Space", label: "Echo", min: 0, max: 0.8, step: 0.05, def: 0, rnd: [0, 0.4] },
     { k: "echoTime", g: "Space", label: "Echo time", min: 0.04, max: 0.5, step: 0.01, def: 0.18, rnd: [0.06, 0.3] },
     { k: "wobble", g: "Space", label: "Variation", min: 0, max: 3, step: 0.1, def: 1, rnd: [0, 2] },
@@ -756,23 +823,30 @@ if (typeof document !== "undefined") {
     const accel = (+L.accel || 0) + K.vRhythm, breath = (+L.breath || 0) * K.vBreath, growl = Math.min(2, (+L.growl || 0) + K.vGrowl);
     const curve = (+L.curve || 1.3) * K.decay / 1.3, atk = (+L.atk || 0) + K.attack;
     const vib = (+L.vib || 0) + K.vib, vibHz = (+L.vibHz || 8) * K.vibHz / 8;
+    // cadence: tempo, swing (long-short pairs), accents, a pitch step per syllable, the "h" of each "ha"
+    const tempo = K.vTempo, swing = Math.min(0.8, (+L.swing || 0) + K.vSwing), stepSt = (+L.step || 0) + K.vStep;
+    const accent = K.vAccent !== "orig" ? K.vAccent : L.accent || "none", h = (+L.h || 0) + K.vH, tail = (+L.tail || 1) * K.vTail;
+    const hit = i => accent === "first" ? i === 0 : accent === "odd" ? i % 2 === 0 : accent === "three" ? i % 3 === 0 : accent === "last" ? i === n - 1 : false;
     let t = at, last = at;
     for (let i = 0; i < n; i++) {
-      const f = n > 1 ? i / (n - 1) : 0, sp = Math.max(0.2, 1 + accel * (f - 0.5) * 2);
-      const d = (+L.sylDur || 0.1) * T * K.vLen * sp * (1 + (Math.random() * 2 - 1) * 0.15 * W);
-      const m = (+L.base || 60) + K.pitch + ((+L.drift || 0) + K.vDrift) * f + (Math.random() * 2 - 1) * (+L.jitter || 0) * W * K.vRough;
+      const f = n > 1 ? i / (n - 1) : 0, sp = Math.max(0.2, 1 + accel * (f - 0.5) * 2) / tempo, sw = n > 1 ? (i % 2 ? 1 - swing : 1 + swing) : 1;
+      const d = (+L.sylDur || 0.1) * T * K.vLen * sp * (1 + (Math.random() * 2 - 1) * 0.15 * W) * (i === n - 1 ? tail : 1);
+      const acc = hit(i);
+      const m = (+L.base || 60) + K.pitch + ((+L.drift || 0) + K.vDrift) * f + stepSt * i + (acc ? (+L.accentSt || 2) : 0) + (Math.random() * 2 - 1) * (+L.jitter || 0) * W * K.vRough;
       const bend = ((+L.contour || 0) + K.vContour) * (L.alt && i % 2 ? -1 : 1) + K.slide;
-      const v = vol * (1 - (+L.fade || 0) * f);
-      const c = { ...common, at: t, vol: v, atk, curve, dur: d, step: d, bend, arp: K.arp, arpHz: K.arpHz, vib, vibHz };
+      const v = vol * (1 - (+L.fade || 0) * f) * (acc ? 1.4 : 1);
+      const hl = h > 0 ? Math.min(d * 0.5, (+L.hLen || 0.035) * T * K.vLen) : 0;
+      if (hl) crunch({ ...common, at: t, vol: v * h * 0.9 * K.noiseVol, dur: hl, rate: 2.4 * Math.pow(2, K.grit), short: K.noise === "short", curve: 0.6 });
+      const c = { ...common, at: t + hl * 0.7, vol: v, atk, curve, dur: d, step: d, bend, arp: K.arp, arpHz: K.arpHz, vib, vibHz };
       chip({ ...c, wave, notes: [m] });
       if (L.harm) chip({ ...c, wave: wave === "triangle" ? "pulse25" : "pulse12", notes: [m + +L.harm], vol: v * (+L.harmVol || 0.3) });
       if (growl > 0) chip({ ...c, wave: "pulse12", notes: [m - 12], vol: v * growl * 0.8, arp: 1, arpHz: 45 });
       if (breath > 0) {
-        crunch({ ...common, at: t, vol: v * breath * 0.9 * K.noiseVol, dur: Math.min(0.05, d * 0.4), rate: 1.8 * Math.pow(2, K.grit), short: K.noise === "short" });
-        crunch({ ...common, at: t, vol: v * breath * 0.35 * K.noiseVol, dur: d, rate: 1.1 * Math.pow(2, K.grit), short: K.noise === "short", atk, curve });
+        crunch({ ...common, at: t + hl * 0.7, vol: v * breath * 0.9 * K.noiseVol, dur: Math.min(0.05, d * 0.4), rate: 1.8 * Math.pow(2, K.grit), short: K.noise === "short" });
+        crunch({ ...common, at: t + hl * 0.7, vol: v * breath * 0.35 * K.noiseVol, dur: d, rate: 1.1 * Math.pow(2, K.grit), short: K.noise === "short", atk, curve });
       }
-      last = t + atk + d;
-      t += d + (+L.gap || 0) * T * K.vGap * sp;
+      last = t + hl * 0.7 + atk + d;
+      t += (d + hl * 0.7 + (+L.gap || 0) * T * K.vGap * sp) * sw;
     }
     return last;
   }

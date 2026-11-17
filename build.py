@@ -1,0 +1,5 @@
+synth=open('synth.js').read()
+t=open('template.html').read().replace('%%SYNTH%%',synth.rstrip('\n'))
+open('disc-drop.html','w').write(t.replace('%%WORDS%%',open('wl.txt').read().strip()))
+l=open('lab-template.html').read().replace('%%SYNTH%%',synth.rstrip('\n'))
+open('lab.html','w').write(l)

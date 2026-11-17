@@ -35,6 +35,7 @@ body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospa
 /* pixel buttons: square, chunky, notched corners, pressed shading */
 button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 9px; line-height: 1.4; color: #000; background: #e9dcb8 no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid #000; border-radius: 0; padding: 10px 12px; cursor: pointer;
   clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
+button { text-shadow: 1px 0 0 currentColor, 0 1px 0 rgba(0,0,0,.35); }
 button:active { transform: translateY(2px); }
 button:focus-visible { outline: none; border-color: var(--glow); }
 #skull { width: 100px; height: 88px; border: none; padding: 0; display: grid; place-items: center; background: transparent; box-shadow: none; clip-path: none; }
@@ -101,9 +102,9 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #shop p { margin: 0; }
 #relicList { display: flex; flex-direction: column; gap: 8px; }
 .relic { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
-.relic b { font-size: 9px; font-weight: normal; color: #000; }
-.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 18px; line-height: 1; color: #3a2e1e; grid-column: 1; }
-.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #8a5a1c; }
+.relic b { font-size: 9px; font-weight: normal; color: #000; text-shadow: 1px 0 0 #000; }
+.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 19px; line-height: 1; color: #120c06; text-shadow: 0.6px 0 0 #120c06; grid-column: 1; }
+.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #5a3008; text-shadow: 1px 0 0 #5a3008; }
 .relic:disabled { opacity: 0.4; cursor: default; }
 
 /* ---- opening: the game's name, the skull on its pedestal, and how to play ---- */
@@ -126,12 +127,12 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #pedestal { width: min(56vw, 212px); height: auto; display: block; }
 #speech { position: relative; width: 100%; max-width: 360px; box-sizing: border-box; background: #e9dcb8; color: #1a140c; border: 3px solid #000; padding: 12px 14px 10px; min-height: 7.2em; text-align: left;
   clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
-#speechStep { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: #8a5a1c; margin-bottom: 6px; }
-#speechText { font-size: 22px; line-height: 1.05; min-height: 3.2em; }
-#speechText b { font-weight: normal; color: #8a1c1c; }
+#speechStep { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: #5a3008; text-shadow: 1px 0 0 #5a3008; margin-bottom: 6px; }
+#speechText { font-size: 22px; line-height: 1.05; min-height: 3.2em; color: #0c0804; text-shadow: 0.6px 0 0 #0c0804; }
+#speechText b { font-weight: normal; color: #7a1010; text-shadow: 0.6px 0 0 #7a1010; }
 #introBtns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
 #introBtns button { flex: 1; min-height: 50px; }
-#introSkip { background-image: none !important; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); background: none; border: none; box-shadow: none; clip-path: none; padding: 8px; }
+#introSkip { background-image: none !important; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); background: none; border: none; box-shadow: none; clip-path: none; padding: 8px; }
 #pHelp { min-width: 14em; }
 @media (max-height: 600px) { #introTag { display: none; } #speech { min-height: 0; } #speechText { min-height: 0; } }
 @media (prefers-reduced-motion: reduce) { #introSkull svg, #shrine .flame { animation: none !important; } }

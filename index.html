@@ -823,6 +823,48 @@ if (typeof document !== "undefined") {
     bonePileCrash: { name: "Bone pile collapses", cat: "Bone smashes", knobs: { room: 0.25 }, layers: [
       { k: "bone", hits: 16, spread: 1.2, bounce: 0.82, smack: 1, tone: 560, jitter: 8, decay: 0.035, body: 0.6, vol: 0.3 },
       { k: "bone", at: 0.1, hits: 8, spread: 1, smack: 1, tone: 950, jitter: 6, decay: 0.025, body: 0.2, vol: 0.15 }] },
+    // real screams: long held voices with drawn pitch lines, sliding mouths and a raspy tear
+    realHowl: { name: "Wolf howl", cat: "Real screams", knobs: { room: 0.35, roomSize: 2 }, layers: [
+      { k: "throat", vowel: "u", vpath: ["u", "o", "o", "u"], base: 57, sylDur: 2.2, path: [0, 9, 10, 9, 1], hold: true, atk: 0.12, vib: 0.2, vibHz: 5, breath: 0.2, vol: 0.2 }] },
+    realShriek: { name: "Shriek", cat: "Real screams", knobs: { room: 0.2 }, layers: [
+      { k: "throat", vowel: "i", vpath: ["e", "i", "i"], size: 0.75, base: 79, sylDur: 0.9, path: [0, 3, 2, -5], hold: true, rasp: 0.6, breath: 0.3, vol: 0.18 }] },
+    realScream: { name: "Death scream", cat: "Real screams", knobs: { room: 0.25 }, layers: [
+      { k: "throat", vowel: "a", vpath: ["a", "a", "o"], base: 70, sylDur: 1.4, path: [0, 4, 3, -2, -10], hold: true, rasp: 1, growl: 0.2, breath: 0.3, vol: 0.2 }] },
+    realWail: { name: "Agony wail", cat: "Real screams", knobs: { room: 0.3 }, layers: [
+      { k: "throat", vowel: "o", vpath: ["o", "a", "o"], base: 62, syl: 2, sylDur: 1.1, gap: 0.25, path: [0, 2, 1, -3], hold: true, vib: 0.4, vibHz: 6, rasp: 0.4, breath: 0.25, fade: 0.25, inhale: 0.5, vol: 0.19 }] },
+    realBanshee: { name: "Banshee", cat: "Real screams", knobs: { room: 0.5, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "i", vpath: ["u", "i", "e", "i"], size: 0.8, base: 82, sylDur: 2.4, path: [0, 5, 3, 7, -12], hold: true, atk: 0.2, vib: 0.5, vibHz: 7, breath: 0.45, vol: 0.16 }] },
+    realGhoulMoan: { name: "Ghoul moan", cat: "Real screams", knobs: { room: 0.35 }, layers: [
+      { k: "throat", vowel: "o", vpath: ["o", "u", "o"], size: 1.4, base: 43, sylDur: 2, path: [0, -2, 1, -4], hold: true, atk: 0.15, growl: 0.7, rasp: 0.5, breath: 0.3, vol: 0.2 }] },
+    realGroan: { name: "Dying groan", cat: "Real screams", knobs: { room: 0.2 }, layers: [
+      { k: "throat", vowel: "uh", vpath: ["uh", "o"], size: 1.3, base: 40, sylDur: 1.2, path: [0, -1, -5], growl: 0.5, rasp: 0.7, breath: 0.35, vol: 0.2 }] },
+    // blood sacrifice: blades, blood, heartbeats and the victim
+    sacrifice: { name: "Full sacrifice", cat: "Blood sacrifice", knobs: { room: 0.3 }, layers: [
+      { k: "bass", notes: [33], bend: -5, dur: 0.12, vol: 0.5 }, { k: "bass", at: 0.17, notes: [33], bend: -5, dur: 0.12, vol: 0.45 },
+      { k: "blade", at: 0.4, dur: 0.2, tone: 1700, ring: 0.6, ringLen: 0.5, vol: 0.3 },
+      { k: "throat", at: 0.55, vowel: "a", vpath: ["a", "o"], base: 72, sylDur: 0.8, path: [0, 3, -6], hold: true, rasp: 0.9, breath: 0.3, vol: 0.16 },
+      { k: "drip", at: 0.6, splash: 1, splashTone: 1200, drops: 10, spread: 0.9, tone: 700, decay: 0.03, fade: 0.4, vol: 0.2 }] },
+    sacBlade: { name: "Ritual blade", cat: "Blood sacrifice", knobs: { room: 0.25 }, layers: [
+      { k: "blade", dur: 0.28, tone: 1900, ring: 1, ringLen: 0.5, vol: 0.32 }] },
+    sacSlash: { name: "Blade slash", cat: "Blood sacrifice", knobs: { room: 0.15 }, layers: [
+      { k: "blade", dur: 0.15, tone: 2200, ring: 0.3, ringLen: 0.3, vol: 0.35 },
+      { k: "drip", at: 0.15, splash: 0.8, splashTone: 1600, splashLen: 0.05, drops: 6, spread: 0.4, tone: 1000, decay: 0.02, vol: 0.18 }] },
+    sacSplash: { name: "Blood splash", cat: "Blood sacrifice", knobs: { room: 0.15 }, layers: [
+      { k: "drip", splash: 1.2, splashTone: 1000, splashLen: 0.1, drops: 16, spread: 0.6, tone: 650, decay: 0.025, fade: 0.5, vol: 0.22 }] },
+    sacDrips: { name: "Blood drips", cat: "Blood sacrifice", knobs: { room: 0.35, roomSize: 2 }, layers: [
+      { k: "drip", drops: 6, spread: 1.8, tone: 900, rise: 2.6, decay: 0.035, jitter: 0.4, vol: 0.28 }] },
+    sacHeart: { name: "Heart torn out", cat: "Blood sacrifice", knobs: { room: 0.2 }, layers: [
+      { k: "drip", splash: 1, splashTone: 600, splashLen: 0.15, drops: 14, spread: 0.35, tone: 380, rise: 1.8, decay: 0.04, vol: 0.22 },
+      { k: "throat", at: 0.05, vowel: "a", vpath: ["a", "uh"], base: 66, sylDur: 0.9, path: [0, 2, -8], hold: true, rasp: 1.2, growl: 0.3, breath: 0.3, vol: 0.17 },
+      { k: "bass", at: 0.9, notes: [33], bend: -5, dur: 0.12, vol: 0.4 }, { k: "bass", at: 1.07, notes: [33], bend: -5, dur: 0.12, vol: 0.3 }] },
+    sacAltar: { name: "Altar offering", cat: "Blood sacrifice", knobs: { room: 0.35, roomSize: 2 }, layers: [
+      { k: "drag", dur: 0.9, tone: 420, rough: 0.6, rate: 20, rumble: 0.6, pebbles: 0.5, atk: 0.1, rel: 0.15, stop: 0.8, vol: 0.35 },
+      { k: "drip", at: 1, drops: 5, spread: 1.2, tone: 850, decay: 0.035, jitter: 0.4, vol: 0.22 },
+      { k: "throat", at: 0.2, vowel: "o", size: 1.3, base: 43, sylDur: 1.8, path: [0, 2, 0, -2], hold: true, atk: 0.3, growl: 0.4, breath: 0.2, vol: 0.12 }] },
+    sacChant: { name: "Cult chant", cat: "Blood sacrifice", knobs: { room: 0.45, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "o", vpath: ["o", "u"], size: 1.3, base: 43, sylDur: 2.2, path: [0, 0, -1], hold: true, atk: 0.3, vib: 0.15, vibHz: 5, growl: 0.3, breath: 0.15, vol: 0.12 },
+      { k: "throat", vowel: "o", vpath: ["o", "u"], size: 1.2, base: 50, sylDur: 2.2, path: [0, 0, -2], hold: true, atk: 0.35, vib: 0.15, vibHz: 5.4, breath: 0.15, vol: 0.1 },
+      { k: "throat", vowel: "a", vpath: ["a", "o"], size: 1.05, base: 55, sylDur: 2.2, path: [0, 1, 0], hold: true, atk: 0.4, vib: 0.2, vibHz: 4.6, breath: 0.2, vol: 0.08 }] },
     // detailed sounds: real stone and real-sounding laughs (clean, no crunch unless you add it)
     dragHeavy: { name: "Heavy stone drag", cat: "Stone drags", knobs: { room: 0.25 }, layers: [
       { k: "drag", dur: 1.4, tone: 380, rough: 0.7, rate: 18, rumble: 0.8, pebbles: 1, atk: 0.12, rel: 0.2, vol: 0.4 }] },
@@ -1172,7 +1214,11 @@ if (typeof document !== "undefined") {
     const tempo = K.vTempo, swing = Math.min(0.8, (+L.swing || 0) + K.vSwing), stepSt = (+L.step || 0) + K.vStep;
     const accent = K.vAccent !== "orig" ? K.vAccent : L.accent || "none", h = (+L.h || 0) + K.vH, tail = (+L.tail || 1) * K.vTail, first = +L.first || 1;
     const hit = i => accent === "first" ? i === 0 : accent === "odd" ? i % 2 === 0 : accent === "three" ? i % 3 === 0 : accent === "last" ? i === n - 1 : false;
-    const shape = (gp, tv, d, v, atkV) => { gp.setValueAtTime(0, tv); gp.linearRampToValueAtTime(v, tv + atkV); gp.linearRampToValueAtTime(v * 0.7, tv + Math.max(atkV + 0.002, d * 0.55)); gp.linearRampToValueAtTime(0, tv + d); };
+    const path = Array.isArray(L.path) && L.path.length > 1 ? L.path.map(p => +p || 0) : null;
+    const vpath = Array.isArray(L.vpath) && L.vpath.length > 1 ? L.vpath.map(k => FORMANTS[k] || vow) : null;
+    const rasp = Math.min(2, Math.max(0, +L.rasp || 0) * K.vRough), hold = !!L.hold, sr2 = sr / 2;
+    const shape = (gp, tv, d, v, atkV) => hold ? (gp.setValueAtTime(0, tv), gp.linearRampToValueAtTime(v, tv + atkV), gp.linearRampToValueAtTime(v * 0.9, tv + Math.max(atkV + 0.002, d * 0.75)), gp.linearRampToValueAtTime(0, tv + d)) : shape0(gp, tv, d, v, atkV);
+    const shape0 = (gp, tv, d, v, atkV) => { gp.setValueAtTime(0, tv); gp.linearRampToValueAtTime(v, tv + atkV); gp.linearRampToValueAtTime(v * 0.7, tv + Math.max(atkV + 0.002, d * 0.55)); gp.linearRampToValueAtTime(0, tv + d); };
     let t = at, last = at;
     for (let i = 0; i < n; i++) {
       const f = n > 1 ? i / (n - 1) : 0, sp = Math.max(0.2, 1 + accel * (f - 0.5) * 2) / tempo, sw = n > 1 ? (i % 2 ? 1 - swing : 1 + swing) : 1;
@@ -1183,7 +1229,8 @@ if (typeof document !== "undefined") {
       const v = vol * (1 - (+L.fade || 0) * f) * (acc ? 1.35 : 1) * (1 + (Math.random() - 0.5) * 0.2 * W);
       const hl = h > 0 ? Math.min(d * 0.6, (+L.hLen || 0.05) * T * K.vLen) : 0, ts = now + t, tv = ts + hl * 0.8;
       // the mouth shape: snap to the vowel, or slide into it on the first syllable ("mwa-ha")
-      bank.forEach((b, j) => { b.frequency.setValueAtTime(i === 0 && from ? fq(from, j) : fq(vow, j), ts); if (i === 0 && from) b.frequency.linearRampToValueAtTime(fq(vow, j), tv + d * 0.5); });
+      if (vpath) bank.forEach((b, j) => { b.frequency.setValueAtTime(fq(vpath[0], j), ts); vpath.forEach((V, k) => k && b.frequency.linearRampToValueAtTime(fq(V, j), tv + d * k / (vpath.length - 1))); });
+      else bank.forEach((b, j) => { b.frequency.setValueAtTime(i === 0 && from ? fq(from, j) : fq(vow, j), ts); if (i === 0 && from) b.frequency.linearRampToValueAtTime(fq(vow, j), tv + d * 0.5); });
       if (hl) { // the "h": breath through the open mouth
         const s = noiseSrc(a, ts, hl + 0.03), hg = a.createGain();
         hg.gain.setValueAtTime(0, ts); hg.gain.linearRampToValueAtTime(v * h * 0.8 * NZ * K.noiseVol, ts + hl * 0.35);
@@ -1192,12 +1239,27 @@ if (typeof document !== "undefined") {
       }
       const f0 = clampHz(a, hz(m)), f1 = clampHz(a, hz(m + bend)), atkV = Math.min(d * 0.4, 0.012 + (+L.atk || 0) + K.attack);
       const voices = [[1, f0, f1]]; if (growl > 0) voices.push([growl * 0.6, f0 / 2, f1 / 2]);
+      let into = mouth, jit = null;
+      if (rasp > 0) { // a torn, raspy voice: the volume flutters and the pitch shakes
+        const rg = a.createGain(), s = noiseSrc(a, tv, d + 0.02), bf = filt(a, "bandpass", 45, 0.8), ng = a.createGain();
+        rg.gain.value = 1; ng.gain.value = rasp * 0.3 / (0.577 * Math.sqrt(1.57 * 45 / 0.8 / sr2));
+        s.connect(bf); bf.connect(ng); ng.connect(rg.gain); rg.connect(mouth); into = rg;
+        const lp = filt(a, "lowpass", 30, 0.7); jit = a.createGain(); jit.gain.value = rasp * 35 / (0.577 * Math.sqrt(1.2 * 30 / sr2));
+        s.connect(lp); lp.connect(jit);
+      }
+      const pm = path ? Math.pow(2, path.reduce((s, p) => s + p, 0) / path.length / 12) : 1;
       for (const [gm, fa, fb] of voices) {
         const o = a.createOscillator(), vg = a.createGain();
-        o.setPeriodicWave(glottal(a)); o.frequency.setValueAtTime(fa, tv); o.frequency.exponentialRampToValueAtTime(Math.max(20, fb), tv + d);
-        shape(vg.gain, tv, d, v * gm / level((fa + fb) / 2), atkV);
+        o.setPeriodicWave(glottal(a));
+        if (path) { // the pitch follows a drawn line: rise, hold, fall
+          const pf = p => clampHz(a, fa * Math.pow(2, p / 12));
+          o.frequency.setValueAtTime(pf(path[0]), tv);
+          path.forEach((p, k) => k && o.frequency.exponentialRampToValueAtTime(pf(p + (k === path.length - 1 ? bend : 0)), tv + d * k / (path.length - 1)));
+        } else { o.frequency.setValueAtTime(fa, tv); o.frequency.exponentialRampToValueAtTime(Math.max(20, fb), tv + d); }
+        shape(vg.gain, tv, d, v * gm / level(path ? fa * pm : (fa + fb) / 2), atkV);
         if (lfoG) lfoG.connect(o.detune);
-        o.connect(vg); vg.connect(mouth); o.start(tv); o.stop(tv + d + 0.02);
+        if (jit) jit.connect(o.detune);
+        o.connect(vg); vg.connect(into); o.start(tv); o.stop(tv + d + 0.02);
       }
       if (breath > 0) { // air leaking through the voice
         const s = noiseSrc(a, tv, d), bg = a.createGain(); shape(bg.gain, tv, d, v * breath * 0.5 * NZ * K.noiseVol, atkV); s.connect(bg); bg.connect(mouth);
@@ -1298,6 +1360,63 @@ if (typeof document !== "undefined") {
     }
     return last;
   }
+  // liquid: each drop is a tiny bubble whose pitch shoots up as it pops; a splash is a wet low burst
+  function drips(L, K, common, at, vol) {
+    const a = audio(); if (!a) return at;
+    const T = K.length, W = K.wobble, out = common.out || master, now = a.currentTime, sr = a.sampleRate, st = Math.pow(2, K.pitch / 12);
+    const n = Math.max(0, Math.min(60, Math.round(L.drops === undefined ? 1 : +L.drops))), spread = Math.max(0, (+L.spread || 0) * T);
+    const rise = Math.max(1, +L.rise || 2.4), dk = Math.max(0.005, (+L.decay || 0.03) * T), jit = L.jitter === undefined ? 1 : +L.jitter;
+    let last = at;
+    const splash = Math.max(0, +L.splash || 0);
+    if (splash > 0) {
+      const ts = now + at, sl = Math.max(0.02, (+L.splashLen || 0.08) * T), fc = clampHz(a, (+L.splashTone || 1400) * st);
+      const s = noiseSrc(a, ts, sl * 6), lp = filt(a, "lowpass", fc, 1.2), g = a.createGain(), norm = 1 / (0.577 * Math.sqrt(Math.min(1, 1.2 * fc / (sr / 2))));
+      lp.frequency.setValueAtTime(fc, ts); lp.frequency.exponentialRampToValueAtTime(clampHz(a, fc * 0.35), ts + sl * 4);
+      g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(vol * splash * 0.6 * norm, ts + 0.003); g.gain.setTargetAtTime(0, ts + 0.003, sl);
+      s.connect(lp); lp.connect(g); g.connect(out);
+      last = Math.max(last, at + sl * 5);
+    }
+    for (let i = 0; i < n; i++) {
+      const ti = n < 2 ? 0 : L.even ? spread * i / (n - 1) : i ? Math.random() * spread : 0, ts = now + at + Math.max(0, ti);
+      const f = clampHz(a, (+L.tone || 900) * st * Math.pow(2, (Math.random() * 2 - 1) * 0.6 * jit * W));
+      const v = vol * (0.55 + 0.45 * Math.random()) * (1 - (+L.fade || 0) * (n > 1 ? i / (n - 1) : 0)), d = dk * (0.7 + Math.random() * 0.6);
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(f, ts); o.frequency.exponentialRampToValueAtTime(clampHz(a, f * rise), ts + d * 2.5);
+      g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(v, ts + 0.001); g.gain.setTargetAtTime(0, ts + 0.001, d);
+      o.connect(g); g.connect(out); o.start(ts); o.stop(ts + d * 7 + 0.01);
+      last = Math.max(last, ts - now + d * 5);
+    }
+    return last;
+  }
+  // a blade: the swish of air as it swings, then the ring of the metal
+  const BLADE_RATIOS = [1, 1.47, 2.09, 2.56, 3.21], BLADE_AMPS = [1, 0.7, 0.5, 0.3, 0.2];
+  function blade(L, K, common, at, vol) {
+    const a = audio(); if (!a) return at;
+    const T = K.length, out = common.out || master, now = a.currentTime, sr = a.sampleRate, st = Math.pow(2, K.pitch / 12);
+    const ts = now + at, dur = Math.max(0.04, (+L.dur || 0.25) * T), tone = (+L.tone || 1800) * st;
+    const f0 = clampHz(a, tone * 0.35), f1 = clampHz(a, tone * 1.6), s = noiseSrc(a, ts, dur + 0.05), bp = filt(a, "bandpass", f0, 1.5), g = a.createGain();
+    const norm = 1 / (0.577 * Math.sqrt(Math.min(1, 1.57 * Math.sqrt(f0 * f1) / 1.5 / (sr / 2))));
+    bp.frequency.setValueAtTime(f0, ts); bp.frequency.exponentialRampToValueAtTime(f1, ts + dur);
+    g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(vol * 0.55 * norm, ts + dur * 0.65); g.gain.linearRampToValueAtTime(0, ts + dur);
+    s.connect(bp); bp.connect(g); g.connect(out);
+    let last = at + dur;
+    const ring = L.ring === undefined ? 1 : Math.max(0, +L.ring), rl = Math.max(0.05, (+L.ringLen || 0.6) * T);
+    if (ring > 0) {
+      const tr = ts + dur * 0.7, rt = (+L.ringTone || 2600) * st, sum = BLADE_AMPS.reduce((x, y) => x + y, 0);
+      BLADE_RATIOS.forEach((r, j) => {
+        const f = rt * r; if (f > sr * 0.45) return;
+        const o = a.createOscillator(), og = a.createGain(), dj = rl / Math.sqrt(r);
+        o.type = "sine"; o.frequency.value = f;
+        og.gain.setValueAtTime(0, tr); og.gain.linearRampToValueAtTime(vol * ring * 0.6 * BLADE_AMPS[j] / sum, tr + 0.002); og.gain.setTargetAtTime(0, tr + 0.002, dj);
+        o.connect(og); og.connect(out); o.start(tr); o.stop(tr + dj * 7);
+      });
+      const c = noiseSrc(a, tr, 0.03), hp = filt(a, "highpass", clampHz(a, 3000 * st), 0.7), cg = a.createGain(); // the scrape of contact
+      cg.gain.setValueAtTime(vol * ring * 1.2, tr); cg.gain.exponentialRampToValueAtTime(0.0005, tr + 0.025);
+      c.connect(hp); hp.connect(cg); cg.connect(out);
+      last = Math.max(last, tr - now + rl * 5);
+    }
+    return last;
+  }
   function playSfx(name, opts = {}, conf = null) { // returns how long the sound lasts, in seconds
     const s = SFX[name]; if (!s) return 0;
     if (s.buzz) buzz(s.buzz);
@@ -1332,6 +1451,8 @@ if (typeof document !== "undefined") {
       if (L.k === "throat") { end = Math.max(end, throat(L, K, common, at, vol)); continue; }
       if (L.k === "bone") { end = Math.max(end, boneHits(L, K, common, at, vol)); continue; }
       if (L.k === "drag") { end = Math.max(end, stoneDrag(L, K, common, at, vol)); continue; }
+      if (L.k === "drip") { end = Math.max(end, drips(L, K, common, at, vol)); continue; }
+      if (L.k === "blade") { end = Math.max(end, blade(L, K, common, at, vol)); continue; }
       if (L.k === "noise") {
         const g = st * Math.pow(2, K.grit), rate = ((+L.rate || 1) + Math.random() * (+L.rj || 0) * W) * g;
         const to = (L.to || K.slide) ? (+L.to || +L.rate || 1) * g * Math.pow(2, K.slide / 12) : 0;

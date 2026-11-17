@@ -259,11 +259,14 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       if (vib) m += vib * Math.sin(2 * Math.PI * vibHz * t);
       return hz(m);
     };
-    const voices = wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.8, wave], [9, 0.45, wave]];
+    const low = hz(notes[0]) < 520; // low notes get a soft sub an octave down for body
+    const voices = wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.65, wave], [8, 0.38, wave], [-8, 0.38, wave]];
+    if (low) voices.push([-1200, wave === "triangle" ? 0.3 : 0.22, "sine"]);
+    const sh = warmth(a);
     for (const [det, gv, wv] of voices) {
       const o = a.createOscillator(), og = a.createGain();
       if (wv === "triangle" || wv === "sine") o.type = wv; else o.setPeriodicWave(pulseWave(a, DUTY[wv] || 0.5));
-      o.detune.value = det; og.gain.value = gv;
+      o.detune.value = det; og.gain.value = sh ? gv * 0.75 : gv;
       notes.forEach((m, i) => o.frequency.setValueAtTime(pitch(i * step), t0 + i * step));
       if (bend || arp || vib) for (let f = 1; f / 120 < len; f++) {
         const t = f / 120, v = pitch(t);
@@ -271,8 +274,9 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       }
       o.connect(og); og.connect(lp); o.start(t0); o.stop(t0 + len + 0.03);
     }
-    env16(g.gain, t0, vol * 0.85, total, atk, curve);
-    lp.connect(g); g.connect(out || master);
+    env16(g.gain, t0, vol * 0.8, total, atk, curve);
+    if (sh) { lp.connect(sh); sh.connect(g); } else lp.connect(g);
+    g.connect(out || master);
     return at + len;
   }
   // 16-bit noise: smooth hiss, its brightness set by `rate`; "short" rings like metal
@@ -288,7 +292,20 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     norm.gain.value = Math.min(40, 0.8 / (0.577 * Math.sqrt(Math.min(1, band / (sr / 2)))));
     env16(g.gain, t0, vol, dur, atk, curve);
     src.connect(f); f.connect(norm); norm.connect(g); g.connect(out || master);
+    if (!short && rate <= 2 && atk <= 0.02 && dur >= 0.03) { // low noise that starts hard gets a punch of weight
+      const o = a.createOscillator(), og = a.createGain(), p = 1 - rate / 2.5;
+      o.type = "sine"; o.frequency.setValueAtTime(90 + rate * 40, t0); o.frequency.exponentialRampToValueAtTime(42, t0 + 0.12);
+      og.gain.setValueAtTime(0, t0); og.gain.linearRampToValueAtTime(vol * 0.9 * p, t0 + 0.003); og.gain.setTargetAtTime(0, t0 + 0.003, Math.min(0.08, 0.02 + dur * 0.15));
+      o.connect(og); og.connect(out || master); o.start(t0); o.stop(t0 + 0.5);
+    }
     return at + len;
+  }
+  // a gentle tape-like soft clip that glues the 16-bit voices together
+  let warmCurve = null;
+  function warmth(a) {
+    if (!a.createWaveShaper) return null;
+    if (!warmCurve) { warmCurve = new Float32Array(1025); for (let i = 0; i < 1025; i++) { const x = i / 512 - 1; warmCurve[i] = Math.tanh(1.4 * x) / Math.tanh(1.4); } }
+    const s = a.createWaveShaper(); s.curve = warmCurve; s.oversample = "2x"; return s;
   }
   function buzz(pattern) { if (muted) return; try { navigator.vibrate && navigator.vibrate(pattern); } catch (_) {} }
 
@@ -411,37 +428,55 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       { k: "drag", dur: 0.45, tone: 1500, rough: 0.5, rate: 45, pebbles: 0.4, atk: 0.03, rel: 0.1, vol: 0.3 }] },
     boneScrapeLong: { name: "Slow bone scrape", cat: "Bone scrapes", knobs: { room: 0.2 }, layers: [
       { k: "drag", dur: 1.3, tone: 1100, sweep: 3, rough: 0.7, rate: 20, ease: 0.3, pebbles: 0.3, atk: 0.15, rel: 0.2, vol: 0.3 },
-      { k: "bone", at: 1.25, hits: 1, tone: 900, decay: 0.05, vol: 0.2 }] },
+      { k: "bone", at: 1.25, hits: 1, smack: 1, tone: 520, decay: 0.04, vol: 0.25 }] },
     boneOnStone: { name: "Bone on stone", cat: "Bone scrapes", knobs: { room: 0.15 }, layers: [
       { k: "drag", dur: 0.8, tone: 800, rough: 0.85, rate: 28, rumble: 0.2, pebbles: 1.5, vol: 0.32 },
-      { k: "bone", hits: 4, spread: 0.7, tone: 1000, jitter: 4, decay: 0.03, click: 1.5, vol: 0.12 }] },
+      { k: "bone", hits: 4, spread: 0.7, smack: 1, tone: 620, jitter: 4, decay: 0.025, body: 0.4, vol: 0.16 }] },
     boneSnap: { name: "Bone snap", cat: "Bone breaks", layers: [
-      { k: "bone", hits: 1, tone: 1300, decay: 0.025, crack: 1, crackLen: 0.05, vol: 0.32 },
-      { k: "bone", at: 0.01, hits: 1, tone: 380, decay: 0.04, click: 0, vol: 0.25 }] },
+      { k: "bone", hits: 1, smack: 1, tone: 900, decay: 0.02, body: 0.5, crack: 1, crackLen: 0.06, vol: 0.32 },
+      { k: "bone", at: 0.01, hits: 1, smack: 1, tone: 300, decay: 0.035, body: 1.2, vol: 0.3 }] },
     boneCrunch: { name: "Bone crunch", cat: "Bone breaks", layers: [
-      { k: "bone", hits: 5, spread: 0.22, tone: 800, jitter: 6, decay: 0.03, crack: 1.2, crackLen: 0.25, vol: 0.3 },
+      { k: "bone", hits: 5, spread: 0.22, smack: 1, tone: 520, jitter: 6, decay: 0.025, body: 0.8, crack: 1.2, crackLen: 0.25, vol: 0.32 },
       { k: "bass", notes: [36], bend: -8, dur: 0.12, vol: 0.35 }] },
     skullCrack: { name: "Skull cracks", cat: "Bone breaks", knobs: { room: 0.2 }, layers: [
-      { k: "bone", hits: 1, tone: 430, ratios: [1, 1.58, 2.9, 4.6], amps: [1, 0.7, 0.35, 0.15], decay: 0.1, crack: 0.8, crackLen: 0.12, vol: 0.35 },
-      { k: "bone", at: 0.12, hits: 3, spread: 0.15, tone: 1400, jitter: 5, decay: 0.03, vol: 0.15 }] },
+      { k: "bone", hits: 1, smack: 1, tone: 280, decay: 0.07, body: 1.5, crack: 0.9, crackLen: 0.14, vol: 0.4 },
+      { k: "bone", at: 0.12, hits: 3, spread: 0.15, smack: 1, tone: 800, jitter: 5, decay: 0.025, body: 0.2, vol: 0.16 }] },
     boneShatter: { name: "Bones shatter", cat: "Bone breaks", knobs: { room: 0.25 }, layers: [
-      { k: "bone", hits: 1, tone: 600, decay: 0.05, crack: 1.5, crackLen: 0.2, vol: 0.35 },
-      { k: "bone", at: 0.05, hits: 12, spread: 0.7, bounce: 0.75, tone: 1300, jitter: 7, decay: 0.035, vol: 0.25 }] },
+      { k: "bone", hits: 1, smack: 1, tone: 420, decay: 0.045, body: 1.4, crack: 1.5, crackLen: 0.2, vol: 0.4 },
+      { k: "bone", at: 0.05, hits: 12, spread: 0.7, bounce: 0.75, smack: 1, tone: 850, jitter: 7, decay: 0.025, body: 0.3, vol: 0.22 }] },
     boneClack: { name: "Bone clack", cat: "Bone clinks", knobs: { room: 0.1 }, layers: [
-      { k: "bone", hits: 2, spread: 0.07, even: true, tone: 950, jitter: 2, decay: 0.05, vol: 0.3 }] },
+      { k: "bone", hits: 2, spread: 0.07, even: true, smack: 1, tone: 600, jitter: 2, decay: 0.035, vol: 0.34 }] },
     skullKnock: { name: "Skull knock", cat: "Bone clinks", knobs: { room: 0.25 }, layers: [
-      { k: "bone", hits: 3, spread: 0.36, even: true, tone: 430, ratios: [1, 1.58, 2.9, 4.6], amps: [1, 0.7, 0.35, 0.15], decay: 0.12, jitter: 0.5, fade: 0.2, vol: 0.35 }] },
+      { k: "bone", hits: 3, spread: 0.36, even: true, smack: 1, tone: 260, decay: 0.08, body: 1.3, jitter: 0.5, fade: 0.2, vol: 0.38 }] },
     boneRattleReal: { name: "Skeleton rattle", cat: "Bone clinks", knobs: { room: 0.15 }, layers: [
-      { k: "bone", hits: 14, spread: 0.6, tone: 1100, jitter: 5, decay: 0.045, fade: 0.3, vol: 0.22 }] },
+      { k: "bone", hits: 14, spread: 0.6, smack: 1, tone: 700, jitter: 5, decay: 0.03, body: 0.3, fade: 0.3, vol: 0.24 }] },
     boneDrop: { name: "Bones dropped", cat: "Bone clinks", knobs: { room: 0.2 }, layers: [
-      { k: "bone", hits: 7, spread: 0.7, bounce: 0.65, tone: 850, jitter: 4, decay: 0.06, vol: 0.33 },
-      { k: "bone", at: 0.05, hits: 5, spread: 0.6, bounce: 0.6, tone: 1250, jitter: 4, decay: 0.04, vol: 0.2 }] },
+      { k: "bone", hits: 7, spread: 0.7, bounce: 0.65, smack: 1, tone: 520, jitter: 4, decay: 0.04, body: 0.9, vol: 0.34 },
+      { k: "bone", at: 0.05, hits: 5, spread: 0.6, bounce: 0.6, smack: 1, tone: 800, jitter: 4, decay: 0.03, body: 0.3, vol: 0.2 }] },
     boneWalk: { name: "Skeleton walk", cat: "Bone clinks", layers: [
-      { k: "bone", hits: 8, spread: 1.4, even: true, swing: 0.8, tone: 700, jitter: 3, decay: 0.05, vol: 0.3 }] },
+      { k: "bone", hits: 8, spread: 1.4, even: true, swing: 0.8, smack: 1, tone: 480, jitter: 3, decay: 0.035, body: 0.6, vol: 0.32 }] },
     boneChime: { name: "Bone wind chimes", cat: "Bone clinks", knobs: { room: 0.45, roomSize: 2.5 }, layers: [
       { k: "bone", hits: 7, spread: 1.4, tone: 1500, jitter: 7, decay: 0.35, ratios: [1, 2.76, 5.4], amps: [1, 0.4, 0.15], click: 0.4, vol: 0.18 }] },
     ribXylo: { name: "Rib xylophone", cat: "Bone clinks", knobs: { room: 0.3 }, layers: [
       { k: "bone", hits: 6, spread: 0.75, even: true, notes: [69, 72, 76, 74, 71, 64], ratios: [1, 3.93, 9.5], amps: [1, 0.3, 0.1], decay: 0.22, vol: 0.3 }] },
+    // bone smashes: the smack model at full weight
+    boneSmack: { name: "Bones smack together", cat: "Bone smashes", knobs: { room: 0.12 }, layers: [
+      { k: "bone", hits: 2, spread: 0.05, even: true, smack: 1, tone: 520, decay: 0.035, body: 1.3, vol: 0.42 }] },
+    boneSmash: { name: "Bone smash", cat: "Bone smashes", knobs: { room: 0.18 }, layers: [
+      { k: "bone", hits: 1, smack: 1, tone: 380, decay: 0.04, body: 1.8, crack: 1.2, crackLen: 0.14, vol: 0.4 },
+      { k: "bone", at: 0.04, hits: 9, spread: 0.6, bounce: 0.7, smack: 1, tone: 900, jitter: 6, decay: 0.025, body: 0.2, vol: 0.18 }] },
+    skullSmash: { name: "Skull smashed", cat: "Bone smashes", knobs: { room: 0.25 }, layers: [
+      { k: "bone", hits: 1, smack: 1, tone: 260, decay: 0.06, body: 2, crack: 1.6, crackLen: 0.2, vol: 0.4 },
+      { k: "bone", at: 0.05, hits: 12, spread: 0.8, bounce: 0.72, smack: 1, tone: 750, jitter: 7, decay: 0.03, body: 0.3, vol: 0.2 }] },
+    femurBreak: { name: "Thick bone breaks", cat: "Bone smashes", knobs: { room: 0.15 }, layers: [
+      { k: "bone", hits: 1, smack: 1, tone: 330, decay: 0.03, body: 1.5, crack: 1.8, crackLen: 0.3, vol: 0.4 },
+      { k: "bone", at: 0.32, hits: 2, spread: 0.12, smack: 1, tone: 240, decay: 0.05, body: 1.2, vol: 0.3 }] },
+    boneClub: { name: "Bone club hit", cat: "Bone smashes", knobs: { room: 0.15 }, layers: [
+      { k: "bone", hits: 1, smack: 1, tone: 300, decay: 0.05, body: 2.5, vol: 0.4 },
+      { k: "bass", notes: [33], bend: -6, dur: 0.1, vol: 0.3 }] },
+    bonePileCrash: { name: "Bone pile collapses", cat: "Bone smashes", knobs: { room: 0.25 }, layers: [
+      { k: "bone", hits: 16, spread: 1.2, bounce: 0.82, smack: 1, tone: 560, jitter: 8, decay: 0.035, body: 0.6, vol: 0.3 },
+      { k: "bone", at: 0.1, hits: 8, spread: 1, smack: 1, tone: 950, jitter: 6, decay: 0.025, body: 0.2, vol: 0.15 }] },
     // detailed sounds: real stone and real-sounding laughs (clean, no crunch unless you add it)
     dragHeavy: { name: "Heavy stone drag", cat: "Stone drags", knobs: { room: 0.25 }, layers: [
       { k: "drag", dur: 1.4, tone: 380, rough: 0.7, rate: 18, rumble: 0.8, pebbles: 1, atk: 0.12, rel: 0.2, vol: 0.4 }] },
@@ -561,6 +596,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     { k: "bHits", g: "Bone", label: "Hits", min: -10, max: 20, step: 1, def: 0, rnd: [-2, 6] },
     { k: "bSpread", g: "Bone", label: "Spread out", min: 0.2, max: 3, step: 0.05, def: 1, rnd: [0.5, 2] },
     { k: "bCrack", g: "Bone", label: "Extra crackle", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 1] },
+    { k: "bBody", g: "Bone", label: "Weight (thud)", min: 0, max: 3, step: 0.05, def: 1, rnd: [0.5, 2] },
     { k: "echo", g: "Space", label: "Echo", min: 0, max: 0.8, step: 0.05, def: 0, rnd: [0, 0.4] },
     { k: "echoTime", g: "Space", label: "Echo time", min: 0.04, max: 0.5, step: 0.01, def: 0.18, rnd: [0.06, 0.3] },
     { k: "room", g: "Space", label: "Temple reverb", min: 0, max: 1, step: 0.05, def: 0, rnd: [0, 0.5] },
@@ -836,6 +872,28 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   // bones: each hit rings a few out-of-tune partials (like a wooden bar) after a sharp click,
   // with an optional crackle for snapping and crunching
   const BONE_RATIOS = [1, 2.32, 4.25, 6.63], BONE_AMPS = [1, 0.55, 0.3, 0.15];
+  // a bone smack: a bright slap where the bones meet, the woody knock of the bone itself
+  // (noise ringing through its resonances) and a low thud for weight
+  const SMACK_MODES = [[1, 1, 7], [2.45, 0.45, 9], [4.1, 0.2, 11]];
+  function smackHit(a, ts, f0, fv, ring, hard, body, bend, out) {
+    const sr = a.sampleRate, nb = (f, q) => 1 / (0.577 * Math.sqrt(Math.min(1, 1.57 * f / q / (sr / 2))));
+    const src = noiseSrc(a, ts, 0.02 + ring * 6);
+    const fs = clampHz(a, 2400 * Math.sqrt(hard)), sb = filt(a, "bandpass", fs, 0.9), sg = a.createGain();
+    sg.gain.setValueAtTime(0, ts); sg.gain.linearRampToValueAtTime(fv * 0.8 * nb(fs, 0.9), ts + 0.0008); sg.gain.setTargetAtTime(0, ts + 0.0008, 0.0035 / hard);
+    src.connect(sb); sb.connect(sg); sg.connect(out);
+    for (const [r, amp, q] of SMACK_MODES) {
+      const f = clampHz(a, f0 * r), bp = filt(a, "bandpass", f, q), g = a.createGain(), dj = ring / Math.pow(r, 0.6 * hard);
+      if (bend) bp.frequency.exponentialRampToValueAtTime(clampHz(a, f * Math.pow(2, bend / 12)), ts + dj * 3);
+      g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(fv * 0.75 * amp * nb(f, q), ts + 0.001); g.gain.setTargetAtTime(0, ts + 0.001, dj);
+      src.connect(bp); bp.connect(g); g.connect(out);
+    }
+    if (body > 0) {
+      const fl = clampHz(a, Math.min(260, f0 * 0.5)), lp = filt(a, "lowpass", fl, 0.7), g = a.createGain();
+      g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(Math.min(60, fv * 0.45 * body / (0.577 * Math.sqrt(Math.min(1, 1.2 * fl / (sr / 2))))), ts + 0.002); g.gain.setTargetAtTime(0, ts + 0.002, 0.014);
+      src.connect(lp); lp.connect(g); g.connect(out);
+    }
+    return Math.max(ring * 5, 0.08);
+  }
   function boneHits(L, K, common, at, vol) {
     const a = audio(); if (!a) return at;
     const T = K.length, W = K.wobble, out = common.out || master, now = a.currentTime;
@@ -846,6 +904,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     const ring = Math.max(0.005, (+L.decay || 0.08) * K.bRing), spread = Math.max(0, (+L.spread || 0) * T * K.bSpread);
     const hard = K.bHard, crack = Math.min(2.5, (+L.crack || 0) + K.bCrack), bounce = Math.min(0.9, +L.bounce || 0), swing = Math.min(0.95, +L.swing || 0);
     const notes = Array.isArray(L.notes) && L.notes.length ? L.notes : null;
+    const smack = !!L.smack, body = (L.body === undefined ? 1 : Math.max(0, +L.body || 0)) * K.bBody;
     const times = [];
     for (let i = 0; i < n; i++) {
       let ti;
@@ -861,6 +920,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       const ts = now + at + ti;
       const fv = vol * (1 - (+L.fade || 0) * (n > 1 ? i / (n - 1) : 0)) * (bounce ? Math.pow(0.8, i) : 1) * (1 + (Math.random() - 0.5) * 0.4 * Math.min(1.5, W));
       const f0 = clampHz(a, notes ? hz(+notes[i % notes.length] + K.pitch) : (+L.tone || 900) * Math.pow(2, (K.pitch + (Math.random() * 2 - 1) * (+L.jitter || 0) * W) / 12));
+      if (smack) { if (fv > 0) last = Math.max(last, ts - now + smackHit(a, ts, f0, fv, ring, hard, body, +L.bend || 0, out)); return; }
       ratios.forEach((r, j) => {
         const fj = f0 * r; if (fj > a.sampleRate * 0.45 || !amps[j]) return;
         const o = a.createOscillator(), g = a.createGain(), dj = ring / Math.pow(r, 0.7 * hard); // high partials die first, faster when hard
@@ -879,7 +939,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     });
     if (crack > 0) { // splintering: hundreds of tiny clicks
       const cl = Math.max(0.02, (+L.crackLen || 0.06) * T), ts = now + at, s = noiseSrc(a, ts, cl), cg = a.createGain();
-      const hp = filt(a, "highpass", clampHz(a, 2200 * Math.pow(2, K.pitch / 12)), 0.7);
+      const hp = smack ? filt(a, "bandpass", clampHz(a, 2600 * Math.pow(2, K.pitch / 12)), 0.5) : filt(a, "highpass", clampHz(a, 2200 * Math.pow(2, K.pitch / 12)), 0.7);
       cg.gain.setValueAtTime(0, ts);
       for (let t = 0, k = 0; t < cl && k < 400; k++) {
         cg.gain.setValueAtTime(vol * crack * 2.2 * (0.3 + 0.7 * Math.random()) * (1 - 0.6 * t / cl), ts + t);
@@ -1027,7 +1087,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     arp: v => v ? "+" + v + " st" : "off", arpHz: v => v + " Hz", vib: v => v ? v.toFixed(2) + " st" : "off", vibHz: v => v + " Hz",
     rSize: v => v.toFixed(2) + "x", rInhale: v => v ? "+" + Math.round(v * 100) + "%" : "as is",
     sWeight: v => Math.round(v * 100) + "%", sRough: v => Math.round(v * 100) + "%", sPebbles: v => Math.round(v * 100) + "%", sSpeed: v => v.toFixed(2) + "x", sStop: v => v ? "+" + Math.round(v * 100) + "%" : "as is",
-    bHard: v => v.toFixed(2) + "x", bRing: v => v.toFixed(2) + "x", bHits: v => v ? sign(v) : "same", bSpread: v => v.toFixed(2) + "x", bCrack: v => v ? "+" + Math.round(v * 100) + "%" : "as is",
+    bHard: v => v.toFixed(2) + "x", bRing: v => v.toFixed(2) + "x", bHits: v => v ? sign(v) : "same", bSpread: v => v.toFixed(2) + "x", bCrack: v => v ? "+" + Math.round(v * 100) + "%" : "as is", bBody: v => v.toFixed(2) + "x",
     room: v => v ? Math.round(v * 100) + "%" : "off", roomSize: v => v.toFixed(1) + " s",
     echo: v => v ? Math.round(v * 100) + "%" : "off", echoTime: v => Math.round(v * 1000) + " ms", wobble: v => Math.round(v * 100) + "%",
   };

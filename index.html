@@ -433,8 +433,8 @@ if (typeof document !== "undefined") {
 
   function startRound(n) {
     st.drand = st.daily ? seeded(hashStr(`bonepile:${st.daily}:${n}`)) : Math.random;
-    Object.assign(st, { round: n, roundGold: 0, spawnedRound: 0, stack: [], falling: null, queue: [], pending: null,
-      chain: 0, checkChain: false, roundDone: false, shopOpen: false, lastOffer: 0, spinning: false });
+    Object.assign(st, { round: n, roundGold: 0, spawnedRound: 0, stack: [], falling: null, rain: [], queue: [], pending: null,
+      boardClear: false, tripleAt: 0, chain: 0, checkChain: false, roundDone: false, shopOpen: false, lastOffer: 0, spinning: false });
     powerState();
     for (let i = 0; i < 3; i++) { const d = makeDisc(st.drand, false); d.y = i; st.stack.push(d); }
     refillQueue();
@@ -1787,7 +1787,7 @@ if (typeof document !== "undefined") {
 
   // Upcoming discs. Locked and cursed discs are capped across the column, the falling disc and the queue.
   function nextDisc() {
-    const all = [...st.stack, ...st.queue, ...(st.falling ? [st.falling] : [])];
+    const all = [...st.stack, ...st.queue, ...(st.falling ? [st.falling] : []), ...st.rain];
     const boss = st.boss && st.boss.id, lockedNow = all.filter(x => x.locked).length;
     const R = st.drand;
     let d = makeDisc(R, lockedNow < LOCKED_MAX);
@@ -1808,6 +1808,18 @@ if (typeof document !== "undefined") {
     if (d.cursed) glowRune("ward", 500);
     if (d.locked) laugh("The skull laughs. A locked disc is coming.");
     else if (d.cursed) laugh(`The skull laughs. A cursed disc: use it within ${d.curse} drops.`);
+    hud();
+  }
+
+  // The board was cleared: three discs drop almost together, a beat apart.
+  const TRIPLE_GAP = 1.25; // rows apart: a small gap, so they land thunk-thunk-thunk
+  function spawnTriple(now) {
+    spawn(now);
+    if (!st.falling) return;
+    for (let k = 1; k <= 2; k++) {
+      const d = st.queue.shift(); refillQueue();
+      d.y = ROWS + k * TRIPLE_GAP; st.rain.push(d); st.spawnedRound++;
+    }
     hud();
   }
 
@@ -1833,7 +1845,7 @@ if (typeof document !== "undefined") {
     $("sacLess").disabled = n <= 1; $("sacMore").disabled = n >= sacMax();
   }
   function openSac() {
-    st.sac = true; st.falling = null; drag = null;
+    st.sac = true; st.falling = null; st.rain = []; drag = null;
     st.sacN = Math.min(4, sacMax());
     sacShow(); $("sac").hidden = false; reskin(); sfx.scream(); babble("give me your blood", 0.9); skullClass("open", 900);
   }
@@ -1855,7 +1867,7 @@ if (typeof document !== "undefined") {
   $("sacNo").addEventListener("click", () => { st.sac = false; $("sac").hidden = true; gameOver(); });
 
   function gameOver() {
-    st.over = true; st.falling = null; sfx.over(); playSfx("laugh", { at: 1.5 }); musicStop();
+    st.over = true; st.falling = null; st.rain = []; sfx.over(); playSfx("laugh", { at: 1.5 }); musicStop();
     $("overText").textContent = `Round ${st.round}: ${st.roundGold} of ${quotaFor(st.round)} gold. Best word: ${st.best || "none"}.`;
     $("dailyText").textContent = st.daily ? dailyResult() : "";
     $("over").hidden = false; reskin();
@@ -1892,7 +1904,7 @@ if (typeof document !== "undefined") {
   function resumeGame() {
     if (!st.paused) return;
     const gap = performance.now() - st.pausedAt;
-    st.spawnAt += gap; st.lastOffer += gap; if (st.pending) st.pending.t += gap;
+    st.spawnAt += gap; st.lastOffer += gap; if (st.tripleAt) st.tripleAt += gap; if (st.pending) st.pending.t += gap;
     st.paused = false; $("paused").hidden = true; musicStart();
   }
 
@@ -2027,6 +2039,7 @@ if (typeof document !== "undefined") {
     const p = st.pending; st.pending = null;
     for (const d of p.discs) st.crumble.push({ d, y: d.y, t: now });
     st.stack = st.stack.filter(d => !p.discs.has(d));
+    if (!st.stack.length && !st.roundDone) st.boardClear = true;
     st.checkChain = true; // discs above will fall; check for words that form on their own
     hud();
   }
@@ -2036,7 +2049,13 @@ if (typeof document !== "undefined") {
     if (st.over || st.shopOpen || st.sac || st.menu || st.paused) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
     // quota met: the round ends now. The falling disc vanishes and no chains are checked.
-    if (st.roundDone) { st.falling = null; st.checkChain = false; }
+    if (st.roundDone) { st.falling = null; st.rain = []; st.checkChain = false; st.boardClear = false; st.tripleAt = 0; }
+    // the board is clear: the skull laughs at you, then sends three discs at once
+    if (st.boardClear && !st.pending) {
+      st.boardClear = false;
+      laugh("The skull laughs. Three discs at once!");
+      st.tripleAt = now + 1400;
+    }
     // chain: once the column has settled after a clear, any word that formed pays a growing multiplier
     if (st.checkChain && !st.pending && st.stack.every((d, i) => d.y === i)) {
       st.checkChain = false;
@@ -2048,21 +2067,26 @@ if (typeof document !== "undefined") {
     // settle stacked discs downwards (gravity after a crumble)
     st.stack.forEach((d, i) => { if (d.y > i) d.y = Math.max(i, d.y - dt * 12); else d.y = i; });
     for (const d of st.stack) d.rot += (d.target - d.rot) * Math.min(1, dt * 18);
-    if (st.falling) {
-      const f = st.falling;
-      f.rot += (f.target - f.rot) * Math.min(1, dt * 18);
+    if (st.falling || st.rain.length) {
       const sp = speedFor(st.round + Math.floor(st.spawnedRound / 8)) * (has("slow") ? 0.75 : 1) * ROWS / BASE_ROWS;
-      f.y -= sp * dt;
-      const floor = st.stack.length;
-      if (f.y <= floor) {
-        f.y = floor; f.rot = f.target; st.stack.push(f); st.falling = null; sfx.land();
-        st.spawnAt = now + 650;
-        for (const d of st.stack) if (d.cursed && d !== f && --d.curse <= 0) curse(d);
-        hud();
-        if (st.stack.length >= ROWS) say("Stack is full. Score a word now or pay the skull in blood.");
+      // lowest first, so each disc lands on the one below it
+      const air = [...(st.falling ? [st.falling] : []), ...st.rain].sort((a, b) => a.y - b.y);
+      for (const f of air) {
+        f.rot += (f.target - f.rot) * Math.min(1, dt * 18);
+        f.y -= sp * dt;
+        const floor = st.stack.length;
+        if (f.y <= floor) {
+          f.y = floor; f.rot = f.target; st.stack.push(f); sfx.land();
+          if (f === st.falling) st.falling = null; else st.rain = st.rain.filter(r => r !== f);
+          st.spawnAt = now + 650;
+          for (const d of st.stack) if (d.cursed && d !== f && --d.curse <= 0) curse(d);
+          hud();
+          if (st.stack.length >= ROWS) say("Stack is full. Score a word now or pay the skull in blood.");
+        }
       }
-    } else if (now >= st.spawnAt && !st.pending && !st.checkChain && !st.roundDone) {
+    } else if (now >= st.spawnAt && now >= st.tripleAt && !st.pending && !st.checkChain && !st.roundDone) {
       if (st.stack.length >= ROWS && now < st.spawnAt + 1500) {/* last chance window */}
+      else if (st.tripleAt) { st.tripleAt = 0; spawnTriple(now); }
       else spawn(now);
     }
     st.crumble = st.crumble.filter(c => now - c.t < 500);
@@ -2178,6 +2202,7 @@ if (typeof document !== "undefined") {
     ctx.beginPath(); ctx.rect(0, wellTop - P, W, H); ctx.clip();
     for (const d of st.stack) drawDisc(d, rowY(d.y), 1, 0, !!(st.pending && st.pending.discs.has(d)));
     if (st.falling) drawDisc(st.falling, rowY(st.falling.y));
+    for (const r of st.rain) drawDisc(r, rowY(r.y));
     ctx.restore();
     for (const c of st.crumble) { const p = (now - c.t) / 500; drawDisc(c.d, rowY(c.y), 1 - p, p); }
     if (st.boss && st.boss.id === "walls") {

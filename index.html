@@ -5,71 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bonepile</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
-/* Layout: one-screen portrait game. Stats row, the well (canvas), skull bar. Black line drawings on white. */
-:root { --bg: #ffffff; --fg: #000000; --muted: #777777; --line: #000000; color-scheme: light; }
-html, body { height: 100%; margin: 0; }
+/* Retro pixel look: black screen, pixel fonts, chunky borders. The well itself is drawn on a low-res canvas. */
+:root { --bg: #000; --fg: #e8e8e8; --muted: #7a7a7a; --line: #b0b0b0; --stone: #484848; --panel: #0c1a1c; --gold: #e0a030; --glow: #7ee05a; --blood: #c83030; color-scheme: dark; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
 [hidden] { display: none !important; }
-body { background: var(--bg); color: var(--fg); font-family: ui-monospace, Menlo, Consolas, monospace; overscroll-behavior: none; touch-action: none; user-select: none; -webkit-user-select: none; }
-#app { height: 100%; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px; box-sizing: border-box; gap: 8px; }
-#stats { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
-#stats b { font-size: 18px; display: inline-block; }
-#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-#msg { min-height: 18px; font-size: 13px; text-align: center; }
+body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospace, Menlo, Consolas, monospace; font-size: 20px; overscroll-behavior: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+#app { height: 100%; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px; box-sizing: border-box; gap: 6px; }
+#stats { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 7px; color: var(--muted); }
+#stats b { display: block; margin-top: 5px; font-size: 11px; color: var(--fg); font-weight: normal; }
+#stats #gold { color: var(--gold); }
+#mute { padding: 4px; border: none; background: transparent; box-shadow: none; clip-path: none; color: var(--line); line-height: 0; }
+#mute .cross { display: none; }
+#mute.off .cross { display: inline; }
+#mute.off .wave { display: none; }
+#fx { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 5; image-rendering: crisp-edges; image-rendering: pixelated; }
+#msg { min-height: 20px; line-height: 1; text-align: center; }
 #wrap { flex: 1; min-height: 0; position: relative; }
-canvas { display: block; width: 100%; height: 100%; }
-#bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-button { font: inherit; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
-button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
-#skull { width: 84px; height: 84px; border: none; border-radius: 50%; padding: 0; display: grid; place-items: center; background: transparent; }
-#skull svg { animation: breathe 4.5s ease-in-out infinite; transform-origin: 50% 60%; }
-@keyframes breathe { 50% { transform: scale(1.06); } }
-#skull .jaw { transition: transform .16s ease-out; }
-#skull.open .jaw { transform: translateY(6px); }
-#skull .pupil { opacity: 0; transition: opacity .2s; }
-#skull.fed .pupil { opacity: 1; }
-#skull.fed svg { animation: gulp .45s ease-out; }
-@keyframes gulp { 30% { transform: scale(1.18); } 60% { transform: scale(0.96); } }
-#skull.refuse svg { animation: refuse .55s ease-in-out; }
-#skull.laugh svg { animation: cackle 1.4s ease-in-out; }
-#skull.laugh .jaw { animation: chatter .14s ease-in-out 9 alternate; }
-#skull.laugh .pupil { opacity: 1; }
-@keyframes cackle { 15% { transform: rotate(-10deg) translateY(-3px); } 35% { transform: rotate(8deg); } 55% { transform: rotate(-8deg) translateY(-2px); } 75% { transform: rotate(6deg); } }
-@keyframes chatter { to { transform: translateY(6px); } }
-@keyframes refuse { 20% { transform: rotate(-9deg); } 50% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+#cv { position: absolute; left: 0; top: 0; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
+#bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+/* pixel buttons: square, chunky, notched corners, pressed shading */
+button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 9px; line-height: 1.4; color: var(--fg); background: #111; border: 3px solid var(--line); border-radius: 0; padding: 10px 12px; cursor: pointer; box-shadow: inset -3px -3px 0 var(--stone);
+  clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
+button:active { box-shadow: inset 3px 3px 0 var(--stone); }
+button:focus-visible { outline: none; border-color: var(--glow); }
+#skull { width: 100px; height: 88px; border: none; padding: 0; display: grid; place-items: center; background: transparent; box-shadow: none; clip-path: none; }
+#skull svg { animation: bob 2.4s steps(1, end) infinite; overflow: visible; }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+#skull .pupil { fill: #fff; }
+#skull.fed .pupil, #skull.laugh .pupil { fill: var(--glow); }
+#skull .jaw { transition: transform .1s steps(2, end); }
+#skull.open .jaw { transform: translateY(1px); }
+#skull.fed svg { animation: gulp .45s steps(4, end); }
+@keyframes gulp { 25% { transform: translateY(4px); } 50% { transform: translateY(-4px); } 75% { transform: translateY(0); } }
+#skull.refuse svg { animation: refuse .5s steps(5, end); }
+@keyframes refuse { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+#skull.laugh svg { animation: cackle 1.4s steps(10, end); }
+#skull.laugh .jaw { animation: chatter .14s steps(1, end) 9 alternate; }
+@keyframes cackle { 15% { transform: translate(-4px, -4px); } 35% { transform: translate(4px, 0); } 55% { transform: translate(-4px, -4px); } 75% { transform: translate(4px, 0); } }
+@keyframes chatter { to { transform: translateY(1px); } }
 @media (prefers-reduced-motion: reduce) { #skull svg { animation: none !important; } }
-#help { font-size: 12px; color: var(--muted); max-width: 12em; }
-/* Relic icons ("runes"): one line-drawn badge per relic bought, sitting where the help text was. They glow when the relic triggers. */
-#runes { display: grid; grid-template-columns: repeat(4, 30px); gap: 4px; }
+#help { font-size: 16px; line-height: 1; color: var(--muted); max-width: 9em; }
+#runes { display: grid; grid-template-columns: repeat(4, 32px); gap: 4px; }
 #runes[hidden] { display: none; }
 #left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-/* The active relic: a round stone with a double ring, apart from the square passive tablets. */
-.rune.power { width: 38px; height: 38px; border-radius: 50%; box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 4.5px var(--line); }
+/* relic tablets: carved squares; the Oracle Stone is the bigger green one */
+.rune { width: 32px; height: 32px; padding: 0; border: 2px solid var(--line); display: grid; place-items: center; background: #111; color: var(--line); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--stone); clip-path: none; }
+.rune svg { width: 24px; height: 24px; }
+.rune.power { width: 40px; height: 40px; position: relative; border-color: var(--glow); color: var(--glow); }
 .rune.power svg { width: 24px; height: 24px; }
-.rune.power { position: relative; }
-.rune.power.spent { opacity: 0.3; border-style: dashed; }
-#charges { position: absolute; right: -14px; bottom: -2px; font-size: 11px; font-weight: bold; }
-.rune { width: 30px; height: 30px; padding: 0; border: 2px solid var(--line); border-radius: 5px; display: grid; place-items: center; background: var(--bg); color: var(--fg); box-shadow: inset 0 0 0 2px var(--bg), inset 0 0 0 3px var(--line); }
-.rune svg { width: 20px; height: 20px; }
-.rune.new { animation: runeIn .45s ease-out; }
-.rune.glow { animation: runeGlow 1s ease-out; }
-@keyframes runeIn { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
-@keyframes runeGlow {
-  0% { background: #000; color: #fff; transform: scale(1.3); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px #fff, 0 0 10px 4px rgba(0,0,0,.55); }
-  45% { background: #000; color: #fff; transform: scale(1.15); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px #fff, 0 0 18px 8px rgba(0,0,0,.25); }
-  100% { background: #fff; color: #000; transform: scale(1); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px #000, 0 0 0 0 rgba(0,0,0,0); }
-}
+.rune.power.spent { opacity: 0.35; border-style: dashed; }
+#charges { position: absolute; right: -22px; bottom: 0; font-size: 8px; color: var(--glow); }
+.rune.new { animation: runeIn .45s steps(3, end); }
+.rune.glow { animation: runeGlow 1s steps(4, end); }
+@keyframes runeIn { 0% { transform: scale(0); } 66% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes runeGlow { 0%, 50% { background: var(--glow); color: #000; border-color: var(--glow); } 100% { background: #111; } }
 @media (prefers-reduced-motion: reduce) { .rune.new, .rune.glow { animation-duration: .01s; } }
-#over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: var(--bg); border: 2px solid var(--line); text-align: center; padding: 16px; }
-#over h2, #shop h2 { margin: 0; font-size: 22px; }
-#next { min-height: 16px; font-size: 12px; text-align: center; color: var(--muted); letter-spacing: 0.04em; }
-#shop { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 10px; background: var(--bg); border: 2px solid var(--line); padding: 16px; text-align: center; z-index: 2; }
-#shop p { margin: 0; font-size: 13px; }
+#over, #shop { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; background: rgba(0,0,0,.94); border: 3px solid var(--line); padding: 16px; text-align: center; }
+#over { align-items: center; }
+#over h2, #shop h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
+#next { min-height: 10px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; text-align: center; color: var(--muted); letter-spacing: 0.1em; }
+#shop { align-items: stretch; z-index: 2; }
+#shop p { margin: 0; }
 #relicList { display: flex; flex-direction: column; gap: 8px; }
-.relic { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; }
-.relic b { font-size: 15px; }
-.relic span { font-size: 12px; grid-column: 1; }
-.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; font-variant-numeric: tabular-nums; }
+.relic { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+.relic b { font-size: 9px; font-weight: normal; color: var(--fg); }
+.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 18px; line-height: 1; color: var(--line); grid-column: 1; }
+.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--gold); }
 .relic:disabled { opacity: 0.4; cursor: default; }
 </style>
 </head>
@@ -81,6 +86,7 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
     <span>ROUND <b id="round">1</b></span>
     <span>QUOTA <b id="quota">0/40</b></span>
     <span>BEST <b id="best">-</b></span>
+    <button id="mute" type="button" aria-label="Sound on" aria-pressed="false"><svg viewBox="0 0 12 12" width="24" height="24" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="3" y="2" width="2" height="1"/><rect x="1" y="3" width="4" height="1"/><rect x="0" y="4" width="5" height="1"/><rect x="0" y="5" width="5" height="1"/><rect x="0" y="6" width="5" height="1"/><rect x="0" y="7" width="5" height="1"/><rect x="1" y="8" width="4" height="1"/><rect x="3" y="9" width="2" height="1"/><rect x="4" y="10" width="1" height="1"/><rect class="wave" x="8" y="3" width="1" height="1"/><rect class="wave" x="6" y="4" width="1" height="1"/><rect class="wave" x="9" y="4" width="1" height="1"/><rect class="wave" x="7" y="5" width="1" height="1"/><rect class="wave" x="9" y="5" width="1" height="1"/><rect class="wave" x="7" y="6" width="1" height="1"/><rect class="wave" x="9" y="6" width="1" height="1"/><rect class="wave" x="6" y="7" width="1" height="1"/><rect class="wave" x="9" y="7" width="1" height="1"/><rect class="wave" x="8" y="8" width="1" height="1"/><rect class="cross" x="6" y="3" width="1" height="1"/><rect class="cross" x="10" y="3" width="1" height="1"/><rect class="cross" x="7" y="4" width="1" height="1"/><rect class="cross" x="9" y="4" width="1" height="1"/><rect class="cross" x="8" y="5" width="1" height="1"/><rect class="cross" x="7" y="6" width="1" height="1"/><rect class="cross" x="9" y="6" width="1" height="1"/><rect class="cross" x="6" y="7" width="1" height="1"/><rect class="cross" x="10" y="7" width="1" height="1"/></svg></button>
   </div>
   <div id="msg">Feed the skull words. Spin discs once they land.</div>
   <div id="next"></div>
@@ -101,20 +107,9 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
   <div id="bar">
     <div id="left">
       <button id="restart" type="button">Restart</button>
-      <button id="power" class="rune power spent" type="button" title="Oracle Stone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 10.6v2.8M10.6 12h2.8"/><path d="M5.2 8A7.6 7.6 0 0 1 18.4 7M18.8 16A7.6 7.6 0 0 1 5.6 17"/><path d="M18.4 7l.3-3.3M18.4 7l-3.2-.8M5.6 17l-.3 3.3M5.6 17l3.2.8"/></svg><span id="charges"></span></button>
+      <button id="power" class="rune power spent" type="button" title="Oracle Stone"><svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="0" width="4" height="1"/><rect x="2" y="1" width="2" height="1"/><rect x="8" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="4" y="3" width="4" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="5" y="5" width="2" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="5" y="6" width="2" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="0" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="4" y="8" width="4" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="2" y="10" width="2" height="1"/><rect x="8" y="10" width="2" height="1"/><rect x="4" y="11" width="4" height="1"/></svg><span id="charges"></span></button>
     </div>
-    <button id="skull" type="button" aria-label="Offer words to the skull">
-      <svg width="76" height="76" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
-        <path d="M32 3C17 3 8 13 8 26c0 7 3 12 8 15v7h32v-7c5-3 8-8 8-15C56 13 47 3 32 3z" fill="#fff"/>
-        <path d="M33 3l-3 7 4 4-3 6M46 9l-4 5"/>
-        <path d="M14 25c3-6 12-6 14 0 1 5-4 9-8 9s-7-4-6-9z" fill="currentColor"/>
-        <path d="M50 25c-3-6-12-6-14 0-1 5 4 9 8 9s7-4 6-9z" fill="currentColor"/>
-        <circle class="pupil" cx="21" cy="28" r="1.8" fill="#fff" stroke="none"/>
-        <circle class="pupil" cx="43" cy="28" r="1.8" fill="#fff" stroke="none"/>
-        <path d="M32 34l-3 7h6z" fill="currentColor"/>
-        <path d="M18 48h28M23 44v4M28 44v4M32 44v4M36 44v4M41 44v4"/>
-        <g class="jaw"><path d="M18 50h28v5c0 4-6 7-14 7s-14-3-14-7z" fill="#fff"/><path d="M23 50v4M28 50v5M32 50v5M36 50v5M41 50v4"/></g>
-      </svg>
+    <button id="skull" type="button" aria-label="Offer words to the skull"><svg width="96" height="84" viewBox="0 0 24 21" shape-rendering="crispEdges"><rect x="8" y="0" width="8" height="1" fill="#7a7a7a"/><rect x="5" y="1" width="2" height="1" fill="#7a7a7a"/><rect x="7" y="1" width="10" height="1" fill="#b0b0b0"/><rect x="17" y="1" width="2" height="1" fill="#7a7a7a"/><rect x="4" y="2" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="2" width="3" height="1" fill="#b0b0b0"/><rect x="8" y="2" width="8" height="1" fill="#e8e8e8"/><rect x="16" y="2" width="3" height="1" fill="#b0b0b0"/><rect x="19" y="2" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="3" width="1" height="1" fill="#7a7a7a"/><rect x="4" y="3" width="2" height="1" fill="#b0b0b0"/><rect x="6" y="3" width="12" height="1" fill="#e8e8e8"/><rect x="18" y="3" width="1" height="1" fill="#b0b0b0"/><rect x="19" y="3" width="1" height="1" fill="#b0b0b0"/><rect x="20" y="3" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="4" width="2" height="1" fill="#b0b0b0"/><rect x="5" y="4" width="14" height="1" fill="#e8e8e8"/><rect x="19" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="20" y="4" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="5" width="1" height="1" fill="#b0b0b0"/><rect x="4" y="5" width="16" height="1" fill="#e8e8e8"/><rect x="20" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="21" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="6" width="1" height="1" fill="#484848"/><rect x="2" y="6" width="2" height="1" fill="#b0b0b0"/><rect x="4" y="6" width="16" height="1" fill="#e8e8e8"/><rect x="20" y="6" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="6" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="6" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="7" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="7" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="7" width="18" height="1" fill="#e8e8e8"/><rect x="21" y="7" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="7" width="1" height="1" fill="#484848"/><rect x="1" y="8" width="1" height="1" fill="#484848"/><rect x="2" y="8" width="2" height="1" fill="#b0b0b0"/><rect x="4" y="8" width="4" height="1" fill="#000"/><rect x="8" y="8" width="8" height="1" fill="#e8e8e8"/><rect x="16" y="8" width="4" height="1" fill="#000"/><rect x="20" y="8" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="8" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="8" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="9" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="9" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="9" width="6" height="1" fill="#000"/><rect x="9" y="9" width="6" height="1" fill="#e8e8e8"/><rect x="15" y="9" width="6" height="1" fill="#000"/><rect x="21" y="9" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="9" width="1" height="1" fill="#484848"/><rect x="1" y="10" width="1" height="1" fill="#484848"/><rect x="2" y="10" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="10" width="2" height="1" fill="#000"/><rect x="7" y="10" width="2" height="1" fill="#000"/><rect x="9" y="10" width="6" height="1" fill="#e8e8e8"/><rect x="15" y="10" width="2" height="1" fill="#000"/><rect x="19" y="10" width="2" height="1" fill="#000"/><rect x="21" y="10" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="10" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="11" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="11" width="2" height="1" fill="#000"/><rect x="7" y="11" width="2" height="1" fill="#000"/><rect x="9" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="10" y="11" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="15" y="11" width="2" height="1" fill="#000"/><rect x="19" y="11" width="2" height="1" fill="#000"/><rect x="21" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="11" width="1" height="1" fill="#484848"/><rect x="2" y="12" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="12" width="1" height="1" fill="#b0b0b0"/><rect x="4" y="12" width="4" height="1" fill="#000"/><rect x="8" y="12" width="2" height="1" fill="#b0b0b0"/><rect x="10" y="12" width="1" height="1" fill="#e8e8e8"/><rect x="11" y="12" width="2" height="1" fill="#000"/><rect x="13" y="12" width="1" height="1" fill="#e8e8e8"/><rect x="14" y="12" width="2" height="1" fill="#b0b0b0"/><rect x="16" y="12" width="4" height="1" fill="#000"/><rect x="20" y="12" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="12" width="1" height="1" fill="#484848"/><rect x="2" y="13" width="1" height="1" fill="#484848"/><rect x="3" y="13" width="7" height="1" fill="#b0b0b0"/><rect x="10" y="13" width="4" height="1" fill="#000"/><rect x="14" y="13" width="5" height="1" fill="#b0b0b0"/><rect x="19" y="13" width="1" height="1" fill="#b0b0b0"/><rect x="20" y="13" width="1" height="1" fill="#7a7a7a"/><rect x="21" y="13" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="14" width="1" height="1" fill="#484848"/><rect x="4" y="14" width="7" height="1" fill="#b0b0b0"/><rect x="11" y="14" width="2" height="1" fill="#000"/><rect x="13" y="14" width="6" height="1" fill="#b0b0b0"/><rect x="19" y="14" width="1" height="1" fill="#7a7a7a"/><rect x="20" y="14" width="1" height="1" fill="#7a7a7a"/><rect x="4" y="15" width="1" height="1" fill="#484848"/><rect x="5" y="15" width="1" height="1" fill="#b0b0b0"/><rect x="6" y="15" width="12" height="1" fill="#b0b0b0"/><rect x="18" y="15" width="1" height="1" fill="#7a7a7a"/><rect x="19" y="15" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="16" width="1" height="1" fill="#484848"/><rect x="6" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="7" y="16" width="1" height="1" fill="#000"/><rect x="8" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="9" y="16" width="1" height="1" fill="#000"/><rect x="10" y="16" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="16" width="1" height="1" fill="#000"/><rect x="15" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="16" y="16" width="1" height="1" fill="#000"/><rect x="17" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="18" y="16" width="1" height="1" fill="#7a7a7a"/><rect class="pupil" x="5" y="10" width="2" height="1"/><rect class="pupil" x="17" y="10" width="2" height="1"/><rect class="pupil" x="5" y="11" width="2" height="1"/><rect class="pupil" x="17" y="11" width="2" height="1"/><g class="jaw"><rect x="5" y="17" width="1" height="1" fill="#484848"/><rect x="6" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="7" y="17" width="1" height="1" fill="#000"/><rect x="8" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="9" y="17" width="1" height="1" fill="#000"/><rect x="10" y="17" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="17" width="1" height="1" fill="#000"/><rect x="15" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="16" y="17" width="1" height="1" fill="#000"/><rect x="17" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="18" y="17" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="6" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="7" y="18" width="10" height="1" fill="#b0b0b0"/><rect x="17" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="18" y="18" width="1" height="1" fill="#484848"/><rect x="6" y="19" width="1" height="1" fill="#7a7a7a"/><rect x="7" y="19" width="1" height="1" fill="#7a7a7a"/><rect x="8" y="19" width="8" height="1" fill="#b0b0b0"/><rect x="16" y="19" width="1" height="1" fill="#b0b0b0"/><rect x="17" y="19" width="1" height="1" fill="#484848"/><rect x="7" y="20" width="1" height="1" fill="#7a7a7a"/><rect x="8" y="20" width="1" height="1" fill="#484848"/><rect x="9" y="20" width="6" height="1" fill="#7a7a7a"/><rect x="15" y="20" width="1" height="1" fill="#7a7a7a"/><rect x="16" y="20" width="1" height="1" fill="#484848"/></g></svg>
     </button>
     <div id="help">Swipe a landed disc to spin it<br>Tap it: turn one step</div>
     <div id="runes" hidden></div>
@@ -177,16 +172,17 @@ function quotaFor(round) { return 20 + 20 * round; } // 40, 60, 80, 100, 120...
 // Relics: bought between rounds. price = base + RELIC_PRICE_STEP x (round - 1)
 const RELIC_PRICE_STEP = 10;
 // Relic icons: original temple glyphs, drawn as if carved in stone (24x24, stroke only unless filled).
+// Relic icons: original temple glyphs as 12x12 pixel art.
 const RUNE_ICONS = {
-  vowels: "<path d=\"M3 21h18M5 21v-3h14v3M7 18v-3h10v3M9 15v-3h6v3\"/><circle cx=\"12\" cy=\"6.5\" r=\"2.6\"/><path d=\"M12 1.8v1M7.3 6.5h1M15.7 6.5h1M8.7 3.2l.7.7M15.3 3.2l-.7.7\"/>",
-  maw: "<path d=\"M5 3h14v10c0 4.5-3.2 8-7 8s-7-3.5-7-8z\"/><path d=\"M8 7.5h2.5M13.5 7.5H16M12 9v2.5\"/><path d=\"M7.5 13.5h9v3h-9zM7.5 13.5l1.5 1.6 1.5-1.6 1.5 1.6 1.5-1.6 1.5 1.6 1.5-1.6\"/>",
-  long: "<path d=\"M4 21.5c0-3 2.7-4 6-4s6-1 6-3.6S13.3 10.4 10 10.4 4 9.4 4 6.8 6.7 3 10 3h2.2\"/><ellipse cx=\"14\" cy=\"3\" rx=\"2\" ry=\"1.5\"/><path d=\"M16 3h2.6l1.6-1.3M18.6 3l1.6 1.3\"/>",
-  slow: "<path d=\"M5 2.5h14M5 21.5h14M7 2.5v1.5c0 4 5 5 5 8s-5 4-5 8v1.5M17 2.5v1.5c0 4-5 5-5 8s5 4 5 8v1.5\"/><path d=\"M9.6 19.8h4.8L12 17.2z\" fill=\"currentColor\"/>",
-  pact: "<circle cx=\"12\" cy=\"2.6\" r=\"1.1\"/><path d=\"M11 3.8h2v3.2h-2zM7 7.3h10M10.6 7.6h2.8v7.6L12 18l-1.4-2.8z\"/><path d=\"M12 19.2c.9 1 1.4 1.7 1.4 2.2a1.4 1.4 0 0 1-2.8 0c0-.5.5-1.2 1.4-2.2z\" fill=\"currentColor\"/>",
-  mercy: "<path d=\"M7 13V7.5a1.2 1.2 0 0 1 2.4 0V12M9.4 11.2V5a1.2 1.2 0 0 1 2.4 0v6.2M11.8 11.2V5.8a1.2 1.2 0 0 1 2.4 0v5.4M14.2 11.5V8a1.2 1.2 0 0 1 2.4 0v6c0 4-2.5 7-6 7-2.3 0-3.8-1.3-5.2-3.6l-1.8-3a1.2 1.2 0 0 1 2-1.3L7 15\"/><path d=\"M11.6 16.2a1 1 0 1 1 1-1\"/>",
-  lens: "<path d=\"M2.5 13s3.6-5 9.5-5 9.5 5 9.5 5-3.6 5-9.5 5-9.5-5-9.5-5z\"/><circle cx=\"12\" cy=\"13\" r=\"2.4\" fill=\"currentColor\"/><path d=\"M12 2.5V5M6.6 4l1.3 2M17.4 4l-1.3 2M10 18l-1.4 3.3\"/>",
-  oracle: "<circle cx=\"12\" cy=\"12\" r=\"3.4\"/><path d=\"M12 10.6v2.8M10.6 12h2.8\"/><path d=\"M5.2 8A7.6 7.6 0 0 1 18.4 7M18.8 16A7.6 7.6 0 0 1 5.6 17\"/><path d=\"M18.4 7l.3-3.3M18.4 7l-3.2-.8M5.6 17l-.3 3.3M5.6 17l3.2.8\"/>",
-  ward: "<circle cx=\"12\" cy=\"12\" r=\"4.6\"/><path d=\"M12 9.6a2.4 2.4 0 1 1-2.4 2.4\"/><path d=\"M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3M4.8 4.8l2.1 2.1M17.1 17.1l2.1 2.1M4.8 19.2l2.1-2.1M17.1 6.9l2.1-2.1\"/>",
+  vowels: "<rect x=\"4\" y=\"0\" width=\"6\" height=\"1\"/><rect x=\"3\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"2\" width=\"2\" height=\"1\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"3\" width=\"4\" height=\"1\"/><rect x=\"4\" y=\"5\" width=\"4\" height=\"1\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"7\" width=\"8\" height=\"1\"/><rect x=\"1\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"9\" width=\"12\" height=\"1\"/><rect x=\"0\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"10\" width=\"2\" height=\"1\"/><rect x=\"0\" y=\"11\" width=\"12\" height=\"1\"/>",
+  maw: "<rect x=\"1\" y=\"0\" width=\"10\" height=\"1\"/><rect x=\"0\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"3\" height=\"1\"/><rect x=\"7\" y=\"2\" width=\"3\" height=\"1\"/><rect x=\"11\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"4\" width=\"3\" height=\"1\"/><rect x=\"7\" y=\"4\" width=\"3\" height=\"1\"/><rect x=\"11\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"11\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"7\" width=\"8\" height=\"1\"/><rect x=\"11\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"9\" width=\"8\" height=\"1\"/><rect x=\"11\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"11\" width=\"8\" height=\"1\"/>",
+  long: "<rect x=\"7\" y=\"0\" width=\"4\" height=\"1\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"6\" y=\"2\" width=\"6\" height=\"1\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"4\" width=\"6\" height=\"1\"/><rect x=\"1\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"6\" width=\"6\" height=\"1\"/><rect x=\"8\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"8\" width=\"6\" height=\"1\"/><rect x=\"1\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"10\" width=\"9\" height=\"1\"/><rect x=\"10\" y=\"11\" width=\"1\" height=\"1\"/>",
+  slow: "<rect x=\"0\" y=\"0\" width=\"12\" height=\"1\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"2\" width=\"4\" height=\"1\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"3\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"5\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"4\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"9\" width=\"2\" height=\"1\"/><rect x=\"9\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"10\" width=\"6\" height=\"1\"/><rect x=\"10\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"11\" width=\"12\" height=\"1\"/>",
+  pact: "<rect x=\"5\" y=\"0\" width=\"2\" height=\"1\"/><rect x=\"4\" y=\"1\" width=\"4\" height=\"1\"/><rect x=\"5\" y=\"2\" width=\"2\" height=\"1\"/><rect x=\"2\" y=\"3\" width=\"8\" height=\"1\"/><rect x=\"5\" y=\"4\" width=\"2\" height=\"1\"/><rect x=\"5\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"5\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"5\" y=\"7\" width=\"2\" height=\"1\"/><rect x=\"6\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"11\" width=\"3\" height=\"1\"/>",
+  mercy: "<rect x=\"3\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"0\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"7\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"4\" width=\"7\" height=\"1\"/><rect x=\"1\" y=\"5\" width=\"9\" height=\"1\"/><rect x=\"1\" y=\"6\" width=\"9\" height=\"1\"/><rect x=\"2\" y=\"7\" width=\"8\" height=\"1\"/><rect x=\"2\" y=\"8\" width=\"7\" height=\"1\"/><rect x=\"3\" y=\"9\" width=\"6\" height=\"1\"/><rect x=\"3\" y=\"10\" width=\"6\" height=\"1\"/>",
+  lens: "<rect x=\"4\" y=\"1\" width=\"4\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"2\" width=\"2\" height=\"1\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"3\" width=\"2\" height=\"1\"/><rect x=\"10\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"4\" width=\"4\" height=\"1\"/><rect x=\"11\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"5\" width=\"6\" height=\"1\"/><rect x=\"11\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"6\" width=\"4\" height=\"1\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"7\" width=\"2\" height=\"1\"/><rect x=\"10\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"8\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"8\" width=\"2\" height=\"1\"/><rect x=\"4\" y=\"9\" width=\"4\" height=\"1\"/>",
+  oracle: "<rect x=\"4\" y=\"0\" width=\"4\" height=\"1\"/><rect x=\"2\" y=\"1\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"1\" width=\"2\" height=\"1\"/><rect x=\"1\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"3\" width=\"4\" height=\"1\"/><rect x=\"10\" y=\"3\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"3\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"11\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"8\" width=\"4\" height=\"1\"/><rect x=\"10\" y=\"8\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"10\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"10\" width=\"2\" height=\"1\"/><rect x=\"4\" y=\"11\" width=\"4\" height=\"1\"/>",
+  ward: "<rect x=\"5\" y=\"0\" width=\"2\" height=\"1\"/><rect x=\"1\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"1\" width=\"2\" height=\"1\"/><rect x=\"10\" y=\"1\" width=\"1\" height=\"1\"/><rect x=\"2\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"3\" width=\"4\" height=\"1\"/><rect x=\"3\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"4\" width=\"1\" height=\"1\"/><rect x=\"0\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"3\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"5\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"5\" width=\"2\" height=\"1\"/><rect x=\"0\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"8\" y=\"6\" width=\"1\" height=\"1\"/><rect x=\"10\" y=\"6\" width=\"2\" height=\"1\"/><rect x=\"3\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"8\" y=\"7\" width=\"1\" height=\"1\"/><rect x=\"4\" y=\"8\" width=\"4\" height=\"1\"/><rect x=\"2\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"9\" y=\"9\" width=\"1\" height=\"1\"/><rect x=\"1\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"10\" width=\"2\" height=\"1\"/><rect x=\"10\" y=\"10\" width=\"1\" height=\"1\"/><rect x=\"5\" y=\"11\" width=\"2\" height=\"1\"/>",
 };
 const RELICS = [
   { id: "vowels", name: "Vowel Tithe", desc: "+2 gold for every vowel you offer", base: 25 },
@@ -313,9 +309,9 @@ if (typeof module !== "undefined") module.exports = { bestSpin, isWord, makeDisc
 // ---------- UI ----------
 if (typeof document !== "undefined") {
   const cv = document.getElementById("cv");
-  const ctx = cv.getContext("2d");
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
   const $ = id => document.getElementById(id);
-  let W = 0, H = 0, dpr = 1, cellH = 40, wellW = 200, wellX = 0, wellTop = 0;
+  let W = 0, H = 0, PX = 3, cellH = 40, wellW = 200, wellX = 0, wellTop = 0;
   let st;
 
   function newGame() {
@@ -351,6 +347,108 @@ if (typeof document !== "undefined") {
   }
   function say(t) { $("msg").textContent = t; }
 
+  // ---------- sound and buzz: 8-bit chiptune, all made with the Web Audio API, no files ----------
+  // Like an old console sound chip: two pulse channels, a triangle bass and an LFSR noise channel.
+  // Pitches move in whole semitones and volume steps down at 60 Hz, so nothing slides smoothly.
+  let actx = null, master = null, muted = false;
+  const waves = {}, noiseBufs = {};
+  try { muted = localStorage.getItem("bonepile-muted") === "1"; } catch (_) {}
+  function audio() {
+    if (muted) return null;
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      actx = new AC(); master = actx.createGain(); master.gain.value = 0.55; master.connect(actx.destination);
+    }
+    if (actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12); // MIDI note to frequency
+  // pulse wave with a duty cycle (0.5 square, 0.25 and 0.125 the thinner, buzzier chip tones)
+  function pulseWave(a, duty) {
+    if (waves[duty]) return waves[duty];
+    const N = 48, re = new Float32Array(N), im = new Float32Array(N);
+    for (let n = 1; n < N; n++) { re[n] = (2 / (n * Math.PI)) * Math.sin(n * Math.PI * duty); }
+    return (waves[duty] = a.createPeriodicWave(re, im));
+  }
+  // 15-bit LFSR noise like the NES: "long" is hiss and grit, "short" is a metallic rattle
+  function lfsrBuf(a, short) {
+    const key = short ? "s" : "l"; if (noiseBufs[key]) return noiseBufs[key];
+    const len = a.sampleRate, b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+    let r = 1, v = 1; const hold = 4;
+    for (let i = 0; i < len; i++) {
+      if (i % hold === 0) { const fb = (r & 1) ^ ((r >> (short ? 6 : 1)) & 1); r = (r >> 1) | (fb << 14); v = (r & 1) ? 1 : -1; }
+      d[i] = v;
+    }
+    return (noiseBufs[key] = b);
+  }
+  function env(g, t0, vol, dur) { // stepped decay, one step per 60 Hz frame
+    const steps = Math.max(1, Math.round(dur * 60));
+    for (let i = 0; i <= steps; i++) g.gain.setValueAtTime(vol * Math.pow(1 - i / steps, 1.3), t0 + i / 60);
+  }
+  // a chip voice: plays notes (MIDI) one after another, `step` seconds each, with an optional pitch drop
+  function chip({ at = 0, wave = "square", notes = [60], step = 0.06, vol = 0.15, dur = 0, bend = 0 } = {}) {
+    const a = audio(); if (!a) return;
+    const t0 = a.currentTime + at, total = dur || notes.length * step, o = a.createOscillator(), g = a.createGain();
+    if (wave === "triangle") o.type = "triangle";
+    else o.setPeriodicWave(pulseWave(a, wave === "pulse25" ? 0.25 : wave === "pulse12" ? 0.125 : 0.5));
+    notes.forEach((m, i) => o.frequency.setValueAtTime(hz(m), t0 + i * step));
+    if (bend) { const frames = Math.max(1, Math.round(total * 60)), m0 = notes[notes.length - 1], s0 = (notes.length - 1) * step;
+      for (let f = 1; f <= frames; f++) { const t = t0 + s0 + f / 60; if (t < t0 + total) o.frequency.setValueAtTime(hz(m0 + bend * f / frames), t); } }
+    env(g, t0, vol, total);
+    o.connect(g).connect(master); o.start(t0); o.stop(t0 + total + 0.03);
+  }
+  // the noise channel: `rate` sets the pitch of the grit (low = rumble, high = hiss)
+  function crunch({ at = 0, dur = 0.1, vol = 0.3, rate = 1, to = 0, short = false } = {}) {
+    const a = audio(); if (!a) return;
+    const t0 = a.currentTime + at, src = a.createBufferSource(), g = a.createGain();
+    src.buffer = lfsrBuf(a, short); src.loop = true;
+    src.playbackRate.setValueAtTime(rate, t0);
+    if (to) { const frames = Math.max(1, Math.round(dur * 60)); for (let f = 1; f <= frames; f++) src.playbackRate.setValueAtTime(rate + (to - rate) * f / frames, t0 + f / 60); }
+    env(g, t0, vol, dur);
+    src.connect(g).connect(master); src.start(t0, Math.random() * 0.5); src.stop(t0 + dur + 0.03);
+  }
+  function buzz(pattern) { if (muted) return; try { navigator.vibrate && navigator.vibrate(pattern); } catch (_) {} }
+  const sfx = {
+    // a stone thud: triangle bass drops an octave under a low crunch
+    land() { chip({ wave: "triangle", notes: [43], bend: -14, dur: 0.16, vol: 0.5 }); crunch({ rate: 0.18, dur: 0.1, vol: 0.32 }); },
+    turn() { chip({ wave: "pulse12", notes: [91], dur: 0.03, vol: 0.08 }); },
+    chomp() { // jaws snap twice: bass bite plus a crunch
+      for (const at of [0, 0.15]) { chip({ at, wave: "triangle", notes: [38], bend: -12, dur: 0.11, vol: 0.55 }); crunch({ at, rate: 0.45, to: 0.2, dur: 0.08, vol: 0.3 }); }
+      chip({ at: 0.32, wave: "square", notes: [48, 55, 60], step: 0.04, vol: 0.07 });
+    },
+    coin(i = 0) { chip({ at: i * 0.05, wave: "square", notes: [83, 88], step: 0.05, dur: 0.16, vol: 0.06 }); },
+    refuse() { chip({ wave: "pulse25", notes: [46, 45], step: 0.1, vol: 0.12 }); chip({ wave: "triangle", notes: [34], dur: 0.2, vol: 0.35 }); },
+    laugh() { // HA HA HA HA HA: each one a fast octave trill, falling
+      [64, 62, 60, 57, 53].forEach((m, i) => chip({ at: i * 0.22, wave: "pulse25", notes: [m, m + 12, m, m + 12, m], step: 1 / 30, vol: 0.1 }));
+      [40, 38, 36, 33, 29].forEach((m, i) => chip({ at: i * 0.22, wave: "triangle", notes: [m], dur: 0.12, vol: 0.3 }));
+    },
+    smash() { crunch({ rate: 0.6, to: 0.08, dur: 0.38, vol: 0.5 }); chip({ wave: "triangle", notes: [36], bend: -12, dur: 0.3, vol: 0.55 }); buzz([40, 30, 70]); },
+    curse() { chip({ wave: "pulse12", notes: [61, 60, 59, 58, 57, 56, 55, 54], step: 0.06, vol: 0.1 }); crunch({ short: true, rate: 0.5, dur: 0.45, vol: 0.12 }); buzz(120); },
+    cleared() { // a little fanfare with a bass line
+      chip({ wave: "square", notes: [67, 72, 76, 79, 84], step: 0.08, dur: 0.7, vol: 0.11 });
+      chip({ at: 0.04, wave: "pulse25", notes: [60, 64, 67, 72, 76], step: 0.08, dur: 0.66, vol: 0.06 });
+      chip({ wave: "triangle", notes: [36, 43, 48], step: 0.16, dur: 0.75, vol: 0.4 });
+    },
+    over() {
+      chip({ wave: "square", notes: [67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55], step: 0.08, dur: 1.3, vol: 0.11 });
+      chip({ wave: "triangle", notes: [36, 34, 31, 28, 24], step: 0.22, dur: 1.4, vol: 0.45 });
+      crunch({ at: 0.9, rate: 0.12, dur: 0.5, vol: 0.25 }); buzz([80, 60, 200]);
+    },
+    oracle() { // a rising sparkle while the discs spin
+      chip({ wave: "pulse25", notes: [60, 64, 67, 72, 76, 79, 84, 88, 91, 96], step: 0.045, dur: 0.6, vol: 0.08 });
+      chip({ at: 0.02, wave: "pulse12", notes: [72, 76, 79, 84, 88, 91, 96, 100], step: 0.045, dur: 0.5, vol: 0.05 });
+      buzz(30);
+    },
+    charge() { chip({ wave: "square", notes: [72, 76, 79, 84], step: 0.05, dur: 0.35, vol: 0.09 }); },
+    buy() { chip({ wave: "square", notes: [72, 79], step: 0.08, dur: 0.28, vol: 0.1 }); chip({ wave: "triangle", notes: [48], dur: 0.2, vol: 0.35 }); },
+  };
+  function setMuted(m) {
+    muted = m;
+    try { localStorage.setItem("bonepile-muted", m ? "1" : "0"); } catch (_) {}
+    const b = $("mute"); b.classList.toggle("off", m); b.setAttribute("aria-pressed", String(m)); b.setAttribute("aria-label", m ? "Sound off" : "Sound on");
+    if (!m) sfx.turn();
+  }
+
   // ---------- relic icons ----------
   function powerState() {
     const pw = $("power"); if (!pw || !pw.classList) return;
@@ -360,7 +458,7 @@ if (typeof document !== "undefined") {
   }
   function gainCharge() {
     if (st.charges >= ORACLE_MAX) return;
-    st.charges++; powerState(); glowRune("oracle", HILITE_MS);
+    st.charges++; powerState(); glowRune("oracle", HILITE_MS); setTimeout(sfx.charge, HILITE_MS);
     setTimeout(() => say(`The Oracle Stone gains a charge (${st.charges} of ${ORACLE_MAX}). Tap it to find the best word.`), HILITE_MS + 900);
   }
   // Oracle Stone: spin the landed discs into the best word on the board, once per round.
@@ -371,7 +469,7 @@ if (typeof document !== "undefined") {
     if (st.pending || st.checkChain || st.spinning) return;
     const b = bestSpin(st.stack);
     if (!b) { say("The Oracle Stone finds no word in these stones."); return; }
-    st.charges--; st.oracleUsedRound = st.round; st.spinning = true; powerState(); glowRune("oracle");
+    st.charges--; st.oracleUsedRound = st.round; st.spinning = true; powerState(); glowRune("oracle"); sfx.oracle();
     say("The Oracle Stone turns the discs...");
     b.picks.forEach(([i, k], n) => {
       const d = st.stack[i];
@@ -393,7 +491,7 @@ if (typeof document !== "undefined") {
       const b = document.createElement("button");
       b.type = "button"; b.className = "rune" + (id === fresh ? " new" : ""); b.id = "rune-" + id;
       b.setAttribute("aria-label", `${r.name}: ${r.desc}`); b.title = r.name;
-      b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${RUNE_ICONS[id]}</svg>`;
+      b.innerHTML = `<svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges">${RUNE_ICONS[id]}</svg>`;
       b.addEventListener("click", () => { say(`${r.name}: ${r.desc}.`); glowRune(id); });
       box.appendChild(b);
     }
@@ -408,15 +506,128 @@ if (typeof document !== "undefined") {
     delay ? setTimeout(go, delay) : go();
   }
 
+  // ---------- pixel look ----------
+  // Both canvases are drawn at a low "art" resolution (one art pixel = PX screen pixels), then every
+  // pixel is snapped to one fixed palette with ordered (Bayer) dithering, so gradients and fades come
+  // out as chunky dither patterns, like an old handheld.
+  const C = {
+    k: "#000000", teal0: "#0c1a1c", teal1: "#16302f", teal2: "#24453f",
+    sage0: "#3d5a40", sage1: "#6b8a55", moss: "#9bb86a",
+    mauve0: "#4a3c44", mauve1: "#7a6268", mauve2: "#a88a88",
+    d: "#484848", m: "#7a7a7a", l: "#b0b0b0", w: "#e8e8e8",
+    bone: "#e9dcb8", bone1: "#b8a47c", bone2: "#7a6a4c",
+    gold: "#e0a030", gold1: "#8a5a1c", glow: "#7ee05a", blood: "#c83030",
+  };
+  const FONT = '"Press Start 2P", ui-monospace, monospace';
+  const PAL = Object.values(C).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  const PAL_EXACT = new Set(PAL.map(([r, g, b]) => (r << 16) | (g << 8) | b));
+  const LUT = new Int8Array(32768).fill(-1);
+  const clamp8 = v => v < 0 ? 0 : v > 255 ? 255 : v | 0;
+  function nearest(r, g, b) {
+    r = clamp8(r); g = clamp8(g); b = clamp8(b);
+    const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+    let v = LUT[key];
+    if (v < 0) {
+      let best = 1e9;
+      for (let i = 0; i < PAL.length; i++) {
+        const q = PAL[i], dr = q[0] - r, dg = q[1] - g, db = q[2] - b, dd = dr * dr * 3 + dg * dg * 4 + db * db * 2;
+        if (dd < best) { best = dd; v = i; }
+      }
+      LUT[key] = v;
+    }
+    return PAL[v];
+  }
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16 - 0.5);
+  const DITHER = 64;
+  // see-through: the overlay canvas, where faint pixels dissolve instead of blending
+  function pixelate(c, seeThrough) {
+    const w = c.canvas && c.canvas.width, h = c.canvas && c.canvas.height;
+    if (!w || !h || !c.getImageData) return;
+    const img = c.getImageData(0, 0, w, h); if (!img || !img.data) return;
+    const px = img.data;
+    for (let y = 0, i = 0; y < h; y++) for (let x = 0; x < w; x++, i += 4) {
+      const t = BAYER[((y & 3) << 2) | (x & 3)];
+      if (seeThrough) { const al = px[i + 3]; if (!al) continue; if (al / 255 < t + 0.5) { px[i + 3] = 0; continue; } px[i + 3] = 255; }
+      const r = px[i], g = px[i + 1], bl = px[i + 2];
+      if (PAL_EXACT.has((r << 16) | (g << 8) | bl)) continue;
+      const o = t * DITHER, q = nearest(r + o, g + o, bl + o);
+      px[i] = q[0]; px[i + 1] = q[1]; px[i + 2] = q[2];
+    }
+    c.putImageData(img, 0, 0);
+  }
+  const snap = v => Math.round(v / PX) * PX;
+  function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }; }
+
+  // The temple: mossy carved stone, a dark shaft for the column, old bricks either side.
+  // Drawn once per size into its own little canvas, in art pixels.
+  let wallCv = null;
+  function stones(f, R, x0, y0, w, h, face, lite, dark, moss) {
+    let y = y0;
+    while (y < y0 + h) {
+      const rh = 6 + Math.floor(R() * 4);
+      let x = x0 - Math.floor(R() * 10);
+      while (x < x0 + w) {
+        const sw = 9 + Math.floor(R() * 10);
+        const a = Math.max(x, x0), b = Math.min(x + sw - 1, x0 + w), top = y, bot = Math.min(y + rh - 1, y0 + h);
+        if (b - a > 1 && bot - top > 1) {
+          f(face, a, top, b - a, bot - top);
+          f(lite, a, top, b - a, 1); f(lite, a, top, 1, bot - top); // worn top-left edge
+          f(dark, a, bot - 1, b - a, 1);
+          // carved glyph on some blocks: a little maze of grooves
+          if (R() < 0.18 && b - a > 8 && bot - top > 5) {
+            const gx = a + 2 + Math.floor(R() * (b - a - 7)), gy = top + 2;
+            f(dark, gx, gy, 5, 1); f(dark, gx, gy, 1, 3); f(dark, gx + 4, gy, 1, 3); f(dark, gx + 2, gy + 2, 3, 1);
+          }
+          // a crack
+          if (R() < 0.3) { let cx = a + 2 + Math.floor(R() * Math.max(1, b - a - 4)), cy = top + 1; while (cy < bot - 1) { f(dark, cx, cy, 1, 1); cy++; cx += R() < 0.4 ? -1 : R() < 0.5 ? 1 : 0; if (cx <= a || cx >= b - 1) break; } }
+          // moss creeping over the top edge
+          if (moss && R() < 0.45) { const mx = a + Math.floor(R() * (b - a - 2)), mw = 2 + Math.floor(R() * 5); for (let i = 0; i < mw && mx + i < b; i++) { const hh = 1 + Math.floor(R() * 3); f(i % 3 ? moss[0] : moss[1], mx + i, top, 1, hh); } }
+        }
+        x += sw;
+      }
+      y += rh;
+    }
+  }
+  function bricks(f, R, x0, y0, w, h) {
+    f(C.k, x0, y0, w, h);
+    for (let r = 0, y = y0; y < y0 + h; r++, y += 3) {
+      for (let x = x0 - (r % 2 ? 2 : 0); x < x0 + w; x += 4) {
+        const a = Math.max(x, x0), b = Math.min(x + 3, x0 + w), bh = Math.min(2, y0 + h - y);
+        if (b <= a || bh <= 0) continue;
+        if (R() < 0.07) { f(C.teal0, a, y, b - a, bh); continue; } // a brick fallen out
+        f(R() < 0.5 ? C.mauve1 : C.mauve0, a, y, b - a, bh); f(C.mauve2, a, y, b - a, 1);
+        if (R() < 0.2) f(C.sage1, a + Math.floor(R() * (b - a)), y, 1, 1);
+      }
+    }
+  }
+  function buildWall() {
+    const cw = Math.round(W / PX), ch = Math.round(H / PX);
+    const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+    const g = c.getContext && c.getContext("2d"); if (!g || !g.fillRect) return null;
+    const R = rng(1234), f = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+    f(C.teal0, 0, 0, cw, ch);
+    stones(f, R, 0, 0, cw, ch, C.sage0, C.sage1, C.teal1, [C.moss, C.sage1]);
+    const sx = wellX / PX, sw = wellW / PX, sy = wellTop / PX, sh = ROWS * cellH / PX;
+    f(C.k, sx, sy, sw, sh);
+    stones(f, R, sx, sy, sw, sh, C.teal1, C.teal2, C.k, null);
+    bricks(f, R, sx - 4, sy - 3, 4, sh + 3); bricks(f, R, sx + sw, sy - 3, 4, sh + 3);
+    bricks(f, R, sx - 4, sy + sh, sw + 8, ch - sy - sh);
+    // vines hanging from the top
+    for (let v = 0; v < 5; v++) { let x = Math.floor(R() * cw); const len = 6 + Math.floor(R() * 18); for (let i = 0; i < len; i++) { f(i % 4 === 3 ? C.moss : C.sage1, x, i, 1, 1); if (R() < 0.2) x += R() < 0.5 ? -1 : 1; } }
+    return c;
+  }
+
   function resize() {
-    const r = cv.getBoundingClientRect();
-    dpr = window.devicePixelRatio || 1;
-    W = r.width; H = r.height;
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    cellH = Math.floor((H - 8) / ROWS);
-    wellW = Math.min(W - 4, (H - 8) / BASE_ROWS * 6.5);
-    wellX = (W - wellW) / 2;
-    wellTop = H - 4 - cellH * ROWS;
+    const r = $("wrap").getBoundingClientRect();
+    PX = Math.max(2, Math.min(5, Math.round((r.height - 8) / ROWS / 12)));
+    const cw = Math.floor(r.width / PX), ch = Math.floor(r.height / PX);
+    W = cw * PX; H = ch * PX;
+    cv.width = cw; cv.height = ch; cv.style.width = W + "px"; cv.style.height = H + "px";
+    cellH = Math.floor((H - 4 * PX) / ROWS / PX) * PX;
+    wellW = snap(Math.min(W - 30 * PX, (H - 8) / BASE_ROWS * 6.5));
+    wellX = snap((W - wellW) / 2);
+    wellTop = H - 3 * PX - cellH * ROWS;
+    wallCv = null;
   }
   // slot 0 is the bottom row
   const rowY = row => wellTop + (ROWS - 1 - row) * cellH;
@@ -442,7 +653,7 @@ if (typeof document !== "undefined") {
   }
 
   function gameOver() {
-    st.over = true; st.falling = null;
+    st.over = true; st.falling = null; sfx.over();
     $("overText").textContent = `Round ${st.round}: ${st.roundGold} of ${quotaFor(st.round)} gold. Best word: ${st.best || "none"}.`;
     $("over").hidden = false;
   }
@@ -451,7 +662,7 @@ if (typeof document !== "undefined") {
   function curse(d) {
     const i = st.stack.indexOf(d);
     for (const j of [i - 1, i + 1]) { const n = st.stack[j]; if (n && !n.locked) n.dark = true; }
-    d.cursed = false;
+    d.cursed = false; sfx.curse();
     flash = performance.now();
     skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
     say(`The curse spreads. Dark discs read as nothing. Tap one twice to smash it (${smashCost()} gold).`);
@@ -459,7 +670,7 @@ if (typeof document !== "undefined") {
 
   // ---------- between rounds: the relic shop ----------
   function openShop() {
-    st.shopOpen = true;
+    st.shopOpen = true; sfx.cleared();
     const pool = RELICS.filter(r => !has(r.id)).sort(() => Math.random() - 0.5).slice(0, 3);
     $("shopTitle").textContent = `Round ${st.round} cleared`;
     $("shopText").textContent = pool.length ? `The skull is fed. You have ${st.gold} gold. Choose a relic, or take nothing.` : "The skull is fed. You own every relic.";
@@ -471,7 +682,7 @@ if (typeof document !== "undefined") {
       b.innerHTML = `<b>${r.name}</b><i>${price} gold</i><span>${r.desc}</span>`;
       b.addEventListener("click", () => {
         if (st.gold < price) return;
-        st.gold -= price; st.shown = st.gold; st.relics.add(r.id);
+        st.gold -= price; st.shown = st.gold; st.relics.add(r.id); sfx.buy();
         renderRunes(r.id);
         startRound(st.round + 1);
         glowRune(r.id, 500);
@@ -486,7 +697,7 @@ if (typeof document !== "undefined") {
       b.innerHTML = `<b>Oracle Stone (rare)</b><i>${price} gold</i><span>${ORACLE_MAX} charges. Tap the stone to spin the discs into the best word, once per round</span>`;
       b.addEventListener("click", () => {
         if (st.gold < price) return;
-        st.gold -= price; st.shown = st.gold; st.charges = ORACLE_MAX;
+        st.gold -= price; st.shown = st.gold; st.charges = ORACLE_MAX; sfx.buy();
         startRound(st.round + 1);
         glowRune("oracle", 500);
       });
@@ -504,7 +715,7 @@ if (typeof document !== "undefined") {
     if (st.over || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     const found = findWords(st.stack);
     if (!found.length) {
-      say("The skull is not satisfied.");
+      say("The skull is not satisfied."); sfx.refuse();
       flash = performance.now();
       skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
       return;
@@ -545,7 +756,7 @@ if (typeof document !== "undefined") {
     skullClass("open");
     setTimeout(() => {
       skullBtn.classList.remove("open");
-      skullClass("fed", 900);
+      skullClass("fed", 900); sfx.chomp();
       veil = performance.now();
       say(`${pre}The skull accepts ${parts.join(", ")}.  +${total} gold${met ? ". Quota met." : ""}`);
     }, HILITE_MS);
@@ -584,7 +795,7 @@ if (typeof document !== "undefined") {
       f.y -= sp * dt;
       const floor = st.stack.length;
       if (f.y <= floor) {
-        f.y = floor; f.rot = f.target; st.stack.push(f); st.falling = null;
+        f.y = floor; f.rot = f.target; st.stack.push(f); st.falling = null; sfx.land();
         st.spawnAt = now + 650;
         for (const d of st.stack) if (d.cursed && d !== f && --d.curse <= 0) curse(d);
         hud();
@@ -597,109 +808,107 @@ if (typeof document !== "undefined") {
     st.crumble = st.crumble.filter(c => now - c.t < 500);
   }
 
+  // a capsule with stepped (pixel) end caps
+  function capsule(xa, ya, xb, yb, e) {
+    const P = PX, h = yb - ya, n = Math.max(1, Math.round(e / P));
+    ctx.fillRect(xa + n * P, ya, xb - xa - 2 * n * P, h);
+    for (let i = 0; i < n; i++) {
+      const t = (n - i - 0.5) / n, inset = Math.min(snap(h / 2 * (1 - Math.sqrt(Math.max(0, 1 - t * t)))), snap(h / 2) - P);
+      ctx.fillRect(xa + i * P, ya + inset, P, h - 2 * inset);
+      ctx.fillRect(xb - (i + 1) * P, ya + inset, P, h - 2 * inset);
+    }
+  }
+  // Discs are slices of old bone: ivory in the middle, yellowing to the ends, pitted and cracked.
   function drawDisc(d, y, alpha = 1, broken = 0, hl = false) {
-    const pad = Math.max(2, cellH * 0.08);
-    const x0 = wellX + 6, x1 = wellX + wellW - 6, top = y + pad, h = cellH - pad * 2;
-    const cx = (x0 + x1) / 2, R = (x1 - x0) / 2, ry = h / 2;
-    const ink = hl || d.dark ? "#fff" : "#000", paper = hl ? "#000" : d.dark ? "#3a3a3a" : d.locked ? "#cdcdcd" : "#fff";
+    const P = PX, now = performance.now();
+    y = snap(y);
+    const x0 = wellX + P, x1 = wellX + wellW - P, top = y + P, h = cellH - 2 * P;
+    const cx = snap((x0 + x1) / 2), R = (x1 - x0) / 2, ry = h / 2, ex = 3 * P;
+    const armed = (d.locked || d.dark) && d.armed && now - d.armed < 2000;
+    const [c0, c1, c2] = hl ? [C.gold1, C.gold, C.bone] : d.dark ? [C.k, C.teal1, C.d] : d.locked ? [C.d, C.m, C.l] : [C.bone2, C.bone1, C.bone];
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.translate(0, broken * 20);
-    ctx.strokeStyle = ink; ctx.fillStyle = paper; ctx.lineWidth = 2;
-    // body: a short cylinder seen from the side
-    const ex = Math.min(14, R * 0.12);
-    ctx.beginPath();
-    ctx.moveTo(x0 + ex, top);
-    ctx.lineTo(x1 - ex, top);
-    ctx.ellipse(x1 - ex, top + ry, ex, ry, 0, -Math.PI / 2, Math.PI / 2);
-    ctx.lineTo(x0 + ex, top + h);
-    ctx.ellipse(x0 + ex, top + ry, ex, ry, 0, Math.PI / 2, Math.PI * 1.5);
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    if (hl) { ctx.strokeStyle = "#000"; ctx.stroke(); ctx.strokeStyle = ink; }
+    ctx.translate(0, snap(broken * 20));
+    ctx.fillStyle = armed && Math.floor(now / 200) % 2 ? C.glow : C.k;
+    capsule(x0 - P, top - P, x1 + P, top + h + P, ex + P);
+    const gr = ctx.createLinearGradient && ctx.createLinearGradient(x0, 0, x1, 0);
+    if (gr && gr.addColorStop) { [[0, c0], [0.16, c1], [0.4, c2], [0.62, c2], [0.9, c1], [1, c0]].forEach(([o, c]) => gr.addColorStop(o, c)); ctx.fillStyle = gr; }
+    else ctx.fillStyle = c2;
+    capsule(x0, top, x1, top + h, ex);
+    ctx.fillStyle = c0; ctx.fillRect(x0 + ex, top + h - P, x1 - x0 - 2 * ex, P);
+    if (!d.dark) {
+      // pits and a hairline crack, the same on each disc every frame
+      const r = rng(d.seed || (d.seed = 1 + Math.floor(Math.random() * 1e9)));
+      for (let i = 0; i < 9; i++) { ctx.fillStyle = r() < 0.6 ? c1 : c0; ctx.fillRect(snap(x0 + ex + r() * (x1 - x0 - 2 * ex)), top + P + snap(r() * (h - 3 * P)), P, P); }
+      if (r() < 0.6) { ctx.fillStyle = c0; let kx = snap(x0 + ex + r() * (x1 - x0 - 2 * ex - 6 * P)), ky = top + snap(r() * (h - 2 * P)); for (let i = 0; i < 5; i++) { ctx.fillRect(kx, ky, P, P); kx += P; ky += r() < 0.5 ? P : -P; ky = Math.max(top, Math.min(top + h - 2 * P, ky)); } }
+    }
+    const fs = h / P >= 20 ? 16 * P : 8 * P;
+    ctx.font = `${fs}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const ty = top + snap(ry) + P;
     if (d.locked || d.dark) {
-      // locked: gray body, one fixed letter. dark: near-black body, no letters.
-      // A dashed edge means it's waiting for a second tap to smash.
-      const armed = d.armed && performance.now() - d.armed < 2000;
-      if (armed) { ctx.setLineDash([6, 4]); ctx.strokeStyle = d.dark ? "#fff" : "#000"; ctx.stroke(); ctx.setLineDash([]); }
-      ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = ink;
-      if (d.locked) {
-        ctx.font = `bold ${h * (d.faces[0].length > 1 ? 0.56 : 0.7)}px ui-monospace, Menlo, Consolas, monospace`;
-        ctx.fillText(d.faces[0], cx, top + ry + 1);
-      }
-      if (armed) { ctx.font = `${Math.max(10, h * 0.3)}px ui-monospace, Menlo, Consolas, monospace`; ctx.textAlign = "left"; ctx.fillText(`smash? -${smashCost()}`, x0 + ex + 4, top + ry + 1); }
+      ctx.fillStyle = C.w;
+      if (armed) { ctx.font = `${8 * P}px ${FONT}`; ctx.fillText(`SMASH -${smashCost()}`, cx, ty); }
+      else if (d.locked) ctx.fillText(d.faces[0], cx, ty);
       ctx.restore();
       return;
     }
     if (d.cursed) {
-      // hatching at both ends, and the drops left, just outside the column
-      for (let k = 0; k < 3; k++) {
-        ctx.beginPath(); ctx.moveTo(x0 + ex + 6 + k * 6, top + 3); ctx.lineTo(x0 + ex + k * 6, top + h - 3); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x1 - ex - 6 - k * 6, top + 3); ctx.lineTo(x1 - ex - k * 6, top + h - 3); ctx.stroke();
-      }
-      ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000";
-      ctx.font = `bold ${Math.max(11, h * 0.45)}px ui-monospace, Menlo, Consolas, monospace`;
-      ctx.fillText(String(d.curse), wellX + wellW + 12, top + ry + 1);
+      // green rot creeping in from both ends, and the drops left, beside the column
+      ctx.fillStyle = C.glow;
+      for (let k = 0; k < 3; k++) for (let j = 0; j < h / P - 2; j += 2) { ctx.fillRect(x0 + ex + k * 2 * P + (j % 4 ? P : 0), top + P + j * P, P, P); ctx.fillRect(x1 - ex - (k * 2 + 1) * P - (j % 4 ? P : 0), top + P + j * P, P, P); }
+      ctx.font = `${8 * P}px ${FONT}`;
+      ctx.fillText(String(d.curse), wellX + wellW + 9 * P, ty);
+      ctx.font = `${fs}px ${FONT}`;
     }
     if (broken) { // crack lines
-      ctx.beginPath(); ctx.moveTo(cx - R * 0.3, top); ctx.lineTo(cx - R * 0.1, top + h * 0.5); ctx.lineTo(cx - R * 0.25, top + h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx + R * 0.35, top); ctx.lineTo(cx + R * 0.15, top + h * 0.6); ctx.lineTo(cx + R * 0.3, top + h); ctx.stroke();
+      ctx.fillStyle = C.k;
+      for (const [fx0, s0] of [[-0.3, 1], [0.3, -1]]) { let kx = snap(cx + R * fx0); for (let yy = top; yy < top + h; yy += P) { ctx.fillRect(kx, yy, P, P); kx += ((yy / P) % 3 ? s0 : -s0) * P; } }
     }
     // letters around the rim
     const n = d.faces.length, step = Math.PI * 2 / n;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for (let k = Math.floor(d.rot) - 3; k <= Math.ceil(d.rot) + 3; k++) {
-      const a = (k - d.rot) * step;
-      const c = Math.cos(a);
+      const a = (k - d.rot) * step, c = Math.cos(a);
       if (c <= 0.05) continue;
-      const lx = cx + Math.sin(a) * (R - ex) * 0.92;
+      const lx = snap(cx + Math.sin(a) * (R - ex) * 0.92);
       const face = d.faces[((k % n) + n) % n];
-      const size = h * (face.length > 2 ? 0.48 : face.length > 1 ? 0.56 : 0.7);
       ctx.save();
-      ctx.translate(lx, top + ry + 1);
-      ctx.scale(Math.max(0.15, c), 1);
-      ctx.globalAlpha = alpha * (0.25 + 0.75 * c * c);
-      ctx.font = `${c > 0.9 ? "bold " : ""}${size}px ui-monospace, Menlo, Consolas, monospace`;
-      ctx.fillStyle = ink;
+      ctx.translate(lx, ty);
+      ctx.scale(Math.max(0.25, c), 1);
+      ctx.fillStyle = c > 0.7 ? C.k : c0;
+      ctx.font = `${face.length > 2 ? 8 * P : fs}px ${FONT}`;
       ctx.fillText(face, 0, 0);
       ctx.restore();
-      // divider between faces
       const ad = a + step / 2, cd = Math.cos(ad);
-      if (cd > 0.05) {
-        const dx = cx + Math.sin(ad) * (R - ex) * 0.92;
-        ctx.globalAlpha = alpha * 0.35;
-        ctx.beginPath(); ctx.moveTo(dx, top + 3); ctx.lineTo(dx, top + h - 3); ctx.stroke();
-        ctx.globalAlpha = alpha;
-      }
+      if (cd > 0.05) { ctx.fillStyle = c1; ctx.fillRect(snap(cx + Math.sin(ad) * (R - ex) * 0.92), top + 2 * P, P, h - 4 * P); }
     }
     ctx.restore();
   }
 
   function draw(now) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
-    // the well
-    ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(wellX, wellTop); ctx.lineTo(wellX, wellTop + ROWS * cellH); ctx.lineTo(wellX + wellW, wellTop + ROWS * cellH); ctx.lineTo(wellX + wellW, wellTop);
-    ctx.stroke();
-    ctx.setLineDash([6, 6]);
-    ctx.beginPath(); ctx.moveTo(wellX, wellTop); ctx.lineTo(wellX + wellW, wellTop); ctx.stroke();
-    ctx.setLineDash([]);
+    const P = PX;
+    ctx.setTransform(1 / P, 0, 0, 1 / P, 0, 0);
+    if (!wallCv) wallCv = buildWall();
+    if (wallCv) ctx.drawImage(wallCv, 0, 0, W, H);
+    else { ctx.fillStyle = C.teal0; ctx.fillRect(0, 0, W, H); }
+    // the line the column must not cross
+    ctx.fillStyle = C.blood;
+    for (let x = wellX; x < wellX + wellW; x += 4 * P) ctx.fillRect(x, wellTop - P, 2 * P, P);
     // reading arrow on the left: top to bottom
-    if (wellX > 18) {
-      const ax = wellX - 10;
-      ctx.beginPath(); ctx.moveTo(ax, wellTop + 10); ctx.lineTo(ax, wellTop + ROWS * cellH - 10);
-      ctx.lineTo(ax - 5, wellTop + ROWS * cellH - 18); ctx.moveTo(ax, wellTop + ROWS * cellH - 10); ctx.lineTo(ax + 5, wellTop + ROWS * cellH - 18);
-      ctx.stroke();
+    if (wellX > 10 * P) {
+      const ax = wellX - 7 * P, yb = wellTop + ROWS * cellH - 4 * P;
+      ctx.fillStyle = C.gold;
+      for (let y = wellTop + 4 * P; y < yb; y += 3 * P) ctx.fillRect(ax, y, P, 2 * P);
+      for (let i = 0; i < 3; i++) { ctx.fillRect(ax - i * P, yb - i * P, P, P); ctx.fillRect(ax + i * P, yb - i * P, P, P); }
     }
     ctx.save();
-    ctx.beginPath(); ctx.rect(0, wellTop - 2, W, H); ctx.clip();
+    ctx.beginPath(); ctx.rect(0, wellTop - P, W, H); ctx.clip();
     for (const d of st.stack) drawDisc(d, rowY(d.y), 1, 0, !!(st.pending && st.pending.discs.has(d)));
     if (st.falling) drawDisc(st.falling, rowY(st.falling.y));
     ctx.restore();
     for (const c of st.crumble) { const p = (now - c.t) / 500; drawDisc(c.d, rowY(c.y), 1 - p, p); }
-    if (now - flash < 250) { ctx.strokeStyle = "#000"; ctx.lineWidth = 6; ctx.strokeRect(wellX, wellTop, wellW, ROWS * cellH); }
+    if (now - flash < 250) { ctx.fillStyle = C.gold; const t = 2 * P, hh = ROWS * cellH; ctx.fillRect(wellX, wellTop, wellW, t); ctx.fillRect(wellX, wellTop + hh - t, wellW, t); ctx.fillRect(wellX, wellTop, t, hh); ctx.fillRect(wellX + wellW - t, wellTop, t, hh); }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    pixelate(ctx, false);
   }
 
   // ---------- input: swipe a disc sideways to turn it ----------
@@ -732,7 +941,7 @@ if (typeof document !== "undefined") {
       st.crumble.push({ d, y: d.y, t: now });
       st.stack = st.stack.filter(x => x !== d);
       st.checkChain = true;
-      say(`${what} smashed. -${cost} gold`);
+      say(`${what} smashed. -${cost} gold`); sfx.smash();
       glowRune("mercy");
       hud();
     } else {
@@ -747,20 +956,22 @@ if (typeof document !== "undefined") {
     if (!drag.axis && Math.hypot(dx, dy) > 10) drag.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
     if (drag.axis === "x" && drag.d) {
       const stepPx = Math.max(28, wellW / 7);
+      const was = Math.round(drag.d.rot);
       drag.d.rot = drag.start - dx / stepPx;
+      if (Math.round(drag.d.rot) !== was) sfx.turn();
       drag.d.target = drag.d.rot;
     }
   });
   app.addEventListener("pointerup", () => {
     if (!drag) return;
     if (drag.axis === "x" && drag.d) drag.d.target = Math.round(drag.d.rot);
-    else if (!drag.axis && drag.tapped) drag.tapped.target = Math.round(drag.tapped.target) + 1;
+    else if (!drag.axis && drag.tapped) { drag.tapped.target = Math.round(drag.tapped.target) + 1; sfx.turn(); }
     drag = null;
   });
   app.addEventListener("pointercancel", () => { if (drag && drag.d) drag.d.target = Math.round(drag.d.rot); drag = null; });
 
   // ---------- coin reward: a pile builds beside the word, then flies to GOLD ----------
-  const fx = $("fx"), fctx = fx.getContext("2d");
+  const fx = $("fx"), fctx = fx.getContext("2d", { willReadFrequently: true });
   let coins = [];       // flying/stacking coins
   let bursts = [];      // pops at the gold counter
   let offerings = [];   // letters drifting into the skull
@@ -768,6 +979,7 @@ if (typeof document !== "undefined") {
   let laughs = [];      // "HA" rising out of the skull
   // A locked or cursed disc arrives: the skull laughs at you.
   function laugh(text) {
+    sfx.laugh();
     skullBtn.classList.remove("laugh"); void skullBtn.offsetWidth;
     skullBtn.classList.add("laugh"); setTimeout(() => skullBtn.classList.remove("laugh"), 1400);
     const now = performance.now();
@@ -790,29 +1002,32 @@ if (typeof document !== "undefined") {
       coins.push({ x, y: by - i * 5, sx: m.x, sy: m.y, i, tDrop: t0 + i * DROP_MS, tFly: flyStart + (n - 1 - i) * STAGGER_MS, share, last: i === 0, done: false });
     }
   }
-  function drawCoin(x, y, s = 1) {
-    const w = 13 * s, h = 4 * s, th = 4 * s;
-    fctx.fillStyle = "#fff"; fctx.strokeStyle = "#000"; fctx.lineWidth = 1.6;
-    fctx.beginPath(); fctx.ellipse(x, y, w, h, 0, 0, Math.PI); fctx.lineTo(x - w, y - th); fctx.ellipse(x, y - th, w, h, 0, Math.PI, 0, true); fctx.closePath(); fctx.fill(); fctx.stroke();
-    fctx.beginPath(); fctx.ellipse(x, y - th, w, h, 0, 0, Math.PI * 2); fctx.fill(); fctx.stroke();
-    fctx.beginPath(); fctx.ellipse(x, y - th, w * 0.55, h * 0.55, 0, 0, Math.PI * 2); fctx.stroke();
+  function drawCoin(x, y, sc = 1) {
+    const P = PX, w = Math.max(2, Math.round(5 * sc)) * P; x = snap(x); y = snap(y);
+    const f = (c, a, b, ww, hh) => { fctx.fillStyle = c; fctx.fillRect(a, b, ww, hh); };
+    f(C.k, x - w, y - 5 * P, 2 * w, 6 * P); f(C.k, x - w - P, y - 4 * P, 2 * w + 2 * P, 4 * P);
+    f(C.gold1, x - w + P, y - P, 2 * w - 2 * P, P); f(C.gold1, x - w, y - 2 * P, 2 * w, P);
+    f(C.gold, x - w, y - 3 * P, 2 * w, P); f(C.gold, x - w + P, y - 4 * P, 2 * w - 2 * P, P);
+    f(C.bone, x - w + 2 * P, y - 4 * P, 2 * P, P);
   }
   function popGold() {
     const el = $("gold");
     if (el.animate) el.animate([{ transform: "scale(1)" }, { transform: "scale(1.45)" }, { transform: "scale(1)" }], { duration: 200, easing: "ease-out" });
   }
   function drawFx(now) {
-    const w = window.innerWidth, h = window.innerHeight, pr = window.devicePixelRatio || 1;
-    if (fx.width !== Math.round(w * pr) || fx.height !== Math.round(h * pr)) { fx.width = Math.round(w * pr); fx.height = Math.round(h * pr); }
-    fctx.setTransform(pr, 0, 0, pr, 0, 0);
-    fctx.clearRect(0, 0, w, h);
+    const P = PX, fw = Math.ceil(window.innerWidth / P), fh = Math.ceil(window.innerHeight / P);
+    if (fx.width !== fw || fx.height !== fh) { fx.width = fw; fx.height = fh; fx.style.width = fw * P + "px"; fx.style.height = fh * P + "px"; }
+    fctx.setTransform(1 / P, 0, 0, 1 / P, 0, 0);
+    fctx.clearRect(0, 0, fw * P, fh * P);
+    let any = false;
+    const w = fw * P, h = fh * P;
     // the swallow: a brief dimming of the whole screen
     const vp = (now - veil) / 700;
-    if (vp >= 0 && vp < 1) { fctx.fillStyle = `rgba(0,0,0,${0.22 * Math.sin(vp * Math.PI)})`; fctx.fillRect(0, 0, w, h); }
+    if (vp >= 0 && vp < 1) { any = true; fctx.fillStyle = `rgba(0,0,0,${0.45 * Math.sin(vp * Math.PI)})`; fctx.fillRect(0, 0, w, h); }
     // offered letters drift down into the mouth, wavering, shrinking as they go
     if (offerings.length) {
       const m = mouth();
-      fctx.textAlign = "center"; fctx.textBaseline = "middle"; fctx.fillStyle = "#000";
+      fctx.textAlign = "center"; fctx.textBaseline = "middle"; fctx.fillStyle = C.bone; any = true;
       for (const o of offerings) {
         const p = (now - o.t0) / o.dur;
         if (p < 0) continue;
@@ -821,20 +1036,20 @@ if (typeof document !== "undefined") {
         const x = o.x + (m.x - o.x) * e + Math.sin(p * 9 + o.t0) * 10 * (1 - p);
         const y = o.y + (m.y - o.y) * e - Math.sin(p * Math.PI) * 20;
         fctx.globalAlpha = 1 - p * p;
-        fctx.font = `bold ${Math.round(26 * (1 - 0.6 * p))}px ui-monospace, Menlo, Consolas, monospace`;
-        fctx.fillText(o.ch, x, y);
+        fctx.font = `${8 * P * (p < 0.5 ? 2 : 1)}px ${FONT}`;
+        fctx.fillText(o.ch, snap(x), snap(y));
       }
       fctx.globalAlpha = 1;
       offerings = offerings.filter(o => !o.done);
     }
     if (laughs.length) {
       const m = mouth();
-      fctx.textAlign = "center"; fctx.textBaseline = "middle"; fctx.fillStyle = "#000";
+      fctx.textAlign = "center"; fctx.textBaseline = "middle"; fctx.fillStyle = C.glow; any = true;
       for (const l of laughs) {
         const p = (now - l.t0) / 1100;
         if (p < 0 || p >= 1) continue;
         fctx.globalAlpha = 1 - p;
-        fctx.font = `bold ${l.size}px ui-monospace, Menlo, Consolas, monospace`;
+        fctx.font = `${8 * P * (l.size > 18 ? 2 : 1)}px ${FONT}`;
         fctx.save();
         fctx.translate(m.x + l.side * (24 + p * 30), m.s.top + 10 - p * 90);
         fctx.rotate(l.side * 0.25 * Math.sin(p * 12));
@@ -844,7 +1059,7 @@ if (typeof document !== "undefined") {
       fctx.globalAlpha = 1;
       laughs = laughs.filter(l => now - l.t0 < 1100);
     }
-    if (!coins.length && !bursts.length) return;
+    if (!coins.length && !bursts.length) { if (any) { fctx.setTransform(1, 0, 0, 1, 0, 0); pixelate(fctx, true); } return; }
     const gr = $("gold").getBoundingClientRect();
     const tx = gr.left + gr.width / 2, ty = gr.top + gr.height / 2;
     // draw bottom coins first so the pile overlaps correctly
@@ -865,32 +1080,36 @@ if (typeof document !== "undefined") {
         drawCoin(x, y, 1 - 0.45 * e);
         if (p >= 1) {
           c.done = true;
-          st.shown += c.share; hud(); popGold();
+          st.shown += c.share; hud(); popGold(); sfx.coin(c.i);
           if (c.last) bursts.push({ x: tx, y: ty, t: now });
         }
       }
     }
     coins = coins.filter(c => !c.done);
-    // pop: short lines bursting out of the gold counter
-    fctx.strokeStyle = "#000"; fctx.lineWidth = 2;
+    // pop: gold sparks bursting out of the gold counter
+    fctx.fillStyle = C.gold;
     for (const b of bursts) {
       const p = (now - b.t) / 380;
       fctx.globalAlpha = 1 - p;
-      for (let a = 0; a < 10; a++) {
-        const ang = a / 10 * Math.PI * 2, r0 = 10 + p * 14, r1 = 16 + p * 26;
-        fctx.beginPath(); fctx.moveTo(b.x + Math.cos(ang) * r0, b.y + Math.sin(ang) * r0); fctx.lineTo(b.x + Math.cos(ang) * r1, b.y + Math.sin(ang) * r1); fctx.stroke();
-      }
+      for (let a = 0; a < 8; a++) { const ang = a / 8 * Math.PI * 2, r = 12 + p * 26; fctx.fillRect(snap(b.x + Math.cos(ang) * r), snap(b.y + Math.sin(ang) * r), 2 * P, 2 * P); }
       fctx.globalAlpha = 1;
     }
     bursts = bursts.filter(b => now - b.t < 380);
+    fctx.setTransform(1, 0, 0, 1, 0, 0);
+    pixelate(fctx, true);
   }
 
   $("skull").addEventListener("click", submit);
   $("power").addEventListener("click", usePower);
+  $("mute").addEventListener("click", () => setMuted(!muted));
+  setMuted(muted);
+  // browsers only allow sound after a tap: wake the audio on the first one
+  window.addEventListener("pointerdown", () => { if (!muted) audio(); }, { once: true });
   $("restart").addEventListener("click", newGame);
   $("again").addEventListener("click", newGame);
   $("skip").addEventListener("click", () => startRound(st.round + 1));
   window.addEventListener("resize", resize);
+  if (window.ResizeObserver) new ResizeObserver(() => resize()).observe($("wrap"));
 
   let last = performance.now();
   function loop(now) {

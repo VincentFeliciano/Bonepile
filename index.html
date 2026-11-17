@@ -2508,10 +2508,11 @@ if (typeof document !== "undefined") {
   function seenIntro() { try { return localStorage.getItem(INTRO_KEY) === "1"; } catch (_) { return false; } }
   function introButtons() {
     const back = $("introBack"), next = $("introNext");
-    if (introI < 0) { back.hidden = !seenIntro(); back.textContent = "How to play"; next.textContent = seenIntro() ? "Play" : "Begin"; return; }
+    if (introI < 0) { back.hidden = !seenIntro(); back.textContent = "How to play"; next.textContent = seenIntro() ? "Play" : "Begin"; reskin(); return; }
     back.hidden = false; back.textContent = "Back";
     next.textContent = introI === STEPS.length - 1 ? (introMode === "help" ? "Done" : "Play") : "Next";
     $("introSkip").textContent = introMode === "help" ? "Close" : "Skip to the game";
+    reskin();
   }
   // the skull speaks a step: letters type out while its jaw moves
   function introSay(i) {

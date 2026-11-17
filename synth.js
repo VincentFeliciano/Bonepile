@@ -9,15 +9,47 @@
     if (!actx) {
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
       actx = new AC(); master = actx.createGain(); master.gain.value = 0.55; master.connect(actx.destination);
+      actx.onstatechange = () => { if (actx.state !== "running") armAudio(); }; // iOS can interrupt it later
     }
     if (actx.state === "suspended") actx.resume();
     return actx;
   }
-  // iOS only lets sound start inside a tap, so play one silent sample on the first touch
+  // iOS only starts Web Audio inside a tap, and its ring switch silences Web Audio. So on each tap,
+  // until the sound is really running: resume the context, play one silent sample, and loop a silent
+  // <audio> tag, which moves the page into "playback" so sound plays even on silent.
+  let silent = null, armed = false;
+  function silentTag() {
+    if (silent) return silent;
+    const n = 4000, b = new Uint8Array(44 + n), v = new DataView(b.buffer); // half a second of 8 kHz silence
+    const w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+    w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true); b.fill(128, 44);
+    let bin = ""; for (let i = 0; i < b.length; i++) bin += String.fromCharCode(b[i]);
+    silent = document.createElement("audio"); silent.src = "data:audio/wav;base64," + btoa(bin);
+    silent.loop = true; silent.preload = "auto"; silent.setAttribute("playsinline", ""); silent.setAttribute("x-webkit-airplay", "deny");
+    return silent;
+  }
   function unlockAudio() {
+    if (muted) return;
+    try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch (_) {}
+    try { const t = silentTag(); if (t.paused) { const p = t.play(); if (p && p.catch) p.catch(() => {}); } } catch (_) {}
     const a = audio(); if (!a) return;
     try { const s = a.createBufferSource(); s.buffer = a.createBuffer(1, 1, 22050); s.connect(a.destination); s.start(0); } catch (_) {}
+    if (a.state !== "running") { try { const r = a.resume(); if (r && r.catch) r.catch(() => {}); } catch (_) {} }
   }
+  function armAudio() {
+    if (armed || typeof window === "undefined" || !window.addEventListener) return; armed = true;
+    const evs = ["touchend", "pointerup", "click", "keydown"];
+    const go = () => {
+      unlockAudio();
+      if (actx && actx.state === "running") { armed = false; evs.forEach(e => window.removeEventListener(e, go, true)); }
+    };
+    evs.forEach(e => window.addEventListener(e, go, true));
+  }
+  function quietAudio(off) { // pause the silent tag while muted or hidden, so iOS isn't left "playing"
+    try { if (off) { if (silent) silent.pause(); } else armAudio(); } catch (_) {}
+  }
+  if (typeof document !== "undefined" && document.addEventListener) document.addEventListener("visibilitychange", () => quietAudio(document.hidden || muted));
   const hz = m => 440 * Math.pow(2, (m - 69) / 12); // MIDI note to frequency
   // pulse wave with a duty cycle (0.5 square, 0.25 and 0.125 the thinner, buzzier chip tones)
   function pulseWave(a, duty) {
@@ -122,6 +154,14 @@
       { k: "noise", at: 0.32, rate: 0.35, to: 0.1, dur: 0.35, vol: 0.4 },
       { k: "tone", at: 0.32, wave: "pulse12", notes: [55, 54, 53, 52, 51, 50], step: 0.05, vol: 0.08 }] },
     charge: { name: "Oracle charge, heart", layers: [{ k: "tone", wave: "square", notes: [72, 76, 79, 84], step: 0.05, dur: 0.35, vol: 0.09 }] },
+    scream: { name: "Skull screams (column full)", knobs: { vib: 0.8, vibHz: 13, bits: 5, down: 2 }, layers: [
+      { k: "tone", wave: "pulse12", notes: [86], bend: -26, dur: 0.8, vol: 0.1 },
+      { k: "tone", at: 0.02, wave: "pulse25", notes: [79], bend: -22, dur: 0.75, vol: 0.06 },
+      { k: "noise", rate: 2.5, to: 0.6, dur: 0.7, vol: 0.14 },
+      { k: "bass", notes: [33], bend: -5, dur: 0.6, vol: 0.3 }] },
+    voice: { name: "Skull voice (babble)", knobs: { bits: 4, down: 3, vib: 0.35, vibHz: 11 }, layers: [
+      { k: "babble", wave: "pulse25", base: 45, spread: 6, syl: 6, sylDur: 0.075, gap: 0.03, cons: 0.5, vol: 0.12 },
+      { k: "bass", notes: [28], dur: 0.3, vol: 0.12 }] },
     buy: { name: "Buy a relic", layers: [
       { k: "tone", wave: "square", notes: [72, 79], step: 0.08, dur: 0.28, vol: 0.1 },
       { k: "bass", notes: [48], dur: 0.2, vol: 0.35 }] },
@@ -170,13 +210,14 @@
     if (raw !== sfxRaw) { sfxRaw = raw; try { const o = raw && JSON.parse(raw); sfxUser = (o && typeof o.sounds === "object" && o.sounds) || {}; } catch (_) { sfxUser = {}; } }
     return sfxUser;
   }
-  function sfxKnob(d, v) {
-    if (d.choices) return d.choices.includes(v) ? v : d.def;
-    return typeof v === "number" && isFinite(v) ? Math.min(d.max, Math.max(d.min, v)) : d.def;
+  function sfxKnob(d, v, def = d.def) {
+    if (d.choices) return d.choices.includes(v) ? v : def;
+    return typeof v === "number" && isFinite(v) ? Math.min(d.max, Math.max(d.min, v)) : def;
   }
+  const sfxDef = (name, d) => sfxKnob(d, ((SFX[name] && SFX[name].knobs) || {})[d.k]); // a sound's own starting value
   function sfxConf(name) {
     const u = sfxSaved()[name] || {}, knobs = {};
-    for (const d of SFX_KNOBS) knobs[d.k] = sfxKnob(d, u[d.k]);
+    for (const d of SFX_KNOBS) knobs[d.k] = sfxKnob(d, u[d.k], sfxDef(name, d));
     const layers = Array.isArray(u.layers) && u.layers.length ? u.layers : SFX[name].layers;
     return { knobs, layers };
   }
@@ -203,10 +244,10 @@
     }
     return { out: out === master ? null : out, nodes };
   }
-  function playSfx(name, opts = {}, conf = null) {
-    const s = SFX[name]; if (!s) return;
+  function playSfx(name, opts = {}, conf = null) { // returns how long the sound lasts, in seconds
+    const s = SFX[name]; if (!s) return 0;
     if (s.buzz) buzz(s.buzz);
-    const a = audio(); if (!a) return;
+    const a = audio(); if (!a) return 0;
     conf = conf || sfxConf(name);
     const K = conf.knobs, T = K.length, base = opts.at || 0, W = K.wobble, st = Math.pow(2, K.pitch / 12);
     const mix = L => (L.k === "noise" ? K.noiseVol : L.k === "bass" ? K.bass : K.tone) * K.vol;
@@ -216,6 +257,23 @@
     for (const L of conf.layers) {
       const at = base + (+L.at || 0) * T, vol = (+L.vol || 0) * mix(L), common = { at, vol, atk: K.attack, curve: K.decay, out: bus.out };
       if (!vol) continue;
+      if (L.k === "babble") { // garbled speech: random short syllables with a little grit between them
+        const n = Math.max(1, Math.min(24, Math.round(opts.syl || +L.syl || 6)));
+        const wave = K.wave === "orig" ? L.wave || "pulse25" : K.wave;
+        let t = at;
+        for (let i = 0; i < n; i++) {
+          const d = (+L.sylDur || 0.07) * (0.7 + Math.random() * 0.6) * T;
+          const m = (+L.base || 48) + K.pitch + Math.round((Math.random() * 2 - 1) * (+L.spread || 5) * W);
+          const glide = Math.random() < 0.5 ? -2 : 3;
+          chip({ ...common, at: t, wave, notes: [m, m + glide], step: d / 2, dur: d, bend: (Math.random() * 2 - 1) * 3 * W + K.slide,
+            arp: K.arp, arpHz: K.arpHz, vib: K.vib, vibHz: K.vibHz });
+          if (Math.random() < (L.cons === undefined ? 0.5 : +L.cons)) crunch({ ...common, at: t, vol: vol * 0.7 * K.noiseVol, dur: 0.03 * T,
+            rate: (1.4 + Math.random()) * Math.pow(2, K.grit), short: K.noise === "orig" ? Math.random() < 0.4 : K.noise === "short" });
+          t += d + (+L.gap || 0.03) * T * Math.random();
+        }
+        end = Math.max(end, t);
+        continue;
+      }
       if (L.k === "noise") {
         const g = st * Math.pow(2, K.grit), rate = ((+L.rate || 1) + Math.random() * (+L.rj || 0) * W) * g;
         const to = (L.to || K.slide) ? (+L.to || +L.rate || 1) * g * Math.pow(2, K.slide / 12) : 0;
@@ -233,4 +291,64 @@
       const tail = K.echo > 0 ? Math.min(4, K.echoTime * Math.log(0.01) / Math.log(K.echo)) : 0;
       setTimeout(() => bus.nodes.forEach(n => { try { n.disconnect(); } catch (_) {} }), (end - base + tail + 0.4) * 1000 + base * 1000);
     }
+    return Math.max(0, end - base);
   }
+
+  // ---------- music: an original dark chiptune loop that builds with the rounds ----------
+  // Levels 0 to 4 add parts: a sparse bass, then an arpeggio, drums, the melody, and finally
+  // double-time hats and a faster tempo. Boss rounds get their own harsher theme.
+  const MUSIC_KEY = "bonepile-music";
+  function musicVol() { let v = 0.5; try { const s = localStorage.getItem(MUSIC_KEY); if (s !== null && s !== "" && isFinite(+s)) v = Math.min(1, Math.max(0, +s)); } catch (_) {} return v; }
+  const SONGS = {
+    crypt: { bpm: 76, perLevel: 7, // D minor: Dm, Bb, C, A
+      roots: [38, 34, 36, 33], chords: [[62, 65, 69], [58, 62, 65], [60, 64, 67], [57, 61, 64]],
+      lead: [[[0, 69, 3], [3, 70, 1], [4, 69, 2], [6, 65, 2], [8, 62, 6], [14, 64, 2]],
+             [[0, 65, 3], [3, 67, 1], [4, 65, 2], [6, 62, 2], [8, 70, 4], [12, 69, 4]],
+             [[0, 67, 3], [3, 69, 1], [4, 67, 2], [6, 64, 2], [8, 72, 6], [14, 70, 2]],
+             [[0, 69, 4], [4, 73, 4], [8, 76, 2], [10, 73, 2], [12, 69, 4]]] },
+    boss: { bpm: 118, perLevel: 0, // E phrygian: Em, F, G, F
+      roots: [40, 41, 43, 41], chords: [[64, 67, 71], [65, 69, 72], [67, 71, 74], [65, 69, 72]],
+      lead: [[[0, 76, 2], [2, 77, 2], [4, 76, 2], [6, 71, 2], [8, 72, 4], [12, 71, 4]],
+             [[0, 77, 2], [2, 79, 2], [4, 77, 2], [6, 72, 2], [8, 76, 4], [12, 77, 4]],
+             [[0, 79, 2], [2, 81, 2], [4, 79, 2], [6, 74, 2], [8, 77, 3], [11, 76, 1], [12, 74, 4]],
+             [[0, 77, 4], [4, 76, 4], [8, 75, 4], [12, 71, 4]]] },
+  };
+  const mus = { on: false, level: 0, boss: false, timer: 0, step: 0, next: 0, gain: null, vol: -1 };
+  function musicStep(n, at, sd) {
+    const S = mus.boss ? SONGS.boss : SONGS.crypt, lv = mus.boss ? 4 : mus.level, bar = Math.floor(n / 16) % 4, s = n % 16;
+    const r = S.roots[bar], ch = S.chords[bar], o = { out: mus.gain };
+    // bass
+    if (mus.boss) chip({ ...o, at, wave: "triangle", notes: [s % 4 === 3 ? r + 12 : r], dur: sd * 0.9, vol: 0.32 });
+    else if (lv >= 4) chip({ ...o, at, wave: "triangle", notes: [s % 2 ? r + 12 : r], dur: sd * 0.9, vol: 0.3 });
+    else if (s === 0 || s === 8 || (lv >= 2 && (s === 6 || s === 14))) chip({ ...o, at, wave: "triangle", notes: [s === 6 || s === 14 ? r + 12 : r], dur: sd * (lv ? 5 : 7), vol: 0.32 });
+    // a cold drip in the empty early rounds
+    if (lv === 0 && s === 12 && bar % 2) chip({ ...o, at, wave: "pulse12", notes: [ch[2] + 12], dur: sd * 3, vol: 0.03 });
+    // arpeggio
+    if (lv >= 1 && (lv >= 3 || s % 2 === 0)) chip({ ...o, at, wave: "pulse12", notes: [ch[(s >> (lv >= 3 ? 0 : 1)) % 3] + 12], dur: sd * 0.8, vol: mus.boss ? 0.035 : 0.03 });
+    // drums: kick, snare, hats
+    if (lv >= 2 && (s === 0 || s === 8 || (lv >= 4 && (s === 10 || (mus.boss && s % 4 === 0)))))
+      chip({ ...o, at, wave: "triangle", notes: [36], bend: -14, dur: 0.09, vol: 0.4 });
+    if (lv >= 3 && (s === 4 || s === 12)) crunch({ ...o, at, rate: 1.2, to: 0.6, dur: 0.08, vol: 0.12, short: mus.boss });
+    if (lv >= 2 && (lv >= 4 || s % 4 === 2)) crunch({ ...o, at, rate: 3.5, dur: 0.02, vol: 0.035 });
+    // melody
+    if (lv >= 3) for (const [st, m, len] of S.lead[bar]) if (st === s) {
+      chip({ ...o, at, wave: "pulse25", notes: [m], dur: sd * len * 0.92, vol: 0.05 });
+      if (lv >= 4) chip({ ...o, at: at + 0.01, wave: "pulse12", notes: [m + 12], dur: sd * len * 0.85, vol: 0.022 });
+    }
+  }
+  function musicTick() {
+    if (!mus.on) return;
+    const a = audio(); if (!a || a.state !== "running") { mus.next = 0; return; }
+    if (!mus.gain) { mus.gain = a.createGain(); mus.gain.connect(master); }
+    if (mus.step % 16 === 0 || mus.vol <= 0) { mus.vol = musicVol(); mus.gain.gain.setValueAtTime(mus.vol * 0.7, a.currentTime); }
+    if (!mus.vol) { mus.next = 0; return; }
+    const S = mus.boss ? SONGS.boss : SONGS.crypt, sd = 60 / (S.bpm + S.perLevel * mus.level) / 4;
+    if (mus.next < a.currentTime) mus.next = a.currentTime + 0.05;
+    while (mus.next < a.currentTime + 0.15) { musicStep(mus.step, mus.next - a.currentTime, sd); mus.next += sd; mus.step++; }
+  }
+  function musicSet(level, boss) {
+    const changed = mus.boss !== !!boss; mus.level = Math.max(0, Math.min(4, level | 0)); mus.boss = !!boss;
+    if (changed) mus.step = 0;
+  }
+  function musicStart() { mus.vol = -1; if (mus.on) return; mus.on = true; mus.step = 0; mus.next = 0; mus.timer = setInterval(musicTick, 25); }
+  function musicStop() { mus.on = false; clearInterval(mus.timer); mus.timer = 0; }

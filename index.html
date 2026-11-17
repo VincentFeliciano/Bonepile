@@ -28,9 +28,9 @@ body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospa
 #cv { position: absolute; left: 0; top: 0; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
 #bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 /* pixel buttons: square, chunky, notched corners, pressed shading */
-button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 9px; line-height: 1.4; color: var(--fg); background: #111; border: 3px solid var(--line); border-radius: 0; padding: 10px 12px; cursor: pointer; box-shadow: inset -3px -3px 0 var(--stone);
+button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 9px; line-height: 1.4; color: #000; background: #e9dcb8 no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid #000; border-radius: 0; padding: 10px 12px; cursor: pointer;
   clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
-button:active { box-shadow: inset 3px 3px 0 var(--stone); }
+button:active { transform: translateY(2px); }
 button:focus-visible { outline: none; border-color: var(--glow); }
 #skull { width: 100px; height: 88px; border: none; padding: 0; display: grid; place-items: center; background: transparent; box-shadow: none; clip-path: none; }
 #skull svg { animation: bob 2.4s steps(1, end) infinite; overflow: visible; }
@@ -53,18 +53,18 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #runes[hidden] { display: none; }
 #left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 /* relic tablets: carved squares; the Oracle Stone is the bigger green one */
-.rune { width: 32px; height: 32px; padding: 0; border: 2px solid var(--line); display: grid; place-items: center; background: #111; color: var(--line); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px var(--stone); clip-path: none; }
+.rune { width: 32px; height: 32px; padding: 0; border: 2px solid #000; display: grid; place-items: center; color: #000; clip-path: none; }
 .rune svg { width: 24px; height: 24px; }
-.rune.power { width: 40px; height: 40px; position: relative; border-color: var(--glow); color: var(--glow); }
+.rune.power { width: 40px; height: 40px; position: relative; background-color: #16302f; border-color: var(--glow); color: var(--glow); }
 .rune.power svg { width: 24px; height: 24px; }
 .rune.power.spent { opacity: 0.35; border-style: dashed; }
 #charges { position: absolute; right: -22px; bottom: 0; font-size: 8px; color: var(--glow); }
 .rune.new { animation: runeIn .45s steps(3, end); }
 .rune.glow { animation: runeGlow 1s steps(4, end); }
 @keyframes runeIn { 0% { transform: scale(0); } 66% { transform: scale(1.25); } 100% { transform: scale(1); } }
-@keyframes runeGlow { 0%, 50% { background: var(--glow); color: #000; border-color: var(--glow); } 100% { background: #111; } }
+@keyframes runeGlow { 0%, 50% { background: var(--glow); color: #000; border-color: var(--glow); } }
 @media (prefers-reduced-motion: reduce) { .rune.new, .rune.glow { animation-duration: .01s; } }
-#over, #shop { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; background: rgba(0,0,0,.94); border: 3px solid var(--line); padding: 16px; text-align: center; }
+#over, #shop { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; background: #0c1a1c no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid var(--line); padding: 16px; text-align: center; }
 #over { align-items: center; }
 #over h2, #shop h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
 #row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 16px; }
@@ -72,26 +72,26 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #hearts svg, #sacCost svg { width: 14px; height: 12px; }
 #hearts.hurt { animation: hurt .6s steps(6, end); }
 @keyframes hurt { 0%, 33%, 66% { opacity: .2; } 16%, 50%, 83%, 100% { opacity: 1; } }
-#menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.94); border: 3px solid var(--line); padding: 16px; text-align: center; z-index: 4; }
+#menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #0c1a1c no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid var(--line); padding: 16px; text-align: center; z-index: 4; }
 #menu h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--gold); font-weight: normal; }
 #menu p, #dailyText { margin: 0; color: var(--line); }
 #menuFree, #menuDaily { min-width: 14em; }
-#menuDaily, #overDaily { border-color: var(--glow); }
-#sac { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(0,0,0,.94); border: 3px solid var(--blood); padding: 16px; text-align: center; z-index: 3; }
+#menuDaily, #overDaily { border-color: #2f7a28; }
+#sac { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #0c1a1c no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid var(--blood); padding: 16px; text-align: center; z-index: 3; }
 #sac h2 { margin: 0; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 13px; line-height: 1.5; color: var(--blood); font-weight: normal; }
 #sac p { margin: 0; }
 #sacPick { display: flex; align-items: center; gap: 14px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 10px; }
 #sacPick button { width: 44px; height: 44px; padding: 0; font-size: 14px; }
 #sacCost svg { width: 21px; height: 18px; }
-#sacYes { border-color: var(--blood); color: #fff; background: #3a0c0c; min-width: 12em; }
+#sacYes { border-color: var(--blood); color: var(--blood); min-width: 12em; }
 #next { min-height: 10px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; text-align: center; color: var(--muted); letter-spacing: 0.1em; }
 #shop { align-items: stretch; z-index: 2; }
 #shop p { margin: 0; }
 #relicList { display: flex; flex-direction: column; gap: 8px; }
 .relic { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
-.relic b { font-size: 9px; font-weight: normal; color: var(--fg); }
-.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 18px; line-height: 1; color: var(--line); grid-column: 1; }
-.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--gold); }
+.relic b { font-size: 9px; font-weight: normal; color: #000; }
+.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 18px; line-height: 1; color: #3a2e1e; grid-column: 1; }
+.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #8a5a1c; }
 .relic:disabled { opacity: 0.4; cursor: default; }
 </style>
 </head>
@@ -143,7 +143,7 @@ button:focus-visible { outline: none; border-color: var(--glow); }
       <button id="restart" type="button">Restart</button>
       <button id="power" class="rune power spent" type="button" title="Oracle Stone"><svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="0" width="4" height="1"/><rect x="2" y="1" width="2" height="1"/><rect x="8" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="4" y="3" width="4" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="5" y="5" width="2" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="5" y="6" width="2" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="0" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="4" y="8" width="4" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="2" y="10" width="2" height="1"/><rect x="8" y="10" width="2" height="1"/><rect x="4" y="11" width="4" height="1"/></svg><span id="charges"></span></button>
     </div>
-    <button id="skull" type="button" aria-label="Offer words to the skull"><svg width="96" height="84" viewBox="0 0 24 21" shape-rendering="crispEdges"><rect x="8" y="0" width="8" height="1" fill="#7a7a7a"/><rect x="5" y="1" width="2" height="1" fill="#7a7a7a"/><rect x="7" y="1" width="10" height="1" fill="#b0b0b0"/><rect x="17" y="1" width="2" height="1" fill="#7a7a7a"/><rect x="4" y="2" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="2" width="3" height="1" fill="#b0b0b0"/><rect x="8" y="2" width="8" height="1" fill="#e8e8e8"/><rect x="16" y="2" width="3" height="1" fill="#b0b0b0"/><rect x="19" y="2" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="3" width="1" height="1" fill="#7a7a7a"/><rect x="4" y="3" width="2" height="1" fill="#b0b0b0"/><rect x="6" y="3" width="12" height="1" fill="#e8e8e8"/><rect x="18" y="3" width="1" height="1" fill="#b0b0b0"/><rect x="19" y="3" width="1" height="1" fill="#b0b0b0"/><rect x="20" y="3" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="4" width="2" height="1" fill="#b0b0b0"/><rect x="5" y="4" width="14" height="1" fill="#e8e8e8"/><rect x="19" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="20" y="4" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="4" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="5" width="1" height="1" fill="#b0b0b0"/><rect x="4" y="5" width="16" height="1" fill="#e8e8e8"/><rect x="20" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="21" y="5" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="6" width="1" height="1" fill="#484848"/><rect x="2" y="6" width="2" height="1" fill="#b0b0b0"/><rect x="4" y="6" width="16" height="1" fill="#e8e8e8"/><rect x="20" y="6" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="6" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="6" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="7" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="7" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="7" width="18" height="1" fill="#e8e8e8"/><rect x="21" y="7" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="7" width="1" height="1" fill="#484848"/><rect x="1" y="8" width="1" height="1" fill="#484848"/><rect x="2" y="8" width="2" height="1" fill="#b0b0b0"/><rect x="4" y="8" width="4" height="1" fill="#000"/><rect x="8" y="8" width="8" height="1" fill="#e8e8e8"/><rect x="16" y="8" width="4" height="1" fill="#000"/><rect x="20" y="8" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="8" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="8" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="9" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="9" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="9" width="6" height="1" fill="#000"/><rect x="9" y="9" width="6" height="1" fill="#e8e8e8"/><rect x="15" y="9" width="6" height="1" fill="#000"/><rect x="21" y="9" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="9" width="1" height="1" fill="#484848"/><rect x="1" y="10" width="1" height="1" fill="#484848"/><rect x="2" y="10" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="10" width="2" height="1" fill="#000"/><rect x="7" y="10" width="2" height="1" fill="#000"/><rect x="9" y="10" width="6" height="1" fill="#e8e8e8"/><rect x="15" y="10" width="2" height="1" fill="#000"/><rect x="19" y="10" width="2" height="1" fill="#000"/><rect x="21" y="10" width="1" height="1" fill="#7a7a7a"/><rect x="22" y="10" width="1" height="1" fill="#7a7a7a"/><rect x="1" y="11" width="1" height="1" fill="#7a7a7a"/><rect x="2" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="3" y="11" width="2" height="1" fill="#000"/><rect x="7" y="11" width="2" height="1" fill="#000"/><rect x="9" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="10" y="11" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="15" y="11" width="2" height="1" fill="#000"/><rect x="19" y="11" width="2" height="1" fill="#000"/><rect x="21" y="11" width="1" height="1" fill="#b0b0b0"/><rect x="22" y="11" width="1" height="1" fill="#484848"/><rect x="2" y="12" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="12" width="1" height="1" fill="#b0b0b0"/><rect x="4" y="12" width="4" height="1" fill="#000"/><rect x="8" y="12" width="2" height="1" fill="#b0b0b0"/><rect x="10" y="12" width="1" height="1" fill="#e8e8e8"/><rect x="11" y="12" width="2" height="1" fill="#000"/><rect x="13" y="12" width="1" height="1" fill="#e8e8e8"/><rect x="14" y="12" width="2" height="1" fill="#b0b0b0"/><rect x="16" y="12" width="4" height="1" fill="#000"/><rect x="20" y="12" width="1" height="1" fill="#b0b0b0"/><rect x="21" y="12" width="1" height="1" fill="#484848"/><rect x="2" y="13" width="1" height="1" fill="#484848"/><rect x="3" y="13" width="7" height="1" fill="#b0b0b0"/><rect x="10" y="13" width="4" height="1" fill="#000"/><rect x="14" y="13" width="5" height="1" fill="#b0b0b0"/><rect x="19" y="13" width="1" height="1" fill="#b0b0b0"/><rect x="20" y="13" width="1" height="1" fill="#7a7a7a"/><rect x="21" y="13" width="1" height="1" fill="#7a7a7a"/><rect x="3" y="14" width="1" height="1" fill="#484848"/><rect x="4" y="14" width="7" height="1" fill="#b0b0b0"/><rect x="11" y="14" width="2" height="1" fill="#000"/><rect x="13" y="14" width="6" height="1" fill="#b0b0b0"/><rect x="19" y="14" width="1" height="1" fill="#7a7a7a"/><rect x="20" y="14" width="1" height="1" fill="#7a7a7a"/><rect x="4" y="15" width="1" height="1" fill="#484848"/><rect x="5" y="15" width="1" height="1" fill="#b0b0b0"/><rect x="6" y="15" width="12" height="1" fill="#b0b0b0"/><rect x="18" y="15" width="1" height="1" fill="#7a7a7a"/><rect x="19" y="15" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="16" width="1" height="1" fill="#484848"/><rect x="6" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="7" y="16" width="1" height="1" fill="#000"/><rect x="8" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="9" y="16" width="1" height="1" fill="#000"/><rect x="10" y="16" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="16" width="1" height="1" fill="#000"/><rect x="15" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="16" y="16" width="1" height="1" fill="#000"/><rect x="17" y="16" width="1" height="1" fill="#e8e8e8"/><rect x="18" y="16" width="1" height="1" fill="#7a7a7a"/><rect class="pupil" x="5" y="10" width="2" height="1"/><rect class="pupil" x="17" y="10" width="2" height="1"/><rect class="pupil" x="5" y="11" width="2" height="1"/><rect class="pupil" x="17" y="11" width="2" height="1"/><g id="gear"></g><g class="jaw"><rect x="5" y="17" width="1" height="1" fill="#484848"/><rect x="6" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="7" y="17" width="1" height="1" fill="#000"/><rect x="8" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="9" y="17" width="1" height="1" fill="#000"/><rect x="10" y="17" width="4" height="1" fill="#e8e8e8"/><rect x="14" y="17" width="1" height="1" fill="#000"/><rect x="15" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="16" y="17" width="1" height="1" fill="#000"/><rect x="17" y="17" width="1" height="1" fill="#e8e8e8"/><rect x="18" y="17" width="1" height="1" fill="#7a7a7a"/><rect x="5" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="6" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="7" y="18" width="10" height="1" fill="#b0b0b0"/><rect x="17" y="18" width="1" height="1" fill="#7a7a7a"/><rect x="18" y="18" width="1" height="1" fill="#484848"/><rect x="6" y="19" width="1" height="1" fill="#7a7a7a"/><rect x="7" y="19" width="1" height="1" fill="#7a7a7a"/><rect x="8" y="19" width="8" height="1" fill="#b0b0b0"/><rect x="16" y="19" width="1" height="1" fill="#b0b0b0"/><rect x="17" y="19" width="1" height="1" fill="#484848"/><rect x="7" y="20" width="1" height="1" fill="#7a7a7a"/><rect x="8" y="20" width="1" height="1" fill="#484848"/><rect x="9" y="20" width="6" height="1" fill="#7a7a7a"/><rect x="15" y="20" width="1" height="1" fill="#7a7a7a"/><rect x="16" y="20" width="1" height="1" fill="#484848"/></g></svg>
+    <button id="skull" type="button" aria-label="Offer words to the skull"><svg width="96" height="84" viewBox="0 0 24 21" shape-rendering="crispEdges" overflow="visible"><rect x="8" y="0" width="6" height="1" fill="#e9dcb8"/><rect x="14" y="0" width="1" height="1" fill="#b8a47c"/><rect x="15" y="0" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="1" width="2" height="1" fill="#b8a47c"/><rect x="7" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="1" width="3" height="1" fill="#e9dcb8"/><rect x="11" y="1" width="1" height="1" fill="#b8a47c"/><rect x="12" y="1" width="1" height="1" fill="#e9dcb8"/><rect x="13" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="1" width="4" height="1" fill="#b8a47c"/><rect x="18" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="4" y="2" width="2" height="1" fill="#b8a47c"/><rect x="6" y="2" width="7" height="1" fill="#e9dcb8"/><rect x="13" y="2" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="2" width="3" height="1" fill="#e9dcb8"/><rect x="17" y="2" width="2" height="1" fill="#b8a47c"/><rect x="19" y="2" width="1" height="1" fill="#7a6a4c"/><rect x="3" y="3" width="2" height="1" fill="#b8a47c"/><rect x="5" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="8" y="3" width="1" height="1" fill="#b8a47c"/><rect x="9" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="12" y="3" width="1" height="1" fill="#7a6a4c"/><rect x="13" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="16" y="3" width="4" height="1" fill="#b8a47c"/><rect x="20" y="3" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="4" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="4" width="1" height="1" fill="#b8a47c"/><rect x="4" y="4" width="8" height="1" fill="#e9dcb8"/><rect x="12" y="4" width="1" height="1" fill="#7a6a4c"/><rect x="13" y="4" width="4" height="1" fill="#e9dcb8"/><rect x="17" y="4" width="4" height="1" fill="#b8a47c"/><rect x="21" y="4" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="5" width="1" height="1" fill="#b8a47c"/><rect x="3" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="5" width="1" height="1" fill="#b8a47c"/><rect x="5" y="5" width="2" height="1" fill="#e9dcb8"/><rect x="7" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="5" width="1" height="1" fill="#b8a47c"/><rect x="10" y="5" width="3" height="1" fill="#e9dcb8"/><rect x="13" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="5" width="2" height="1" fill="#e9dcb8"/><rect x="16" y="5" width="1" height="1" fill="#b8a47c"/><rect x="17" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="5" width="2" height="1" fill="#b8a47c"/><rect x="20" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="5" width="1" height="1" fill="#b8a47c"/><rect x="1" y="6" width="1" height="1" fill="#b8a47c"/><rect x="2" y="6" width="14" height="1" fill="#e9dcb8"/><rect x="16" y="6" width="2" height="1" fill="#b8a47c"/><rect x="18" y="6" width="1" height="1" fill="#e9dcb8"/><rect x="19" y="6" width="2" height="1" fill="#b8a47c"/><rect x="21" y="6" width="1" height="1" fill="#7a6a4c"/><rect x="22" y="6" width="1" height="1" fill="#b8a47c"/><rect x="1" y="7" width="2" height="1" fill="#b8a47c"/><rect x="3" y="7" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="7" width="1" height="1" fill="#b8a47c"/><rect x="5" y="7" width="11" height="1" fill="#e9dcb8"/><rect x="16" y="7" width="1" height="1" fill="#b8a47c"/><rect x="17" y="7" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="7" width="2" height="1" fill="#b8a47c"/><rect x="20" y="7" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="7" width="1" height="1" fill="#b8a47c"/><rect x="22" y="7" width="1" height="1" fill="#7a6a4c"/><rect x="1" y="8" width="1" height="1" fill="#b8a47c"/><rect x="2" y="8" width="2" height="1" fill="#e9dcb8"/><rect x="4" y="8" width="4" height="1" fill="#000"/><rect x="8" y="8" width="8" height="1" fill="#e9dcb8"/><rect x="16" y="8" width="4" height="1" fill="#000"/><rect x="20" y="8" width="3" height="1" fill="#b8a47c"/><rect x="1" y="9" width="2" height="1" fill="#b8a47c"/><rect x="3" y="9" width="6" height="1" fill="#000"/><rect x="9" y="9" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="9" width="6" height="1" fill="#000"/><rect x="21" y="9" width="1" height="1" fill="#b8a47c"/><rect x="22" y="9" width="1" height="1" fill="#7a6a4c"/><rect x="1" y="10" width="1" height="1" fill="#b8a47c"/><rect x="2" y="10" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="10" width="2" height="1" fill="#000"/><rect class="pupil" x="5" y="10" width="2" height="1"/><rect x="7" y="10" width="2" height="1" fill="#000"/><rect x="9" y="10" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="10" width="2" height="1" fill="#000"/><rect class="pupil" x="17" y="10" width="2" height="1"/><rect x="19" y="10" width="2" height="1" fill="#000"/><rect x="21" y="10" width="1" height="1" fill="#7a6a4c"/><rect x="22" y="10" width="1" height="1" fill="#b8a47c"/><rect x="1" y="11" width="2" height="1" fill="#b8a47c"/><rect x="3" y="11" width="2" height="1" fill="#000"/><rect class="pupil" x="5" y="11" width="2" height="1"/><rect x="7" y="11" width="2" height="1" fill="#000"/><rect x="9" y="11" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="11" width="2" height="1" fill="#000"/><rect class="pupil" x="17" y="11" width="2" height="1"/><rect x="19" y="11" width="2" height="1" fill="#000"/><rect x="21" y="11" width="1" height="1" fill="#b8a47c"/><rect x="22" y="11" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="12" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="12" width="1" height="1" fill="#b8a47c"/><rect x="4" y="12" width="4" height="1" fill="#000"/><rect x="8" y="12" width="3" height="1" fill="#e9dcb8"/><rect x="11" y="12" width="2" height="1" fill="#000"/><rect x="13" y="12" width="3" height="1" fill="#e9dcb8"/><rect x="16" y="12" width="4" height="1" fill="#000"/><rect x="20" y="12" width="1" height="1" fill="#b8a47c"/><rect x="21" y="12" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="13" width="1" height="1" fill="#b8a47c"/><rect x="3" y="13" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="13" width="1" height="1" fill="#b8a47c"/><rect x="5" y="13" width="5" height="1" fill="#e9dcb8"/><rect x="10" y="13" width="4" height="1" fill="#000"/><rect x="14" y="13" width="2" height="1" fill="#e9dcb8"/><rect x="16" y="13" width="1" height="1" fill="#b8a47c"/><rect x="17" y="13" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="13" width="2" height="1" fill="#b8a47c"/><rect x="20" y="13" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="13" width="1" height="1" fill="#b8a47c"/><rect x="3" y="14" width="1" height="1" fill="#b8a47c"/><rect x="4" y="14" width="1" height="1" fill="#e9dcb8"/><rect x="5" y="14" width="1" height="1" fill="#b8a47c"/><rect x="6" y="14" width="5" height="1" fill="#e9dcb8"/><rect x="11" y="14" width="2" height="1" fill="#000"/><rect x="13" y="14" width="4" height="1" fill="#e9dcb8"/><rect x="17" y="14" width="2" height="1" fill="#b8a47c"/><rect x="19" y="14" width="2" height="1" fill="#7a6a4c"/><rect x="4" y="15" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="15" width="2" height="1" fill="#b8a47c"/><rect x="7" y="15" width="9" height="1" fill="#e9dcb8"/><rect x="16" y="15" width="2" height="1" fill="#b8a47c"/><rect x="18" y="15" width="2" height="1" fill="#7a6a4c"/><rect x="5" y="16" width="1" height="1" fill="#b8a47c"/><rect x="6" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="7" y="16" width="1" height="1" fill="#000"/><rect x="8" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="16" width="1" height="1" fill="#000"/><rect x="10" y="16" width="4" height="1" fill="#e9dcb8"/><rect x="14" y="16" width="1" height="1" fill="#000"/><rect x="15" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="16" y="16" width="1" height="1" fill="#000"/><rect x="17" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="16" width="1" height="1" fill="#7a6a4c"/><g id="gear"></g><g class="jaw"><rect x="5" y="17" width="1" height="1" fill="#b8a47c"/><rect x="6" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="7" y="17" width="1" height="1" fill="#000"/><rect x="8" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="17" width="1" height="1" fill="#000"/><rect x="10" y="17" width="4" height="1" fill="#e9dcb8"/><rect x="14" y="17" width="1" height="1" fill="#000"/><rect x="15" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="16" y="17" width="1" height="1" fill="#000"/><rect x="17" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="17" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="18" width="1" height="1" fill="#7a6a4c"/><rect x="6" y="18" width="2" height="1" fill="#b8a47c"/><rect x="8" y="18" width="5" height="1" fill="#e9dcb8"/><rect x="13" y="18" width="1" height="1" fill="#b8a47c"/><rect x="14" y="18" width="1" height="1" fill="#e9dcb8"/><rect x="15" y="18" width="2" height="1" fill="#b8a47c"/><rect x="17" y="18" width="2" height="1" fill="#7a6a4c"/><rect x="6" y="19" width="1" height="1" fill="#7a6a4c"/><rect x="7" y="19" width="2" height="1" fill="#b8a47c"/><rect x="9" y="19" width="1" height="1" fill="#e9dcb8"/><rect x="10" y="19" width="1" height="1" fill="#b8a47c"/><rect x="11" y="19" width="1" height="1" fill="#e9dcb8"/><rect x="12" y="19" width="4" height="1" fill="#b8a47c"/><rect x="16" y="19" width="2" height="1" fill="#7a6a4c"/><rect x="7" y="20" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="20" width="2" height="1" fill="#b8a47c"/><rect x="10" y="20" width="1" height="1" fill="#e9dcb8"/><rect x="11" y="20" width="1" height="1" fill="#b8a47c"/><rect x="12" y="20" width="1" height="1" fill="#e9dcb8"/><rect x="13" y="20" width="2" height="1" fill="#b8a47c"/><rect x="15" y="20" width="2" height="1" fill="#7a6a4c"/></g></svg>
     </button>
     <div id="help">Swipe a landed disc to spin it<br>Tap it: turn one step</div>
     <div id="runes" hidden></div>
@@ -501,7 +501,11 @@ if (typeof document !== "undefined") {
   const sfx = {
     // a stone thud: triangle bass drops an octave under a low crunch
     land() { chip({ wave: "triangle", notes: [43], bend: -14, dur: 0.16, vol: 0.5 }); crunch({ rate: 0.18, dur: 0.1, vol: 0.32 }); },
-    turn() { chip({ wave: "pulse12", notes: [91], dur: 0.03, vol: 0.08 }); },
+    turn() { // bone grinding on bone: a short gritty scrape and a dull knock
+      crunch({ rate: 0.32 + Math.random() * 0.12, to: 0.2, dur: 0.07, vol: 0.1 });
+      crunch({ short: true, rate: 0.9 + Math.random() * 0.3, dur: 0.035, vol: 0.035 });
+      chip({ wave: "triangle", notes: [31 + Math.floor(Math.random() * 3)], dur: 0.04, vol: 0.12 });
+    },
     chomp() { // jaws snap twice: bass bite plus a crunch
       for (const at of [0, 0.15]) { chip({ at, wave: "triangle", notes: [38], bend: -12, dur: 0.11, vol: 0.55 }); crunch({ at, rate: 0.45, to: 0.2, dur: 0.08, vol: 0.3 }); }
       chip({ at: 0.32, wave: "square", notes: [48, 55, 60], step: 0.04, vol: 0.07 });
@@ -590,6 +594,7 @@ if (typeof document !== "undefined") {
       b.addEventListener("click", () => { say(`${r.name}: ${r.desc}.`); glowRune(id); });
       box.appendChild(b);
     }
+    reskin();
   }
   // Flash a relic's icon when it does something. delay lets it line up with the skull swallowing.
   function glowRune(id, delay = 0) {
@@ -655,7 +660,7 @@ if (typeof document !== "undefined") {
 
   // The temple: mossy carved stone, a dark shaft for the column, old bricks either side.
   // Drawn once per size into its own little canvas, in art pixels.
-  let wallCv = null;
+  let wallCv = null, slab = () => {};
   function stones(f, R, x0, y0, w, h, face, lite, dark, moss) {
     let y = y0;
     while (y < y0 + h) {
@@ -665,9 +670,7 @@ if (typeof document !== "undefined") {
         const sw = 9 + Math.floor(R() * 10);
         const a = Math.max(x, x0), b = Math.min(x + sw - 1, x0 + w), top = y, bot = Math.min(y + rh - 1, y0 + h);
         if (b - a > 1 && bot - top > 1) {
-          f(face, a, top, b - a, bot - top);
-          f(lite, a, top, b - a, 1); f(lite, a, top, 1, bot - top); // worn top-left edge
-          f(dark, a, bot - 1, b - a, 1);
+          slab(a, top, b - a, bot - top, dark, face, lite);
           // carved glyph on some blocks: a little maze of grooves
           if (R() < 0.18 && b - a > 8 && bot - top > 5) {
             const gx = a + 2 + Math.floor(R() * (b - a - 7)), gy = top + 2;
@@ -690,7 +693,7 @@ if (typeof document !== "undefined") {
         const a = Math.max(x, x0), b = Math.min(x + 3, x0 + w), bh = Math.min(2, y0 + h - y);
         if (b <= a || bh <= 0) continue;
         if (R() < 0.07) { f(C.teal0, a, y, b - a, bh); continue; } // a brick fallen out
-        f(R() < 0.5 ? C.mauve1 : C.mauve0, a, y, b - a, bh); f(C.mauve2, a, y, b - a, 1);
+        slab(a, y, b - a, bh, C.mauve0, C.mauve1, C.mauve2);
         if (R() < 0.2) f(C.sage1, a + Math.floor(R() * (b - a)), y, 1, 1);
       }
     }
@@ -700,6 +703,11 @@ if (typeof document !== "undefined") {
     const c = document.createElement("canvas"); c.width = cw; c.height = ch;
     const g = c.getContext && c.getContext("2d"); if (!g || !g.fillRect) return null;
     const R = rng(1234), f = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+    slab = (x, y, w, h, c0, c1, c2) => { // the disc's shading: a horizontal profile, dithered later
+      const gr = g.createLinearGradient && g.createLinearGradient(x, 0, x + w, 0);
+      if (gr) [[0, c0], [0.16, c1], [0.4, c2], [0.62, c2], [0.9, c1], [1, c0]].forEach(([o, c]) => gr.addColorStop(o, c));
+      g.fillStyle = gr || c1; g.fillRect(x, y, w, h); f(c0, x, y + h - 1, w, 1);
+    };
     f(C.teal0, 0, 0, cw, ch);
     stones(f, R, 0, 0, cw, ch, C.sage0, C.sage1, C.teal1, [C.moss, C.sage1]);
     const sx = wellX / PX, sw = wellW / PX, sy = wellTop / PX, sh = ROWS * cellH / PX;
@@ -709,8 +717,43 @@ if (typeof document !== "undefined") {
     bricks(f, R, sx - 4, sy + sh, sw + 8, ch - sy - sh);
     // vines hanging from the top
     for (let v = 0; v < 5; v++) { let x = Math.floor(R() * cw); const len = 6 + Math.floor(R() * 18); for (let i = 0; i < len; i++) { f(i % 4 === 3 ? C.moss : C.sage1, x, i, 1, 1); if (R() < 0.2) x += R() < 0.5 ? -1 : 1; } }
+    pixelate(g, false);
     return c;
   }
+
+  // UI skins: the disc's dithered slab shading baked into a small image for each button and panel size.
+  const UI_PX = 3;
+  const SKINS = { bone: [C.bone2, C.bone1, C.bone], stone: [C.k, C.teal0, C.teal1], oracle: [C.teal0, C.teal1, C.teal2] };
+  const skinCache = new Map();
+  function slabTexture(w, h, [c0, c1, c2], seed) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext && c.getContext("2d", { willReadFrequently: true });
+    if (!g || !g.createLinearGradient || !c.toDataURL) return "";
+    const gr = g.createLinearGradient(0, 0, w, 0);
+    [[0, c0], [0.16, c1], [0.4, c2], [0.62, c2], [0.9, c1], [1, c0]].forEach(([o, col]) => gr.addColorStop(o, col));
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.fillStyle = c0; g.fillRect(0, h - 1, w, 1);
+    const r = rng(seed);
+    for (let i = 0; i < w * h / 30; i++) { g.fillStyle = r() < 0.6 ? c1 : c0; g.fillRect(Math.floor(r() * w), Math.floor(r() * (h - 1)), 1, 1); }
+    pixelate(g, false);
+    return c.toDataURL();
+  }
+  function skin(el, kind) {
+    if (!el || !el.getBoundingClientRect || !el.style) return;
+    const r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+    const w = Math.ceil(r.width / UI_PX), h = Math.ceil(r.height / UI_PX), key = `${kind}${w}x${h}`;
+    let url = skinCache.get(key);
+    if (url === undefined) { url = slabTexture(w, h, SKINS[kind], w * 131 + h * 7); skinCache.set(key, url); }
+    if (!url) return;
+    el.style.backgroundImage = `url(${url})`; el.style.backgroundSize = `${w * UI_PX}px ${h * UI_PX}px`;
+  }
+  function skinAll() {
+    if (!document.querySelectorAll) return;
+    document.querySelectorAll("button:not(#skull):not(#mute):not(#power)").forEach(b => skin(b, "bone"));
+    skin($("power"), "oracle");
+    document.querySelectorAll("#over, #shop, #sac, #menu").forEach(p => skin(p, "stone"));
+  }
+  const reskin = () => setTimeout(skinAll, 0);
 
   function resize() {
     const r = $("wrap").getBoundingClientRect();
@@ -723,6 +766,7 @@ if (typeof document !== "undefined") {
     wellX = snap((W - wellW) / 2);
     wellTop = H - 3 * PX - cellH * ROWS;
     wallCv = null;
+    reskin();
   }
   // slot 0 is the bottom row
   const rowY = row => wellTop + (ROWS - 1 - row) * cellH;
@@ -777,7 +821,7 @@ if (typeof document !== "undefined") {
   function openSac() {
     st.sac = true; st.falling = null; drag = null;
     st.sacN = Math.min(4, sacMax());
-    sacShow(); $("sac").hidden = false; sfx.refuse(); skullClass("open", 900);
+    sacShow(); $("sac").hidden = false; reskin(); sfx.refuse(); skullClass("open", 900);
   }
   function sacrifice() {
     if (!st.sac) return;
@@ -800,7 +844,7 @@ if (typeof document !== "undefined") {
     st.over = true; st.falling = null; sfx.over();
     $("overText").textContent = `Round ${st.round}: ${st.roundGold} of ${quotaFor(st.round)} gold. Best word: ${st.best || "none"}.`;
     $("dailyText").textContent = st.daily ? dailyResult() : "";
-    $("over").hidden = false;
+    $("over").hidden = false; reskin();
   }
   // best daily result for today, kept on this device
   function dailyBest(key) { try { return JSON.parse(localStorage.getItem("bonepile-daily-" + key) || "null"); } catch (_) { return null; } }
@@ -816,7 +860,7 @@ if (typeof document !== "undefined") {
     st.menu = true; drag = null;
     const b = dailyBest(todayKey());
     $("menuDailyText").textContent = b ? `Today's best: ${b.gold} gold, round ${b.round}${b.word ? ", " + b.word : ""}.` : "Same discs for everyone today. Your best is saved here.";
-    $("menu").hidden = false;
+    $("menu").hidden = false; reskin();
   }
   function closeMenu() { st.menu = false; $("menu").hidden = true; }
 
@@ -887,7 +931,7 @@ if (typeof document !== "undefined") {
       });
       list.appendChild(b);
     }
-    $("shop").hidden = false;
+    $("shop").hidden = false; reskin();
   }
 
   // ---------- the offering: letters drift into the skull's mouth, it swallows, then pays ----------
@@ -1203,8 +1247,10 @@ if (typeof document !== "undefined") {
     const P = PX, w = Math.max(2, Math.round(5 * sc)) * P; x = snap(x); y = snap(y);
     const f = (c, a, b, ww, hh) => { fctx.fillStyle = c; fctx.fillRect(a, b, ww, hh); };
     f(C.k, x - w, y - 5 * P, 2 * w, 6 * P); f(C.k, x - w - P, y - 4 * P, 2 * w + 2 * P, 4 * P);
+    const gr = fctx.createLinearGradient ? fctx.createLinearGradient(x - w, 0, x + w, 0) : null;
+    if (gr && gr.addColorStop) [[0, C.gold1], [0.18, C.gold], [0.42, C.bone], [0.6, C.gold], [1, C.gold1]].forEach(([o, c]) => gr.addColorStop(o, c));
     f(C.gold1, x - w + P, y - P, 2 * w - 2 * P, P); f(C.gold1, x - w, y - 2 * P, 2 * w, P);
-    f(C.gold, x - w, y - 3 * P, 2 * w, P); f(C.gold, x - w + P, y - 4 * P, 2 * w - 2 * P, P);
+    f((gr && gr.addColorStop) ? gr : C.gold, x - w, y - 3 * P, 2 * w, P); f((gr && gr.addColorStop) ? gr : C.gold, x - w + P, y - 4 * P, 2 * w - 2 * P, P);
     f(C.bone, x - w + 2 * P, y - 4 * P, 2 * P, P);
   }
   function popGold() {
@@ -1319,6 +1365,7 @@ if (typeof document !== "undefined") {
     requestAnimationFrame(loop);
   }
   resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reskin);
 }
 </script>
 </body>

@@ -688,6 +688,42 @@ if (typeof document !== "undefined") {
       { k: "bass", at: 0.8, notes: [33], dur: 0.08, vol: 0.5 }, { k: "bass", at: 0.98, notes: [31], dur: 0.1, vol: 0.4 }] },
     door: { name: "Creaky door", cat: "Spooky", knobs: { bits: 5, down: 2, arp: 1, arpHz: 23 }, layers: [
       { k: "tone", wave: "pulse12", notes: [50], bend: 9, dur: 0.8, vol: 0.06 }, { k: "noise", short: true, rate: 0.3, dur: 0.8, vol: 0.05 }] },
+    // bones: scraping, breaking and clinking
+    boneScrape: { name: "Bone scrape", cat: "Bone scrapes", layers: [
+      { k: "drag", dur: 0.45, tone: 1500, rough: 0.5, rate: 45, pebbles: 0.4, atk: 0.03, rel: 0.1, vol: 0.3 }] },
+    boneScrapeLong: { name: "Slow bone scrape", cat: "Bone scrapes", knobs: { room: 0.2 }, layers: [
+      { k: "drag", dur: 1.3, tone: 1100, sweep: 3, rough: 0.7, rate: 20, ease: 0.3, pebbles: 0.3, atk: 0.15, rel: 0.2, vol: 0.3 },
+      { k: "bone", at: 1.25, hits: 1, tone: 900, decay: 0.05, vol: 0.2 }] },
+    boneOnStone: { name: "Bone on stone", cat: "Bone scrapes", knobs: { room: 0.15 }, layers: [
+      { k: "drag", dur: 0.8, tone: 800, rough: 0.85, rate: 28, rumble: 0.2, pebbles: 1.5, vol: 0.32 },
+      { k: "bone", hits: 4, spread: 0.7, tone: 1000, jitter: 4, decay: 0.03, click: 1.5, vol: 0.12 }] },
+    boneSnap: { name: "Bone snap", cat: "Bone breaks", layers: [
+      { k: "bone", hits: 1, tone: 1300, decay: 0.025, crack: 1, crackLen: 0.05, vol: 0.32 },
+      { k: "bone", at: 0.01, hits: 1, tone: 380, decay: 0.04, click: 0, vol: 0.25 }] },
+    boneCrunch: { name: "Bone crunch", cat: "Bone breaks", layers: [
+      { k: "bone", hits: 5, spread: 0.22, tone: 800, jitter: 6, decay: 0.03, crack: 1.2, crackLen: 0.25, vol: 0.3 },
+      { k: "bass", notes: [36], bend: -8, dur: 0.12, vol: 0.35 }] },
+    skullCrack: { name: "Skull cracks", cat: "Bone breaks", knobs: { room: 0.2 }, layers: [
+      { k: "bone", hits: 1, tone: 430, ratios: [1, 1.58, 2.9, 4.6], amps: [1, 0.7, 0.35, 0.15], decay: 0.1, crack: 0.8, crackLen: 0.12, vol: 0.35 },
+      { k: "bone", at: 0.12, hits: 3, spread: 0.15, tone: 1400, jitter: 5, decay: 0.03, vol: 0.15 }] },
+    boneShatter: { name: "Bones shatter", cat: "Bone breaks", knobs: { room: 0.25 }, layers: [
+      { k: "bone", hits: 1, tone: 600, decay: 0.05, crack: 1.5, crackLen: 0.2, vol: 0.35 },
+      { k: "bone", at: 0.05, hits: 12, spread: 0.7, bounce: 0.75, tone: 1300, jitter: 7, decay: 0.035, vol: 0.25 }] },
+    boneClack: { name: "Bone clack", cat: "Bone clinks", knobs: { room: 0.1 }, layers: [
+      { k: "bone", hits: 2, spread: 0.07, even: true, tone: 950, jitter: 2, decay: 0.05, vol: 0.3 }] },
+    skullKnock: { name: "Skull knock", cat: "Bone clinks", knobs: { room: 0.25 }, layers: [
+      { k: "bone", hits: 3, spread: 0.36, even: true, tone: 430, ratios: [1, 1.58, 2.9, 4.6], amps: [1, 0.7, 0.35, 0.15], decay: 0.12, jitter: 0.5, fade: 0.2, vol: 0.35 }] },
+    boneRattleReal: { name: "Skeleton rattle", cat: "Bone clinks", knobs: { room: 0.15 }, layers: [
+      { k: "bone", hits: 14, spread: 0.6, tone: 1100, jitter: 5, decay: 0.045, fade: 0.3, vol: 0.22 }] },
+    boneDrop: { name: "Bones dropped", cat: "Bone clinks", knobs: { room: 0.2 }, layers: [
+      { k: "bone", hits: 7, spread: 0.7, bounce: 0.65, tone: 850, jitter: 4, decay: 0.06, vol: 0.33 },
+      { k: "bone", at: 0.05, hits: 5, spread: 0.6, bounce: 0.6, tone: 1250, jitter: 4, decay: 0.04, vol: 0.2 }] },
+    boneWalk: { name: "Skeleton walk", cat: "Bone clinks", layers: [
+      { k: "bone", hits: 8, spread: 1.4, even: true, swing: 0.8, tone: 700, jitter: 3, decay: 0.05, vol: 0.3 }] },
+    boneChime: { name: "Bone wind chimes", cat: "Bone clinks", knobs: { room: 0.45, roomSize: 2.5 }, layers: [
+      { k: "bone", hits: 7, spread: 1.4, tone: 1500, jitter: 7, decay: 0.35, ratios: [1, 2.76, 5.4], amps: [1, 0.4, 0.15], click: 0.4, vol: 0.18 }] },
+    ribXylo: { name: "Rib xylophone", cat: "Bone clinks", knobs: { room: 0.3 }, layers: [
+      { k: "bone", hits: 6, spread: 0.75, even: true, notes: [69, 72, 76, 74, 71, 64], ratios: [1, 3.93, 9.5], amps: [1, 0.3, 0.1], decay: 0.22, vol: 0.3 }] },
     // detailed sounds: real stone and real-sounding laughs (clean, no crunch unless you add it)
     dragHeavy: { name: "Heavy stone drag", cat: "Stone drags", knobs: { room: 0.25 }, layers: [
       { k: "drag", dur: 1.4, tone: 380, rough: 0.7, rate: 18, rumble: 0.8, pebbles: 1, atk: 0.12, rel: 0.2, vol: 0.4 }] },
@@ -802,6 +838,11 @@ if (typeof document !== "undefined") {
     { k: "sPebbles", g: "Stone", label: "Grit and pebbles", min: 0, max: 4, step: 0.1, def: 1, rnd: [0.2, 2.5] },
     { k: "sSpeed", g: "Stone", label: "Scrape speed", min: 0.3, max: 3, step: 0.05, def: 1, rnd: [0.6, 1.8] },
     { k: "sStop", g: "Stone", label: "Extra thud at the end", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 1] },
+    { k: "bHard", g: "Bone", label: "Hardness", min: 0.3, max: 3, step: 0.05, def: 1, rnd: [0.6, 2] },
+    { k: "bRing", g: "Bone", label: "Ring", min: 0.2, max: 4, step: 0.05, def: 1, rnd: [0.5, 2.5] },
+    { k: "bHits", g: "Bone", label: "Hits", min: -10, max: 20, step: 1, def: 0, rnd: [-2, 6] },
+    { k: "bSpread", g: "Bone", label: "Spread out", min: 0.2, max: 3, step: 0.05, def: 1, rnd: [0.5, 2] },
+    { k: "bCrack", g: "Bone", label: "Extra crackle", min: 0, max: 1.5, step: 0.05, def: 0, rnd: [0, 1] },
     { k: "echo", g: "Space", label: "Echo", min: 0, max: 0.8, step: 0.05, def: 0, rnd: [0, 0.4] },
     { k: "echoTime", g: "Space", label: "Echo time", min: 0.04, max: 0.5, step: 0.01, def: 0.18, rnd: [0.06, 0.3] },
     { k: "room", g: "Space", label: "Temple reverb", min: 0, max: 1, step: 0.05, def: 0, rnd: [0, 0.5] },
@@ -1064,6 +1105,64 @@ if (typeof document !== "undefined") {
     if (lfo) lfo.stop(now + last + 0.1);
     return last;
   }
+  // bones: each hit rings a few out-of-tune partials (like a wooden bar) after a sharp click,
+  // with an optional crackle for snapping and crunching
+  const BONE_RATIOS = [1, 2.32, 4.25, 6.63], BONE_AMPS = [1, 0.55, 0.3, 0.15];
+  function boneHits(L, K, common, at, vol) {
+    const a = audio(); if (!a) return at;
+    const T = K.length, W = K.wobble, out = common.out || master, now = a.currentTime;
+    const n = Math.max(0, Math.min(40, Math.round(L.hits === undefined ? 1 : +L.hits) + K.bHits));
+    const ratios = Array.isArray(L.ratios) && L.ratios.length ? L.ratios.slice(0, 6).map(r => Math.max(0.1, +r || 1)) : BONE_RATIOS;
+    const amps = ratios.map((_, j) => Array.isArray(L.amps) && isFinite(+L.amps[j]) ? Math.max(0, +L.amps[j]) : BONE_AMPS[j] || 0.1);
+    const sumA = Math.max(0.1, amps.reduce((s, v) => s + v, 0));
+    const ring = Math.max(0.005, (+L.decay || 0.08) * K.bRing), spread = Math.max(0, (+L.spread || 0) * T * K.bSpread);
+    const hard = K.bHard, crack = Math.min(2.5, (+L.crack || 0) + K.bCrack), bounce = Math.min(0.9, +L.bounce || 0), swing = Math.min(0.95, +L.swing || 0);
+    const notes = Array.isArray(L.notes) && L.notes.length ? L.notes : null;
+    const times = [];
+    for (let i = 0; i < n; i++) {
+      let ti;
+      if (n < 2) ti = 0;
+      else if (bounce) ti = spread * (1 - Math.pow(bounce, i)) / (1 - Math.pow(bounce, n - 1)); // gaps shrink like a bounce
+      else if (L.even) ti = spread * (i - (i % 2 ? swing : 0)) / (n - 1) + (Math.random() - 0.5) * 0.1 * W * spread / n;
+      else ti = i ? Math.random() * spread : 0;
+      times.push(Math.max(0, ti));
+    }
+    times.sort((x, y) => x - y);
+    let last = at;
+    times.forEach((ti, i) => {
+      const ts = now + at + ti;
+      const fv = vol * (1 - (+L.fade || 0) * (n > 1 ? i / (n - 1) : 0)) * (bounce ? Math.pow(0.8, i) : 1) * (1 + (Math.random() - 0.5) * 0.4 * Math.min(1.5, W));
+      const f0 = clampHz(a, notes ? hz(+notes[i % notes.length] + K.pitch) : (+L.tone || 900) * Math.pow(2, (K.pitch + (Math.random() * 2 - 1) * (+L.jitter || 0) * W) / 12));
+      ratios.forEach((r, j) => {
+        const fj = f0 * r; if (fj > a.sampleRate * 0.45 || !amps[j]) return;
+        const o = a.createOscillator(), g = a.createGain(), dj = ring / Math.pow(r, 0.7 * hard); // high partials die first, faster when hard
+        o.type = "sine"; o.frequency.setValueAtTime(fj, ts);
+        if (L.bend) o.frequency.exponentialRampToValueAtTime(clampHz(a, fj * Math.pow(2, +L.bend / 12)), ts + dj * 3);
+        g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(fv * 1.6 * amps[j] / sumA, ts + 0.0015); g.gain.setTargetAtTime(0, ts + 0.0015, dj);
+        o.connect(g); g.connect(out); o.start(ts); o.stop(ts + 0.002 + dj * 7);
+        last = Math.max(last, ts - now + dj * 5);
+      });
+      const cl = (L.click === undefined ? 1 : +L.click) * hard; // the click of the strike
+      if (cl > 0 && fv > 0) {
+        const s = noiseSrc(a, ts, 0.012), hp = filt(a, "highpass", clampHz(a, 1800 * Math.sqrt(hard)), 0.7), cg = a.createGain();
+        cg.gain.setValueAtTime(fv * cl * 1.2, ts); cg.gain.exponentialRampToValueAtTime(0.0005, ts + 0.003 + 0.005 / hard);
+        s.connect(hp); hp.connect(cg); cg.connect(out);
+      }
+    });
+    if (crack > 0) { // splintering: hundreds of tiny clicks
+      const cl = Math.max(0.02, (+L.crackLen || 0.06) * T), ts = now + at, s = noiseSrc(a, ts, cl), cg = a.createGain();
+      const hp = filt(a, "highpass", clampHz(a, 2200 * Math.pow(2, K.pitch / 12)), 0.7);
+      cg.gain.setValueAtTime(0, ts);
+      for (let t = 0, k = 0; t < cl && k < 400; k++) {
+        cg.gain.setValueAtTime(vol * crack * 2.2 * (0.3 + 0.7 * Math.random()) * (1 - 0.6 * t / cl), ts + t);
+        cg.gain.setTargetAtTime(0, ts + t + 0.0005, 0.0012);
+        t += 0.001 + Math.random() * 0.006 / hard;
+      }
+      s.connect(hp); hp.connect(cg); cg.connect(out);
+      last = Math.max(last, at + cl);
+    }
+    return last;
+  }
   function playSfx(name, opts = {}, conf = null) { // returns how long the sound lasts, in seconds
     const s = SFX[name]; if (!s) return 0;
     if (s.buzz) buzz(s.buzz);
@@ -1096,6 +1195,7 @@ if (typeof document !== "undefined") {
       }
       if (L.k === "vox") { end = Math.max(end, vox(L, K, common, at, vol)); continue; }
       if (L.k === "throat") { end = Math.max(end, throat(L, K, common, at, vol)); continue; }
+      if (L.k === "bone") { end = Math.max(end, boneHits(L, K, common, at, vol)); continue; }
       if (L.k === "drag") { end = Math.max(end, stoneDrag(L, K, common, at, vol)); continue; }
       if (L.k === "noise") {
         const g = st * Math.pow(2, K.grit), rate = ((+L.rate || 1) + Math.random() * (+L.rj || 0) * W) * g;

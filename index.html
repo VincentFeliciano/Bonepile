@@ -871,13 +871,12 @@ if (typeof document !== "undefined") {
       if (c <= 0.05) continue;
       const lx = snap(cx + Math.sin(a) * (R - ex) * 0.92);
       const face = d.faces[((k % n) + n) % n];
-      ctx.save();
-      ctx.translate(lx, ty);
-      ctx.scale(Math.max(0.25, c), 1);
-      ctx.fillStyle = c > 0.7 ? C.k : c0;
-      ctx.font = `${face.length > 2 ? 8 * P : fs}px ${FONT}`;
-      ctx.fillText(face, 0, 0);
-      ctx.restore();
+      // pixel letters don't squash well, so the turning-away faces just fade to a carved outline colour
+      if (c > 0.45) {
+        ctx.fillStyle = c > 0.8 ? C.k : c0;
+        ctx.font = `${face.length > 2 ? 8 * P : fs}px ${FONT}`;
+        ctx.fillText(face, lx, ty);
+      }
       const ad = a + step / 2, cd = Math.cos(ad);
       if (cd > 0.05) { ctx.fillStyle = c1; ctx.fillRect(snap(cx + Math.sin(ad) * (R - ex) * 0.92), top + 2 * P, P, h - 4 * P); }
     }

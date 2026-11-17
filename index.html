@@ -39,6 +39,20 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
 @keyframes refuse { 20% { transform: rotate(-9deg); } 50% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
 @media (prefers-reduced-motion: reduce) { #skull svg { animation: none !important; } }
 #help { font-size: 12px; color: var(--muted); max-width: 12em; }
+/* Relic icons ("runes"): one line-drawn badge per relic bought, sitting where the help text was. They glow when the relic triggers. */
+#runes { display: grid; grid-template-columns: repeat(4, 30px); gap: 4px; }
+#runes[hidden] { display: none; }
+.rune { width: 30px; height: 30px; padding: 0; border: 2px solid var(--line); border-radius: 5px; display: grid; place-items: center; background: var(--bg); color: var(--fg); box-shadow: inset 0 0 0 2px var(--bg), inset 0 0 0 3px var(--line); }
+.rune svg { width: 20px; height: 20px; }
+.rune.new { animation: runeIn .45s ease-out; }
+.rune.glow { animation: runeGlow 1s ease-out; }
+@keyframes runeIn { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes runeGlow {
+  0% { background: #000; color: #fff; transform: scale(1.3); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px #fff, 0 0 10px 4px rgba(0,0,0,.55); }
+  45% { background: #000; color: #fff; transform: scale(1.15); box-shadow: inset 0 0 0 2px #000, inset 0 0 0 3px #fff, 0 0 18px 8px rgba(0,0,0,.25); }
+  100% { background: #fff; color: #000; transform: scale(1); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 3px #000, 0 0 0 0 rgba(0,0,0,0); }
+}
+@media (prefers-reduced-motion: reduce) { .rune.new, .rune.glow { animation-duration: .01s; } }
 #over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: var(--bg); border: 2px solid var(--line); text-align: center; padding: 16px; }
 #over h2, #shop h2 { margin: 0; font-size: 22px; }
 #next { min-height: 16px; font-size: 12px; text-align: center; color: var(--muted); letter-spacing: 0.04em; }
@@ -93,6 +107,7 @@ button:focus-visible { outline: 3px dashed var(--fg); outline-offset: 2px; }
       </svg>
     </button>
     <div id="help">Swipe a landed disc to spin it<br>Tap it: turn one step</div>
+    <div id="runes" hidden></div>
   </div>
 </div>
 <canvas id="fx"></canvas>
@@ -150,6 +165,17 @@ function quotaFor(round) { return 30 * round + 10 * round * round; } // 40, 100,
 
 // Relics: bought between rounds. price = base + RELIC_PRICE_STEP x (round - 1)
 const RELIC_PRICE_STEP = 10;
+// Relic icons: original temple glyphs, drawn as if carved in stone (24x24, stroke only unless filled).
+const RUNE_ICONS = {
+  vowels: "<path d=\"M3 21h18M5 21v-3h14v3M7 18v-3h10v3M9 15v-3h6v3\"/><circle cx=\"12\" cy=\"6.5\" r=\"2.6\"/><path d=\"M12 1.8v1M7.3 6.5h1M15.7 6.5h1M8.7 3.2l.7.7M15.3 3.2l-.7.7\"/>",
+  maw: "<path d=\"M5 3h14v10c0 4.5-3.2 8-7 8s-7-3.5-7-8z\"/><path d=\"M8 7.5h2.5M13.5 7.5H16M12 9v2.5\"/><path d=\"M7.5 13.5h9v3h-9zM7.5 13.5l1.5 1.6 1.5-1.6 1.5 1.6 1.5-1.6 1.5 1.6 1.5-1.6\"/>",
+  long: "<path d=\"M4 21.5c0-3 2.7-4 6-4s6-1 6-3.6S13.3 10.4 10 10.4 4 9.4 4 6.8 6.7 3 10 3h2.2\"/><ellipse cx=\"14\" cy=\"3\" rx=\"2\" ry=\"1.5\"/><path d=\"M16 3h2.6l1.6-1.3M18.6 3l1.6 1.3\"/>",
+  slow: "<path d=\"M5 2.5h14M5 21.5h14M7 2.5v1.5c0 4 5 5 5 8s-5 4-5 8v1.5M17 2.5v1.5c0 4-5 5-5 8s5 4 5 8v1.5\"/><path d=\"M9.6 19.8h4.8L12 17.2z\" fill=\"currentColor\"/>",
+  pact: "<circle cx=\"12\" cy=\"2.6\" r=\"1.1\"/><path d=\"M11 3.8h2v3.2h-2zM7 7.3h10M10.6 7.6h2.8v7.6L12 18l-1.4-2.8z\"/><path d=\"M12 19.2c.9 1 1.4 1.7 1.4 2.2a1.4 1.4 0 0 1-2.8 0c0-.5.5-1.2 1.4-2.2z\" fill=\"currentColor\"/>",
+  mercy: "<path d=\"M7 13V7.5a1.2 1.2 0 0 1 2.4 0V12M9.4 11.2V5a1.2 1.2 0 0 1 2.4 0v6.2M11.8 11.2V5.8a1.2 1.2 0 0 1 2.4 0v5.4M14.2 11.5V8a1.2 1.2 0 0 1 2.4 0v6c0 4-2.5 7-6 7-2.3 0-3.8-1.3-5.2-3.6l-1.8-3a1.2 1.2 0 0 1 2-1.3L7 15\"/><path d=\"M11.6 16.2a1 1 0 1 1 1-1\"/>",
+  lens: "<path d=\"M2.5 13s3.6-5 9.5-5 9.5 5 9.5 5-3.6 5-9.5 5-9.5-5-9.5-5z\"/><circle cx=\"12\" cy=\"13\" r=\"2.4\" fill=\"currentColor\"/><path d=\"M12 2.5V5M6.6 4l1.3 2M17.4 4l-1.3 2M10 18l-1.4 3.3\"/>",
+  ward: "<circle cx=\"12\" cy=\"12\" r=\"4.6\"/><path d=\"M12 9.6a2.4 2.4 0 1 1-2.4 2.4\"/><path d=\"M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3M4.8 4.8l2.1 2.1M17.1 17.1l2.1 2.1M4.8 19.2l2.1-2.1M17.1 6.9l2.1-2.1\"/>",
+};
 const RELICS = [
   { id: "vowels", name: "Vowel Tithe", desc: "+2 gold for every vowel you offer", base: 25 },
   { id: "maw", name: "Hungry Maw", desc: "5+ letter words also crumble the disc below", base: 30 },
@@ -241,6 +267,8 @@ if (typeof document !== "undefined") {
     st = { gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [] };
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
+    if (/[?&]relics=all\b/.test(location.search)) RELICS.forEach(r => st.relics.add(r.id)); // testing aid
+    renderRunes();
     startRound(1);
   }
   const has = id => st.relics.has(id);
@@ -263,9 +291,33 @@ if (typeof document !== "undefined") {
     $("best").textContent = st.best || "-";
     const lookahead = has("lens") ? 3 : 2;
     $("next").textContent = "NEXT  " + st.queue.slice(0, lookahead).map(d => d.locked ? `[${d.faces[0]}]` : d.cursed ? `${d.faces.join("")}!` : d.faces.join("")).join("   ");
-    $("help").innerHTML = st.relics.size ? [...st.relics].map(id => RELICS.find(r => r.id === id).name).join("<br>") : "Swipe a landed disc to spin it<br>Tap it: turn one step";
+    $("help").hidden = st.relics.size > 0;
   }
   function say(t) { $("msg").textContent = t; }
+
+  // ---------- relic icons ----------
+  function renderRunes(fresh) {
+    const box = $("runes"); box.innerHTML = "";
+    box.hidden = st.relics.size === 0;
+    for (const id of st.relics) {
+      const r = RELICS.find(x => x.id === id);
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "rune" + (id === fresh ? " new" : ""); b.id = "rune-" + id;
+      b.setAttribute("aria-label", `${r.name}: ${r.desc}`); b.title = r.name;
+      b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${RUNE_ICONS[id]}</svg>`;
+      b.addEventListener("click", () => { say(`${r.name}: ${r.desc}.`); glowRune(id); });
+      box.appendChild(b);
+    }
+  }
+  // Flash a relic's icon when it does something. delay lets it line up with the skull swallowing.
+  function glowRune(id, delay = 0) {
+    if (!has(id)) return;
+    const go = () => {
+      const b = document.getElementById("rune-" + id); if (!b) return;
+      b.classList.remove("glow", "new"); void b.offsetWidth; b.classList.add("glow");
+    };
+    delay ? setTimeout(go, delay) : go();
+  }
 
   function resize() {
     const r = cv.getBoundingClientRect();
@@ -293,6 +345,8 @@ if (typeof document !== "undefined") {
     if (st.stack.length >= ROWS) return gameOver();
     const d = st.queue.shift(); refillQueue();
     d.y = ROWS; st.falling = d; st.spawnedRound++;
+    glowRune("lens"); glowRune("slow", 250);
+    if (d.cursed) glowRune("ward", 500);
     if (d.locked) laugh("The skull laughs. A locked disc is coming.");
     else if (d.cursed) laugh(`The skull laughs. A cursed disc: use it within ${d.curse} drops.`);
     hud();
@@ -329,7 +383,9 @@ if (typeof document !== "undefined") {
       b.addEventListener("click", () => {
         if (st.gold < price) return;
         st.gold -= price; st.shown = st.gold; st.relics.add(r.id);
+        renderRunes(r.id);
         startRound(st.round + 1);
+        glowRune(r.id, 500);
       });
       list.appendChild(b);
     }
@@ -365,11 +421,14 @@ if (typeof document !== "undefined") {
       const locked = st.stack.slice(r.lo, r.hi + 1).some(d => d.locked);
       parts.push(r.word + (locked ? ` (x${LOCKED_MULT})` : ""));
       for (let i = r.lo; i <= r.hi; i++) discs.add(st.stack[i]);
-      if (has("maw") && r.word.length >= 5 && r.lo > 0) discs.add(st.stack[r.lo - 1]);
+      if (has("maw") && r.word.length >= 5 && r.lo > 0) { discs.add(st.stack[r.lo - 1]); glowRune("maw", HILITE_MS); }
+      if (r.word.length >= 6) glowRune("long", HILITE_MS);
+      if (/[AEIOU]/.test(r.word)) glowRune("vowels", HILITE_MS);
       addCoins(g, k, now + HILITE_MS + 250 + k * 250);
     });
     st.roundGold += total; st.lastOffer = now;
     const pre = mult > 1 ? `Chain x${mult}! ` : "";
+    if (mult > 1) glowRune("pact", HILITE_MS);
     const met = !st.roundDone && st.roundGold >= quotaFor(st.round);
     if (met) st.roundDone = true;
     // each offered letter lifts off its disc and drifts into the mouth, top of the column first
@@ -567,6 +626,7 @@ if (typeof document !== "undefined") {
       st.stack = st.stack.filter(x => x !== d);
       st.checkChain = true;
       say(`${what} smashed. -${cost} gold`);
+      glowRune("mercy");
       hud();
     } else {
       d.armed = now;

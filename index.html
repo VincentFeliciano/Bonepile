@@ -105,6 +105,37 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 .relic span { font-family: "VT323", ui-monospace, monospace; font-size: 18px; line-height: 1; color: #3a2e1e; grid-column: 1; }
 .relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #8a5a1c; }
 .relic:disabled { opacity: 0.4; cursor: default; }
+
+/* ---- opening: the game's name, the skull on its pedestal, and how to play ---- */
+#intro { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 10px; background: radial-gradient(ellipse at 50% 58%, #13292b 0%, #081214 55%, #000 100%); padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); box-sizing: border-box; text-align: center; overflow: hidden; }
+#introName { margin: 6px 0 0; font-family: "Press Start 2P", ui-monospace, monospace; font-weight: normal; font-size: clamp(22px, 8.5vw, 40px); line-height: 1.2; color: var(--gold); letter-spacing: 0.06em; text-shadow: 3px 3px 0 #5a3a10, 6px 6px 0 #000; }
+#introTag { margin: 0; font-size: 20px; color: var(--muted); }
+#shrine { position: relative; flex: 1; min-height: 0; width: 100%; max-width: 360px; display: flex; align-items: flex-end; justify-content: center; }
+#shrine .torch { position: absolute; bottom: 34%; width: 28px; height: 70px; }
+#shrine .torch.l { left: 4%; } #shrine .torch.r { right: 4%; }
+#shrine .flame { animation: flicker .5s steps(1, end) infinite; transform-origin: 50% 100%; }
+#shrine .torch.r .flame { animation-delay: -.25s; }
+@keyframes flicker { 0% { transform: scale(1, 1); } 25% { transform: scale(.85, 1.15); } 50% { transform: scale(1.1, .9); } 75% { transform: scale(.9, 1.1); } }
+#altar { display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+#introSkull { line-height: 0; margin-bottom: -4px; position: relative; z-index: 1; }
+#introSkull svg { width: min(34vw, 132px); height: auto; animation: bob 2.4s steps(1, end) infinite; overflow: visible; }
+#introSkull .pupil { fill: var(--glow); }
+#introSkull.talk .jaw { animation: chatter .12s steps(1, end) infinite alternate; }
+#introSkull.laugh svg { animation: cackle 1.4s steps(10, end); }
+#introSkull.laugh .jaw { animation: chatter .14s steps(1, end) 9 alternate; }
+#pedestal { width: min(46vw, 180px); height: auto; display: block; }
+#speech { position: relative; width: 100%; max-width: 360px; box-sizing: border-box; background: #e9dcb8; color: #1a140c; border: 3px solid #000; padding: 12px 14px 10px; min-height: 7.2em; text-align: left;
+  clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
+#speechStep { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: #8a5a1c; margin-bottom: 6px; }
+#speechText { font-size: 22px; line-height: 1.05; min-height: 3.2em; }
+#speechText b { font-weight: normal; color: #8a1c1c; }
+#introBtns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
+#introBtns button { flex: 1; min-height: 50px; }
+#introNext { background-color: var(--gold); }
+#introSkip { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); background: none; border: none; box-shadow: none; clip-path: none; padding: 8px; }
+#pHelp { min-width: 14em; }
+@media (max-height: 600px) { #introTag { display: none; } #speech { min-height: 0; } #speechText { min-height: 0; } }
+@media (prefers-reduced-motion: reduce) { #introSkull svg, #shrine .flame { animation: none !important; } }
 </style>
 </head>
 <body>
@@ -135,6 +166,7 @@ button:focus-visible { outline: none; border-color: var(--glow); }
       <p>The skull waits. The discs hold still.</p>
       <button id="resume" type="button">Resume</button>
       <div class="prow"><button id="pSound" type="button">Sound on</button><button id="pMusic" type="button">Music on</button></div>
+      <button id="pHelp" type="button">How to play</button>
       <button id="pNew" type="button">New run</button>
       <a class="lab" href="lab.html">Sound lab</a>
     </div>
@@ -171,6 +203,13 @@ button:focus-visible { outline: none; border-color: var(--glow); }
     <div id="help">Swipe a landed disc to spin it<br>Tap it: turn one step</div>
     <div id="runes" hidden></div>
   </div>
+</div>
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="introName">
+  <div><h1 id="introName"></h1><p id="introTag">The skull hungers for words</p></div>
+  <div id="shrine"><svg class="torch l" viewBox="0 0 7 18" shape-rendering="crispEdges" aria-hidden="true"><g class="flame"><rect x="3" y="0" width="1" height="1" fill="#e0a030"/><rect x="2" y="1" width="3" height="2" fill="#e0a030"/><rect x="1" y="3" width="5" height="2" fill="#e0603a"/><rect x="3" y="2" width="1" height="3" fill="#fff2b0"/><rect x="2" y="5" width="3" height="1" fill="#c83030"/></g><rect x="1" y="6" width="5" height="1" fill="#7a6a4c"/><rect x="2" y="7" width="3" height="2" fill="#4a3a24"/><rect x="3" y="9" width="1" height="7" fill="#4a3a24"/><rect x="2" y="16" width="3" height="2" fill="#2e2e2e"/></svg><div id="altar"><div id="introSkull" aria-hidden="true"></div><svg id="pedestal" viewBox="0 0 32 26" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="32" height="1" fill="#8a8a80"/><rect x="0" y="1" width="32" height="2" fill="#5e5e58"/><rect x="0" y="3" width="32" height="1" fill="#3a3a36"/><rect x="2" y="4" width="28" height="1" fill="#1c1c1a"/><rect x="6" y="4" width="20" height="14" fill="#5e5e58"/><rect x="6" y="4" width="2" height="14" fill="#8a8a80"/><rect x="24" y="4" width="2" height="14" fill="#3a3a36"/><rect x="6" y="8" width="20" height="1" fill="#3a3a36"/><rect x="6" y="13" width="20" height="1" fill="#3a3a36"/><rect x="9" y="9" width="1" height="3" fill="#1c1c1a"/><rect x="10" y="10" width="1" height="1" fill="#1c1c1a"/><rect x="13" y="10" width="2" height="1" fill="#7ee05a"/><rect x="13" y="11" width="1" height="1" fill="#2f7a28"/><rect x="17" y="9" width="1" height="3" fill="#1c1c1a"/><rect x="18" y="10" width="1" height="1" fill="#1c1c1a"/><rect x="21" y="10" width="2" height="1" fill="#7ee05a"/><rect x="21" y="11" width="1" height="1" fill="#2f7a28"/><rect x="10" y="15" width="1" height="2" fill="#3a3a36"/><rect x="17" y="5" width="1" height="2" fill="#3a3a36"/><rect x="20" y="15" width="2" height="1" fill="#3a3a36"/><rect x="3" y="18" width="26" height="1" fill="#8a8a80"/><rect x="3" y="19" width="26" height="2" fill="#5e5e58"/><rect x="3" y="21" width="26" height="1" fill="#3a3a36"/><rect x="0" y="22" width="32" height="1" fill="#8a8a80"/><rect x="0" y="23" width="32" height="2" fill="#5e5e58"/><rect x="0" y="25" width="32" height="1" fill="#1c1c1a"/></svg></div><svg class="torch r" viewBox="0 0 7 18" shape-rendering="crispEdges" aria-hidden="true"><g class="flame"><rect x="3" y="0" width="1" height="1" fill="#e0a030"/><rect x="2" y="1" width="3" height="2" fill="#e0a030"/><rect x="1" y="3" width="5" height="2" fill="#e0603a"/><rect x="3" y="2" width="1" height="3" fill="#fff2b0"/><rect x="2" y="5" width="3" height="1" fill="#c83030"/></g><rect x="1" y="6" width="5" height="1" fill="#7a6a4c"/><rect x="2" y="7" width="3" height="2" fill="#4a3a24"/><rect x="3" y="9" width="1" height="7" fill="#4a3a24"/><rect x="2" y="16" width="3" height="2" fill="#2e2e2e"/></svg></div>
+  <div id="speech" aria-live="polite"><div id="speechStep"></div><div id="speechText"></div></div>
+  <div id="introBtns"><button id="introBack" type="button">Back</button><button id="introNext" type="button">Begin</button></div>
+  <button id="introSkip" type="button">Skip to the game</button>
 </div>
 <canvas id="fx"></canvas>
 
@@ -1896,7 +1935,7 @@ if (typeof document !== "undefined") {
     $("pMusic").textContent = musicVol() > 0 ? "Music on" : "Music off";
   }
   function pauseGame() {
-    if (!st || st.over || st.shopOpen || st.sac || st.menu || st.paused) return false;
+    if (!st || st.over || st.shopOpen || st.sac || st.menu || st.paused || introOpen) return false;
     st.paused = true; st.pausedAt = performance.now(); drag = null; musicStop();
     pauseShow(); $("paused").hidden = false; reskin();
     return true;
@@ -2046,7 +2085,7 @@ if (typeof document !== "undefined") {
   let flash = 0;
 
   function update(dt, now) {
-    if (st.over || st.shopOpen || st.sac || st.menu || st.paused) return;
+    if (st.over || st.shopOpen || st.sac || st.menu || st.paused || introOpen) return;
     if (st.pending && now - st.pending.t >= HILITE_MS) crumblePending(now);
     // quota met: the round ends now. The falling disc vanishes and no chains are checked.
     if (st.roundDone) { st.falling = null; st.rain = []; st.checkChain = false; st.boardClear = false; st.tripleAt = 0; }
@@ -2421,7 +2460,7 @@ if (typeof document !== "undefined") {
   // leaving the app pauses the game; coming back leaves it paused until Resume
   if (document.addEventListener) document.addEventListener("visibilitychange", () => {
     if (document.hidden) { if (!pauseGame()) musicStop(); }
-    else if (st && !st.over && !st.paused) musicStart();
+    else if (st && !st.over && !st.paused && !introOpen) musicStart();
   });
   $("pause").addEventListener("click", () => { if (st.paused) resumeGame(); else pauseGame(); });
   $("resume").addEventListener("click", resumeGame);
@@ -2447,7 +2486,78 @@ if (typeof document !== "undefined") {
     update(dt, now); draw(now); drawFx(now);
     requestAnimationFrame(loop);
   }
+
+  // ---------- opening: the game's name, the skull on its pedestal, how to play ----------
+  const GAME_NAME = "BONEPILE"; // working title: change it here and the opening follows
+  const INTRO_KEY = "bonepile-intro-seen";
+  const STEPS = [
+    "Welcome, mortal. I am the keeper of this temple, and I am <b>hungry</b>.",
+    "Stone discs fall into my well. Each one carries <b>six letters</b> around its rim.",
+    "Once a disc lands, <b>swipe</b> it to spin it, or <b>tap</b> it to turn one step.",
+    "Line up letters <b>reading down</b> the column to spell a word. Three letters or more.",
+    "Then <b>tap me</b> to offer your words. Longer words pay more gold.",
+    "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
+    "Gray discs are <b>locked</b> but pay triple. <b>Cursed</b> discs darken their neighbors if you wait too long.",
+    "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",
+    "Empty my well and I will laugh, and send you <b>three discs</b> at once. Now. Feed me.",
+  ];
+  let introOpen = true, introMode = "launch", introI = -1, typeT = null, typed = true;
+  const introEl = $("intro"), iSkull = $("introSkull");
+  $("introName").textContent = GAME_NAME;
+  try { document.title = GAME_NAME.charAt(0) + GAME_NAME.slice(1).toLowerCase(); } catch (_) {}
+  if (iSkull && skullBtn.querySelector) { const sv = skullBtn.querySelector("svg"); if (sv) { const c = sv.cloneNode(true); const g = c.querySelector && c.querySelector("#gear"); if (g) g.remove(); iSkull.appendChild(c); } }
+  function seenIntro() { try { return localStorage.getItem(INTRO_KEY) === "1"; } catch (_) { return false; } }
+  function introButtons() {
+    const back = $("introBack"), next = $("introNext");
+    if (introI < 0) { back.hidden = !seenIntro(); back.textContent = "How to play"; next.textContent = seenIntro() ? "Play" : "Begin"; return; }
+    back.hidden = false; back.textContent = "Back";
+    next.textContent = introI === STEPS.length - 1 ? (introMode === "help" ? "Done" : "Play") : "Next";
+    $("introSkip").textContent = introMode === "help" ? "Close" : "Skip to the game";
+  }
+  // the skull speaks a step: letters type out while its jaw moves
+  function introSay(i) {
+    introI = i; introButtons();
+    $("speechStep").textContent = i < 0 ? "" : `${i + 1} / ${STEPS.length}`;
+    const html = i < 0 ? (seenIntro() ? "Back again? My well is waiting." : "Tap Begin, and I will teach you my game.") : STEPS[i];
+    const box = $("speechText"), plain = html.replace(/<[^>]+>/g, "");
+    clearInterval(typeT); typed = false;
+    if (i >= 0) { babble(plain); iSkull.classList.add("talk"); }
+    let n = 0; box.textContent = "";
+    const done = () => { clearInterval(typeT); typed = true; box.innerHTML = html; iSkull.classList.remove("talk"); };
+    if (i < 0) return done();
+    typeT = setInterval(() => { n += 2; if (n >= plain.length) done(); else box.textContent = plain.slice(0, n); }, 28);
+  }
+  function introLaugh() {
+    iSkull.classList.remove("laugh"); void iSkull.offsetWidth; iSkull.classList.add("laugh");
+    setTimeout(() => iSkull.classList.remove("laugh"), 1400);
+    sfx.laugh();
+  }
+  function openIntro(mode) {
+    introMode = mode; introOpen = true; introEl.hidden = false;
+    if (mode === "help") { $("paused").hidden = true; introSay(0); } else introSay(-1);
+  }
+  function closeIntro() {
+    clearInterval(typeT); iSkull.classList.remove("talk");
+    try { localStorage.setItem(INTRO_KEY, "1"); } catch (_) {}
+    introEl.hidden = true; introOpen = false;
+    if (introMode === "help") { $("paused").hidden = false; return; }
+    newGame(/[?&]daily\b/.test(location.search)); // a fresh run starts the moment you leave
+  }
+  $("introNext").addEventListener("click", () => {
+    if (!typed) { clearInterval(typeT); typed = true; $("speechText").innerHTML = STEPS[introI]; iSkull.classList.remove("talk"); return; } // first tap finishes the line
+    if (introI < 0 && seenIntro()) return closeIntro();
+    if (introI >= STEPS.length - 1) { introLaugh(); return closeIntro(); }
+    introSay(introI + 1);
+    if (introI === STEPS.length - 1) introLaugh();
+  });
+  $("introBack").addEventListener("click", () => {
+    if (introI < 0) return introSay(0);
+    introSay(introI - 1);
+  });
+  $("introSkip").addEventListener("click", closeIntro);
+  $("pHelp").addEventListener("click", () => openIntro("help"));
   resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
+  if (/[?&]nointro\b/.test(location.search)) { introOpen = false; introEl.hidden = true; } else { openIntro("launch"); try { musicStop(); } catch (_) {} }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(reskin);
 }
 </script>

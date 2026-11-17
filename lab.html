@@ -12,7 +12,7 @@
   --bone: #e9dcb8; --bone1: #b8a47c; --bone2: #7a6a4c; --gold: #e0a030; --glow: #7ee05a; --blood: #c83030; color-scheme: dark; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); }
-body { font-family: "VT323", ui-monospace, monospace; font-size: 22px; line-height: 1.15; padding: max(12px, env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
+body { font-family: "VT323", ui-monospace, monospace; font-size: 22px; line-height: 1.15; padding: max(12px, env(safe-area-inset-top)) 16px calc(150px + env(safe-area-inset-bottom));
   max-width: 560px; margin: 0 auto; -webkit-user-select: none; user-select: none; }
 .px { font-family: "Press Start 2P", ui-monospace, monospace; font-weight: normal; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
@@ -53,13 +53,17 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
 #msg { margin: 0; min-height: 1.2em; color: var(--glow); }
 .note { margin: 0; color: var(--muted); font-size: 19px; }
 #bar { position: fixed; left: 0; right: 0; bottom: 0; background: #000; border-top: 3px solid var(--teal2); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); z-index: 5; }
-#bar .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+#bar .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
+#bar .auto { max-width: 560px; margin: 8px auto 0; }
+#loop { min-height: 64px; font-family: "Press Start 2P", monospace; font-size: 16px; letter-spacing: 0.1em; }
+#loop.on { background: var(--glow); transform: translateY(2px); box-shadow: inset 4px 4px 0 #3f8a2c, 0 0 0 3px var(--glow); }
+.ph { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: -4px 0 6px; }
+.ph h2 { margin: 0; }
+.ph button { min-height: 40px; padding: 4px 12px; font-family: "Press Start 2P", monospace; font-size: 8px; color: var(--blood); }
 #musicBtn.on { background: var(--glow); box-shadow: inset -4px -4px 0 #3f8a2c, inset 4px 4px 0 #b8f59a; }
 #play { min-height: 64px; font-family: "Press Start 2P", monospace; font-size: 16px; letter-spacing: 0.1em; }
 #play.hit { background: var(--glow); }
-.opts { display: grid; gap: 8px; }
-#play.looping { background: var(--blood); color: var(--bone); box-shadow: inset -4px -4px 0 #7a1c1c, inset 4px 4px 0 #e86060; }
-.auto { display: flex; align-items: center; gap: 8px; color: var(--line); font-size: 19px; line-height: 1; max-width: 6.5em; }
+.auto { display: flex; align-items: center; gap: 8px; color: var(--line); font-size: 19px; line-height: 1; }
 .auto input { width: 28px; height: 28px; accent-color: var(--glow); flex: none; }
 </style>
 </head>
@@ -83,7 +87,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
 </div>
 
 <div class="panel stack" id="musicPanel">
-  <h2 class="px">MUSIC</h2>
+  <div class="ph"><h2 class="px">MUSIC</h2><button id="musicReset" type="button" aria-label="Reset music">Reset</button></div>
   <button id="musicBtn" type="button">Play music</button>
   <div class="kh"><span class="kl">How deep in the temple</span><span class="kv" id="lvlVal"></span></div>
   <div class="seg" id="levels"></div>
@@ -101,7 +105,8 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   <p class="note">Saved as you go. Bonepile on this site plays your sounds right away. Tap a value to put that one back. Sound plays even with your iPhone on silent, so use the volume buttons, or the speaker and note buttons in the game.</p>
 </div>
 
-<div id="bar"><div class="in"><button id="play" type="button">PLAY</button><div class="opts"><label class="auto"><input type="checkbox" id="loop">Loop</label><label class="auto"><input type="checkbox" id="auto" checked>Play on release</label></div></div></div>
+<div id="bar"><div class="in"><button id="play" type="button">PLAY</button><button id="loop" type="button" aria-pressed="false">LOOP</button></div>
+  <label class="auto"><input type="checkbox" id="auto" checked>Play when I let go of a slider</label></div>
 
 <script>
 (() => {
@@ -488,11 +493,11 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   let looping = false, loopT = 0;
   function check() { setTimeout(() => { if (!actx || actx.state !== "running") say("Sound is still waking up. Tap PLAY again and turn your volume up."); else if ($("msg").textContent.startsWith("Sound is still")) say(""); }, 400); }
   const flash = () => { const p = $("play"); p.classList.add("hit"); setTimeout(() => p.classList.remove("hit"), 150); };
-  const play = () => { if (looping) return; unlockAudio(); playSfx(cur); flash(); check(); };
+  const play = () => { unlockAudio(); if (!looping) playSfx(cur); flash(); check(); };
   function loopRun() { if (!looping) return; const d = playSfx(cur) || 0.3; loopT = setTimeout(loopRun, (Math.max(0.12, d) + 0.15) * 1000); }
   function setLoop(on) {
     looping = on; clearTimeout(loopT);
-    const p = $("play"); p.classList.toggle("looping", on); p.textContent = on ? "STOP" : "PLAY";
+    const b = $("loop"); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "LOOPING" : "LOOP";
     if (on) { unlockAudio(); loopRun(); check(); }
   }
   const snap = (d, v) => d.choices ? v : +(Math.round((Math.min(d.max, Math.max(d.min, v)) - d.min) / d.step) * d.step + d.min).toFixed(4);
@@ -518,7 +523,15 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     for (const d of SFX_KNOBS) {
       if (d.g !== group) {
         group = d.g; panel = document.createElement("div"); panel.className = "panel";
-        const h = document.createElement("h2"); h.className = "px"; h.textContent = group.toUpperCase(); panel.append(h); box.append(panel);
+        const ph = document.createElement("div"); ph.className = "ph";
+        const h = document.createElement("h2"); h.className = "px"; h.textContent = group.toUpperCase();
+        const rb = document.createElement("button"); rb.type = "button"; rb.textContent = "Reset"; rb.setAttribute("aria-label", "Reset " + group);
+        const g = group;
+        rb.addEventListener("click", () => {
+          const u = user[cur]; if (u) for (const k of SFX_KNOBS) if (k.g === g) delete u[k.k];
+          save(); render(); if ($("auto").checked) play();
+        });
+        ph.append(h, rb); panel.append(ph); box.append(panel);
       }
       const row = document.createElement("div"); row.className = "knob";
       const head = document.createElement("div"); head.className = "kh";
@@ -570,8 +583,8 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   $("sound").addEventListener("change", e => pick(e.target.value));
   $("prev").addEventListener("click", () => { pick(NAMES[(NAMES.indexOf(cur) + NAMES.length - 1) % NAMES.length]); play(); });
   $("next").addEventListener("click", () => { pick(NAMES[(NAMES.indexOf(cur) + 1) % NAMES.length]); play(); });
-  $("play").addEventListener("click", () => { if ($("loop").checked) setLoop(!looping); else play(); });
-  $("loop").addEventListener("change", e => { if (!e.target.checked) setLoop(false); else { $("play").textContent = "PLAY"; } });
+  $("play").addEventListener("click", play);
+  $("loop").addEventListener("click", () => setLoop(!looping));
   // music preview
   const LEVELS = ["Early", "Rising", "Drums", "Melody", "Frenzy", "Boss"];
   let lvl = 0;
@@ -587,6 +600,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   const mvShow = () => { const v = musicVol(); $("mv").value = v; $("mvVal").textContent = v ? Math.round(v * 100) + "%" : "off"; };
   $("mv").addEventListener("input", () => { try { localStorage.setItem(MUSIC_KEY, String(+$("mv").value)); } catch (_) {} mus.vol = -1; $("mvVal").textContent = +$("mv").value ? Math.round($("mv").value * 100) + "%" : "off"; });
   mvShow();
+  $("musicReset").addEventListener("click", () => { try { localStorage.removeItem(MUSIC_KEY); } catch (_) {} mus.vol = -1; lvl = 0; musicSet(0, false); showLvl(); mvShow(); });
   $("rand").addEventListener("click", () => {
     const u = user[cur] || (user[cur] = {});
     for (const d of SFX_KNOBS) {

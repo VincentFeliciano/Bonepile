@@ -316,18 +316,18 @@ function canGrow(q) {
 }
 function bestSpin(stack) {
   let best = null;
-  const score = (w, locked) => wordGold(w) * (locked ? LOCKED_MULT : 1);
-  function dfs(hi, i, word, picks, locked) {
+  const score = (w, pts, locked) => wordGold(w, pts) * (locked ? LOCKED_MULT : 1);
+  function dfs(hi, i, word, picks, locked, pts = 0) {
     const d = stack[i];
     if (!d || d.dark) return;
     const faces = d.locked ? [0] : d.faces.map((_, k) => k);
     for (const k of faces) {
       const w = word + d.faces[k].toLowerCase();
       if (w.length > 11 || !canGrow(w)) continue;
-      const p = [...picks, [i, k]], lk = locked || !!d.locked;
+      const p = [...picks, [i, k]], lk = locked || !!d.locked, pp = pts + facePts(d.faces[k]);
       // the Oracle only reveals list words and their plurals, never loose guesses like coraling
-      if (w.length >= 3 && isWord(w) && (WORDS.has(w) || /s$/.test(w)) && (!best || score(w, lk) > best.score)) best = { hi, lo: i, word: w.toUpperCase(), picks: p, score: score(w, lk) };
-      if (i > 0) dfs(hi, i - 1, w, p, lk);
+      if (w.length >= 3 && isWord(w) && (WORDS.has(w) || /s$/.test(w)) && (!best || score(w, pp, lk) > best.score)) best = { hi, lo: i, word: w.toUpperCase(), picks: p, score: score(w, pp, lk) };
+      if (i > 0) dfs(hi, i - 1, w, p, lk, pp);
     }
   }
   for (let hi = stack.length - 1; hi >= 0; hi--) dfs(hi, hi, "", [], false);
@@ -428,7 +428,7 @@ function bestRun(stack, used = new Set(), off = 0) {
       const ch = off ? faceAt(stack[lo], off) : front(stack[lo]);
       if (!ch || ch === "#") break;
       w += ch;
-      if (w.length >= 3 && (!best || w.length > best.word.length) && isWord(w)) best = { hi, lo, word: w, off, offs: Array(w.length).fill(off) };
+      if (w.length >= 3 && (!best || w.length > best.word.length) && isWord(w)) best = { hi, lo, word: w, off, offs: Array(hi - lo + 1).fill(off) };
     }
   }
   return best;
@@ -463,12 +463,22 @@ function goldFor(len) { return GOLD[Math.min(len, GOLD.length - 1)]; }
 // Scrabble-style letter values, paid on top of the gold for the word's length
 const LETTER_PTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
 function letterPts(word) { let p = 0; for (const c of word.toUpperCase()) p += LETTER_PTS[c] || 0; return p; }
-function wordGold(word) { return goldFor(word.length) + letterPts(word); }
+// the two- and three-letter faces get their own values from the same groups
+const TILE_PTS = { AN: 2, ER: 2, IN: 2, RE: 2, ED: 3, ST: 3, ING: 4, TH: 5, SH: 5, CH: 8, QU: 10 };
+function facePts(face) { const f = String(face || "").toUpperCase(); return f in TILE_PTS ? TILE_PTS[f] : letterPts(f); }
+// the face points of the discs a word used, column by column
+function runPts(stack, r) {
+  if (!r.offs) return letterPts(r.word);
+  let p = 0;
+  for (let j = 0; j <= r.hi - r.lo; j++) p += facePts(faceAt(stack[r.hi - j], r.offs[j] || 0));
+  return p;
+}
+function wordGold(word, pts = letterPts(word)) { return goldFor(word.length) + pts; }
 // mods: { vowels: bool, long: bool, chain: multiplier }
 function runGold(stack, r, mods = {}) {
   let locked = false;
   for (let i = r.lo; i <= r.hi; i++) if (stack[i].locked) locked = true;
-  let g = wordGold(r.word) * (locked ? LOCKED_MULT : 1);
+  let g = wordGold(r.word, runPts(stack, r)) * (locked ? LOCKED_MULT : 1);
   if (mods.long && r.word.length >= 6) g *= 2;
   if (mods.vowels) g += 2 * (r.word.match(/[AEIOU]/g) || []).length;
   return Math.round(g * (mods.chain || 1));
@@ -476,7 +486,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { letterPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { letterPts, facePts, runPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {

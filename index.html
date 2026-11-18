@@ -66,6 +66,12 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 .rune.power { width: 40px; height: 40px; position: relative; background-color: #16302f; border-color: var(--glow); color: var(--glow); }
 .rune.power svg { width: 24px; height: 24px; }
 .rune.power.spent { opacity: 0.35; border-style: dashed; }
+#runeRow { display: flex; gap: 6px; align-items: center; }
+.rune.bleed { width: 40px; height: 40px; position: relative; background-color: #2a1438; border-color: var(--blood); color: var(--blood); }
+.rune.bleed[hidden] { display: none; }
+.rune.bleed svg { width: 22px; height: 19px; }
+.rune.bleed.armed { animation: runeGlow .5s steps(2, end) infinite; }
+#bleedN { position: absolute; right: -2px; bottom: -4px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 7px; color: #c8acea; text-shadow: 1px 1px 0 #000; }
 #charges { position: absolute; right: -22px; bottom: 0; font-size: 8px; color: var(--glow); }
 .rune.new { animation: runeIn .45s steps(3, end); }
 .rune.glow { animation: runeGlow 1s steps(4, end); }
@@ -206,7 +212,10 @@ button:focus-visible { outline: none; border-color: var(--glow); }
   <div id="bar">
     <div id="left">
       <button id="restart" type="button">Restart</button>
+      <div id="runeRow">
       <button id="power" class="rune power spent" type="button" title="Oracle Stone"><svg viewBox="0 0 12 12" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="0" width="4" height="1"/><rect x="2" y="1" width="2" height="1"/><rect x="8" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="4" y="3" width="4" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="11" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="5" y="5" width="2" height="1"/><rect x="8" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/><rect x="0" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="5" y="6" width="2" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="0" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="4" y="8" width="4" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="2" y="10" width="2" height="1"/><rect x="8" y="10" width="2" height="1"/><rect x="4" y="11" width="4" height="1"/></svg><span id="charges"></span></button>
+      <button id="bleed" class="rune bleed" type="button" hidden aria-label="Blood purge: pay blood to clear the cursed discs"><svg viewBox="0 0 7 6" shape-rendering="crispEdges" fill="currentColor"><rect x="1" y="0" width="2" height="1"/><rect x="4" y="0" width="2" height="1"/><rect x="0" y="1" width="7" height="2"/><rect x="1" y="3" width="5" height="1"/><rect x="2" y="4" width="3" height="1"/><rect x="3" y="5" width="1" height="1"/></svg><span id="bleedN"></span></button>
+      </div>
     </div>
     <button id="skull" type="button" aria-label="Offer words to the skull"><svg width="96" height="84" viewBox="0 0 24 21" shape-rendering="crispEdges" overflow="visible"><rect x="8" y="0" width="6" height="1" fill="#e9dcb8"/><rect x="14" y="0" width="1" height="1" fill="#b8a47c"/><rect x="15" y="0" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="1" width="2" height="1" fill="#b8a47c"/><rect x="7" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="1" width="3" height="1" fill="#e9dcb8"/><rect x="11" y="1" width="1" height="1" fill="#b8a47c"/><rect x="12" y="1" width="1" height="1" fill="#e9dcb8"/><rect x="13" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="1" width="4" height="1" fill="#b8a47c"/><rect x="18" y="1" width="1" height="1" fill="#7a6a4c"/><rect x="4" y="2" width="2" height="1" fill="#b8a47c"/><rect x="6" y="2" width="7" height="1" fill="#e9dcb8"/><rect x="13" y="2" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="2" width="3" height="1" fill="#e9dcb8"/><rect x="17" y="2" width="2" height="1" fill="#b8a47c"/><rect x="19" y="2" width="1" height="1" fill="#7a6a4c"/><rect x="3" y="3" width="2" height="1" fill="#b8a47c"/><rect x="5" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="8" y="3" width="1" height="1" fill="#b8a47c"/><rect x="9" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="12" y="3" width="1" height="1" fill="#7a6a4c"/><rect x="13" y="3" width="3" height="1" fill="#e9dcb8"/><rect x="16" y="3" width="4" height="1" fill="#b8a47c"/><rect x="20" y="3" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="4" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="4" width="1" height="1" fill="#b8a47c"/><rect x="4" y="4" width="8" height="1" fill="#e9dcb8"/><rect x="12" y="4" width="1" height="1" fill="#7a6a4c"/><rect x="13" y="4" width="4" height="1" fill="#e9dcb8"/><rect x="17" y="4" width="4" height="1" fill="#b8a47c"/><rect x="21" y="4" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="5" width="1" height="1" fill="#b8a47c"/><rect x="3" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="5" width="1" height="1" fill="#b8a47c"/><rect x="5" y="5" width="2" height="1" fill="#e9dcb8"/><rect x="7" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="5" width="1" height="1" fill="#b8a47c"/><rect x="10" y="5" width="3" height="1" fill="#e9dcb8"/><rect x="13" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="14" y="5" width="2" height="1" fill="#e9dcb8"/><rect x="16" y="5" width="1" height="1" fill="#b8a47c"/><rect x="17" y="5" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="5" width="2" height="1" fill="#b8a47c"/><rect x="20" y="5" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="5" width="1" height="1" fill="#b8a47c"/><rect x="1" y="6" width="1" height="1" fill="#b8a47c"/><rect x="2" y="6" width="14" height="1" fill="#e9dcb8"/><rect x="16" y="6" width="2" height="1" fill="#b8a47c"/><rect x="18" y="6" width="1" height="1" fill="#e9dcb8"/><rect x="19" y="6" width="2" height="1" fill="#b8a47c"/><rect x="21" y="6" width="1" height="1" fill="#7a6a4c"/><rect x="22" y="6" width="1" height="1" fill="#b8a47c"/><rect x="1" y="7" width="2" height="1" fill="#b8a47c"/><rect x="3" y="7" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="7" width="1" height="1" fill="#b8a47c"/><rect x="5" y="7" width="11" height="1" fill="#e9dcb8"/><rect x="16" y="7" width="1" height="1" fill="#b8a47c"/><rect x="17" y="7" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="7" width="2" height="1" fill="#b8a47c"/><rect x="20" y="7" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="7" width="1" height="1" fill="#b8a47c"/><rect x="22" y="7" width="1" height="1" fill="#7a6a4c"/><rect x="1" y="8" width="1" height="1" fill="#b8a47c"/><rect x="2" y="8" width="2" height="1" fill="#e9dcb8"/><rect x="4" y="8" width="4" height="1" fill="#000"/><rect x="8" y="8" width="8" height="1" fill="#e9dcb8"/><rect x="16" y="8" width="4" height="1" fill="#000"/><rect x="20" y="8" width="3" height="1" fill="#b8a47c"/><rect x="1" y="9" width="2" height="1" fill="#b8a47c"/><rect x="3" y="9" width="6" height="1" fill="#000"/><rect x="9" y="9" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="9" width="6" height="1" fill="#000"/><rect x="21" y="9" width="1" height="1" fill="#b8a47c"/><rect x="22" y="9" width="1" height="1" fill="#7a6a4c"/><rect x="1" y="10" width="1" height="1" fill="#b8a47c"/><rect x="2" y="10" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="10" width="2" height="1" fill="#000"/><rect class="pupil" x="5" y="10" width="2" height="1"/><rect x="7" y="10" width="2" height="1" fill="#000"/><rect x="9" y="10" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="10" width="2" height="1" fill="#000"/><rect class="pupil" x="17" y="10" width="2" height="1"/><rect x="19" y="10" width="2" height="1" fill="#000"/><rect x="21" y="10" width="1" height="1" fill="#7a6a4c"/><rect x="22" y="10" width="1" height="1" fill="#b8a47c"/><rect x="1" y="11" width="2" height="1" fill="#b8a47c"/><rect x="3" y="11" width="2" height="1" fill="#000"/><rect class="pupil" x="5" y="11" width="2" height="1"/><rect x="7" y="11" width="2" height="1" fill="#000"/><rect x="9" y="11" width="6" height="1" fill="#e9dcb8"/><rect x="15" y="11" width="2" height="1" fill="#000"/><rect class="pupil" x="17" y="11" width="2" height="1"/><rect x="19" y="11" width="2" height="1" fill="#000"/><rect x="21" y="11" width="1" height="1" fill="#b8a47c"/><rect x="22" y="11" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="12" width="1" height="1" fill="#e9dcb8"/><rect x="3" y="12" width="1" height="1" fill="#b8a47c"/><rect x="4" y="12" width="4" height="1" fill="#000"/><rect x="8" y="12" width="3" height="1" fill="#e9dcb8"/><rect x="11" y="12" width="2" height="1" fill="#000"/><rect x="13" y="12" width="3" height="1" fill="#e9dcb8"/><rect x="16" y="12" width="4" height="1" fill="#000"/><rect x="20" y="12" width="1" height="1" fill="#b8a47c"/><rect x="21" y="12" width="1" height="1" fill="#7a6a4c"/><rect x="2" y="13" width="1" height="1" fill="#b8a47c"/><rect x="3" y="13" width="1" height="1" fill="#e9dcb8"/><rect x="4" y="13" width="1" height="1" fill="#b8a47c"/><rect x="5" y="13" width="5" height="1" fill="#e9dcb8"/><rect x="10" y="13" width="4" height="1" fill="#000"/><rect x="14" y="13" width="2" height="1" fill="#e9dcb8"/><rect x="16" y="13" width="1" height="1" fill="#b8a47c"/><rect x="17" y="13" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="13" width="2" height="1" fill="#b8a47c"/><rect x="20" y="13" width="1" height="1" fill="#7a6a4c"/><rect x="21" y="13" width="1" height="1" fill="#b8a47c"/><rect x="3" y="14" width="1" height="1" fill="#b8a47c"/><rect x="4" y="14" width="1" height="1" fill="#e9dcb8"/><rect x="5" y="14" width="1" height="1" fill="#b8a47c"/><rect x="6" y="14" width="5" height="1" fill="#e9dcb8"/><rect x="11" y="14" width="2" height="1" fill="#000"/><rect x="13" y="14" width="4" height="1" fill="#e9dcb8"/><rect x="17" y="14" width="2" height="1" fill="#b8a47c"/><rect x="19" y="14" width="2" height="1" fill="#7a6a4c"/><rect x="4" y="15" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="15" width="2" height="1" fill="#b8a47c"/><rect x="7" y="15" width="9" height="1" fill="#e9dcb8"/><rect x="16" y="15" width="2" height="1" fill="#b8a47c"/><rect x="18" y="15" width="2" height="1" fill="#7a6a4c"/><rect x="5" y="16" width="1" height="1" fill="#b8a47c"/><rect x="6" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="7" y="16" width="1" height="1" fill="#000"/><rect x="8" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="16" width="1" height="1" fill="#000"/><rect x="10" y="16" width="4" height="1" fill="#e9dcb8"/><rect x="14" y="16" width="1" height="1" fill="#000"/><rect x="15" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="16" y="16" width="1" height="1" fill="#000"/><rect x="17" y="16" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="16" width="1" height="1" fill="#7a6a4c"/><g id="gear"></g><g class="jaw"><rect x="5" y="17" width="1" height="1" fill="#b8a47c"/><rect x="6" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="7" y="17" width="1" height="1" fill="#000"/><rect x="8" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="9" y="17" width="1" height="1" fill="#000"/><rect x="10" y="17" width="4" height="1" fill="#e9dcb8"/><rect x="14" y="17" width="1" height="1" fill="#000"/><rect x="15" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="16" y="17" width="1" height="1" fill="#000"/><rect x="17" y="17" width="1" height="1" fill="#e9dcb8"/><rect x="18" y="17" width="1" height="1" fill="#7a6a4c"/><rect x="5" y="18" width="1" height="1" fill="#7a6a4c"/><rect x="6" y="18" width="2" height="1" fill="#b8a47c"/><rect x="8" y="18" width="5" height="1" fill="#e9dcb8"/><rect x="13" y="18" width="1" height="1" fill="#b8a47c"/><rect x="14" y="18" width="1" height="1" fill="#e9dcb8"/><rect x="15" y="18" width="2" height="1" fill="#b8a47c"/><rect x="17" y="18" width="2" height="1" fill="#7a6a4c"/><rect x="6" y="19" width="1" height="1" fill="#7a6a4c"/><rect x="7" y="19" width="2" height="1" fill="#b8a47c"/><rect x="9" y="19" width="1" height="1" fill="#e9dcb8"/><rect x="10" y="19" width="1" height="1" fill="#b8a47c"/><rect x="11" y="19" width="1" height="1" fill="#e9dcb8"/><rect x="12" y="19" width="4" height="1" fill="#b8a47c"/><rect x="16" y="19" width="2" height="1" fill="#7a6a4c"/><rect x="7" y="20" width="1" height="1" fill="#7a6a4c"/><rect x="8" y="20" width="2" height="1" fill="#b8a47c"/><rect x="10" y="20" width="1" height="1" fill="#e9dcb8"/><rect x="11" y="20" width="1" height="1" fill="#b8a47c"/><rect x="12" y="20" width="1" height="1" fill="#e9dcb8"/><rect x="13" y="20" width="2" height="1" fill="#b8a47c"/><rect x="15" y="20" width="2" height="1" fill="#7a6a4c"/></g></svg>
     </button>
@@ -350,7 +359,7 @@ function bestSpin(stack) {
 }
 
 // Hearts: the blood the skull takes when the column fills. Each disc cleared costs half a heart.
-const START_HEARTS = 3, MAX_HEARTS = 5;
+const START_HEARTS = 4, MAX_HEARTS = 5;
 const HEART_PRICE = 30; // shop: restore one heart, + RELIC_PRICE_STEP per round
 const HEART = [".##.##.", "#######", "#######", ".#####.", "..###..", "...#..."];
 function heartSvg(kind) { // kind: "full", "half" or "empty"
@@ -561,9 +570,48 @@ if (typeof document !== "undefined") {
     const lookahead = has("lens") ? 3 : 2;
     $("next").textContent = "NEXT  " + st.queue.slice(0, lookahead).map(d => d.locked ? `[${d.faces[0]}]` : d.cursed ? `${d.faces.join("")}!` : d.faces.join("")).join("   ");
     $("help").hidden = st.relics.size > 0;
+    bleedState();
     renderHearts();
   }
   function say(t) { $("msg").textContent = t; }
+
+  // Blood purge: pay half a heart for each cursed disc to clear them all. Fully cursed discs go first.
+  // You always keep at least half a heart. First tap asks, a second tap within 2s pays.
+  let bleedArmed = 0;
+  function bleedTargets() {
+    const all = [...st.stack.filter(d => d.dark), ...st.stack.filter(d => d.cursed)];
+    return all.slice(0, Math.max(0, st.halves - 1));
+  }
+  function bleedState() {
+    const b = $("bleed"); if (!b) return;
+    const n = st.stack.filter(d => d.dark || d.cursed).length;
+    b.hidden = !n || !!(st.tut && !st.tut.free && TUT[st.tut.i] && !TUT[st.tut.i].bleed);
+    $("bleedN").textContent = n ? String(n) : "";
+    if (!n && b.classList) b.classList.remove("armed");
+  }
+  function bleed() {
+    if (st.over || st.sac || st.menu || st.paused || st.pending || st.shopOpen || st.checkChain || tutNoTouch()) return;
+    const now = performance.now(), b = $("bleed"), take = bleedTargets();
+    const total = st.stack.filter(d => d.dark || d.cursed).length;
+    if (!total) return;
+    if (!take.length) { say("You have no blood to spare. The skull leaves you half a heart."); sfx.refuse(); return; }
+    const cost = take.length / 2, hearts = `${cost} heart${cost === 1 ? "" : "s"}`;
+    if (!(bleedArmed && now - bleedArmed < 2000)) {
+      bleedArmed = now; if (b.classList) b.classList.add("armed");
+      setTimeout(() => { if (performance.now() - bleedArmed >= 1990 && b.classList) b.classList.remove("armed"); }, 2000);
+      say(`Blood purge: ${take.length} cursed disc${take.length === 1 ? "" : "s"} for ${hearts}${take.length < total ? ` (all the blood you can spare)` : ""}. Tap again to pay.`);
+      return;
+    }
+    bleedArmed = 0; if (b.classList) b.classList.remove("armed");
+    const gone = new Set(take);
+    gone.forEach(d => st.crumble.push({ d, y: d.y, t: now }));
+    st.stack = st.stack.filter(d => !gone.has(d));
+    st.halves -= take.length; st.checkChain = true;
+    renderHearts(true); sfx.blood(); skullClass("fed", 450);
+    say(`The skull drinks. ${take.length} cursed disc${take.length === 1 ? "" : "s"} gone for ${hearts}.`);
+    tutEvent("bleed");
+    hud();
+  }
 
   // ---------- sound: 8-bit chiptune, all made with the Web Audio API, no files ----------
   // Shared word for word by the game and the sound lab (lab.html), so a sound shaped in the lab
@@ -1869,7 +1917,7 @@ if (typeof document !== "undefined") {
   }
   function skinAll() {
     if (!document.querySelectorAll) return;
-    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#pause):not(#power):not(#introSkip):not(#coachSkip)").forEach(b => skin(b, "bone"));
+    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#pause):not(#power):not(#bleed):not(#introSkip):not(#coachSkip)").forEach(b => skin(b, "bone"));
     skin($("power"), "oracle");
     document.querySelectorAll("#over, #shop, #sac, #menu, #paused").forEach(p => skin(p, "stone"));
   }
@@ -2614,6 +2662,7 @@ if (typeof document !== "undefined") {
   }
   $("skull").addEventListener("click", submit);
   $("power").addEventListener("click", usePower);
+  $("bleed").addEventListener("click", bleed);
   $("mute").addEventListener("click", () => setMuted(!muted));
   $("music").addEventListener("click", toggleMusic); musicState();
   // leaving the app pauses the game; coming back leaves it paused until Resume
@@ -2664,7 +2713,7 @@ if (typeof document !== "undefined") {
       drop: () => [TD(["P", "O", "L", "M", "B", "D"]), TD(["E", "A", "I", "O", "U", "Y"]), TD(["Z"], { locked: true })], wait: "offer" },
     { clear: true, say: "<b>Purple</b> discs are cursed. The coins beside one show its worth, and they drain with every drop. Watch what happens if you wait.", noTouch: true, wait: "curse",
       drop: () => [TD(["R", "O", "S", "T", "A", "N"]), TD(["I", "M", "E", "T", "A", "O"], { cursed: true, curse: 2, curseMax: CURSE_DROPS }), TD(["L", "Q", "B", "H", "U", "G"]), TD(["F", "W", "J", "V", "Y", "D"])] },
-    { say: "Too slow. Now it's <b>fully cursed</b>: it can't turn, words through it pay <b>nothing</b>, and it curses every disc it touches. <b>Tap it twice</b> to smash it. The first smash costs 10 gold, then 20, then 30.", wait: "smash", gold: 10 },
+    { say: "Too slow. Now it's <b>fully cursed</b>: it can't turn, words through it pay <b>nothing</b>, and it curses every disc it touches. <b>Tap it twice</b> to smash it: 10 gold, then 20, then 30. Or tap the <b>blood</b> button twice to pay half a heart for each cursed disc.", wait: "smash", gold: 10, bleed: true },
     { say: "One last thing. When the column fills, I take <b>blood</b>: half a heart for every disc I clear. When your blood runs out, so do you. Let's see how long you last.", next: "Go" },
     { free: true, wait: "death" },
     { say: "Dead. They always are, in the end. But I'm not finished with you. <b>Rise</b>, and this time it counts.", next: "Rise", end: true },
@@ -2705,6 +2754,7 @@ if (typeof document !== "undefined") {
     if (!st || !st.tut) return;
     const L = TUT[st.tut.i];
     if (L && L.wait === "word" && name === "offer" && !st.tut.adv) { st.tut.i++; return tutAdvance(HILITE_MS + 700); } // offered before we said so
+    if (L && L.wait === "smash" && name === "bleed") name = "smash";
     if (!L || L.wait !== name) return;
     tutAdvance({ offer: HILITE_MS + 700, curse: 900, smash: 600, fling: 1600, death: 1600 }[name] || 0);
   }

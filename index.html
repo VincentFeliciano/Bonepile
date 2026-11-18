@@ -134,6 +134,13 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #speechText b { font-weight: normal; color: #7a1010; text-shadow: 0.6px 0 0 #7a1010; }
 #introBtns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
 #introBtns button { flex: 1; min-height: 50px; }
+#coach { position: absolute; left: 10px; right: 10px; top: 10px; background: #e9dcb8; color: #0c0804; border: 3px solid #000; box-shadow: 0 0 0 2px #7a6a4c; padding: 10px 12px 8px; pointer-events: none; }
+#coachText { font-size: 21px; line-height: 1.05; text-shadow: 0.6px 0 0 #0c0804; }
+#coachText b { font-weight: normal; color: #7a1010; text-shadow: 0.6px 0 0 #7a1010; }
+#coachBtns { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+#coachBtns button { pointer-events: auto; }
+#coachNext { min-height: 40px; min-width: 110px; }
+#coachSkip { background: none !important; border: none; box-shadow: none; clip-path: none; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 7px; color: #5a3008; padding: 8px 0; }
 #introSkip { background-image: none !important; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); background: none; border: none; box-shadow: none; clip-path: none; padding: 8px; }
 #pHelp { min-width: 14em; }
 @media (max-height: 600px) { #introTag { display: none; } #speech { min-height: 0; } #speechText { min-height: 0; } }
@@ -156,6 +163,7 @@ button:focus-visible { outline: none; border-color: var(--glow); }
   <div id="row2"><div id="hearts" aria-label="Hearts"></div><div id="next"></div></div>
   <div id="wrap">
     <canvas id="cv"></canvas>
+    <div id="coach" hidden><div id="coachText"></div><div id="coachBtns"><button id="coachSkip" type="button">Skip tutorial</button><button id="coachNext" type="button">Next</button></div></div>
     <div id="over" hidden>
       <h2>The skull claims the column</h2>
       <div id="overText"></div>
@@ -481,12 +489,22 @@ function runPts(stack, r) {
   for (let j = 0; j <= r.hi - r.lo; j++) p += facePts(faceAt(stack[r.hi - j], r.offs[j] || 0));
   return p;
 }
+// side and diagonal words are bonus words: half gold
+const BONUS_MULT = 0.5;
+function isBonus(r) { return !!r.off; }
 function wordGold(word, pts = letterPts(word)) { return goldFor(word.length) + pts; }
 // mods: { vowels: bool, long: bool, chain: multiplier }
 function runGold(stack, r, mods = {}) {
   let locked = false;
-  for (let i = r.lo; i <= r.hi; i++) { if (stack[i].dark) return 0; if (stack[i].locked) locked = true; }
-  let g = wordGold(r.word, runPts(stack, r)) * (locked ? LOCKED_MULT : 1);
+  let worth = 1; // a cursed disc's worth runs down with its count: full when it lands, nothing when fully cursed
+  for (let i = r.lo; i <= r.hi; i++) {
+    const d = stack[i];
+    if (d.dark) return 0;
+    if (d.locked) locked = true;
+    if (d.cursed) worth = Math.min(worth, Math.max(0, d.curse) / (d.curseMax || CURSE_DROPS));
+  }
+  let g = wordGold(r.word, runPts(stack, r)) * (locked ? LOCKED_MULT : 1) * worth;
+  if (isBonus(r)) g *= BONUS_MULT;
   if (mods.long && r.word.length >= 6) g *= 2;
   if (mods.vowels) g += 2 * (r.word.match(/[AEIOU]/g) || []).length;
   return Math.round(g * (mods.chain || 1));
@@ -494,7 +512,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { curseShaded, letterPts, facePts, runPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { isBonus, curseShaded, letterPts, facePts, runPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {
@@ -507,7 +525,7 @@ if (typeof document !== "undefined") {
   function newGame(daily = false) {
     if (typeof daily !== "boolean") daily = false;
     st = { daily: daily ? todayKey() : "", earned: 0, gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, curseSmashes: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
-    $("sac").hidden = true; $("menu").hidden = true; $("paused").hidden = true;
+    $("sac").hidden = true; $("menu").hidden = true; $("paused").hidden = true; $("coach").hidden = true;
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
     if (/[?&]relics=all\b/.test(location.search)) { RELICS.forEach(r => st.relics.add(r.id)); st.charges = ORACLE_MAX; } // testing aid
@@ -1717,6 +1735,7 @@ if (typeof document !== "undefined") {
     d: "#484848", m: "#7a7a7a", l: "#b0b0b0", w: "#e8e8e8",
     bone: "#e9dcb8", bone1: "#b8a47c", bone2: "#7a6a4c",
     gold: "#e0a030", gold1: "#8a5a1c", glow: "#7ee05a", blood: "#c83030",
+    bonus: "#5ec8f0",
     purple0: "#2a1438", purple1: "#5c2e7a", purple2: "#9a6cc4", purple3: "#c8acea",
   };
   const FONT = '"Press Start 2P", ui-monospace, monospace';
@@ -1850,7 +1869,7 @@ if (typeof document !== "undefined") {
   }
   function skinAll() {
     if (!document.querySelectorAll) return;
-    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#pause):not(#power):not(#introSkip)").forEach(b => skin(b, "bone"));
+    document.querySelectorAll("button:not(#skull):not(#mute):not(#music):not(#pause):not(#power):not(#introSkip):not(#coachSkip)").forEach(b => skin(b, "bone"));
     skin($("power"), "oracle");
     document.querySelectorAll("#over, #shop, #sac, #menu, #paused").forEach(p => skin(p, "stone"));
   }
@@ -1885,7 +1904,7 @@ if (typeof document !== "undefined") {
     if (!d.locked && cursedNow < (boss === "rot" ? 2 : 1) && r3 < CURSE_CHANCE * (boss === "rot" ? 4 : 1)) { d.cursed = true; d.curse = d.curseMax = CURSE_DROPS + (has("ward") ? 3 : 0); }
     return d;
   }
-  function refillQueue() { while (st.queue.length < 3) st.queue.push(nextDisc()); }
+  function refillQueue() { if (st.tut && !st.tut.free) return; while (st.queue.length < 3) st.queue.push(nextDisc()); }
 
   function spawn(now) {
     if (st.stack.length >= ROWS) return st.halves > 0 ? openSac() : gameOver();
@@ -1954,6 +1973,7 @@ if (typeof document !== "undefined") {
   $("sacNo").addEventListener("click", () => { st.sac = false; $("sac").hidden = true; gameOver(); });
 
   function gameOver() {
+    if (st.tut) { st.over = true; st.falling = null; st.rain = []; sfx.over(); playSfx("laugh", { at: 1.5 }); tutEvent("death"); return; }
     st.over = true; st.falling = null; st.rain = []; sfx.over(); playSfx("laugh", { at: 1.5 }); musicStop();
     $("overText").textContent = `Round ${st.round}: ${st.roundGold} of ${quotaFor(st.round)} gold. Best word: ${st.best || "none"}.`;
     $("dailyText").textContent = st.daily ? dailyResult() : "";
@@ -2001,6 +2021,7 @@ if (typeof document !== "undefined") {
     const n = spreadCurse();
     flash = performance.now();
     skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
+    tutEvent("curse");
     say(`${n ? "The curse creeps into the discs it touches. " : ""}Words through a dark purple disc pay nothing. Tap it twice to smash it (${smashCost(d)} gold).`);
   }
   // A fully cursed disc curses any disc touching it, above or below, that isn't cursed yet.
@@ -2080,6 +2101,7 @@ if (typeof document !== "undefined") {
   const skullBtn = $("skull");
   function skullClass(c, ms) { skullBtn.classList.add(c); if (ms) setTimeout(() => skullBtn.classList.remove(c), ms); }
   function submit() {
+    if (tutNoTouch()) return;
     if (st.over || st.sac || st.menu || st.paused || st.pending || st.shopOpen || st.checkChain || st.spinning) return;
     stopFlings();
     const found = findWords(st.stack, true);
@@ -2091,6 +2113,7 @@ if (typeof document !== "undefined") {
     }
     st.chain = 0;
     offer(found, 1);
+    tutEvent("offer");
   }
   function offer(found, mult) {
     const discs = new Set();
@@ -2104,7 +2127,7 @@ if (typeof document !== "undefined") {
       if (!st.best || r.word.length > st.best.length) st.best = r.word;
       const locked = st.stack.slice(r.lo, r.hi + 1).some(d => d.locked);
       const cursed = st.stack.slice(r.lo, r.hi + 1).some(d => d.dark);
-      parts.push(`${r.word} ${g}` + (cursed ? " (cursed)" : locked ? ` (x${LOCKED_MULT})` : ""));
+      parts.push(`${r.word} ${g}` + (cursed ? " (cursed)" : locked ? ` (x${LOCKED_MULT})` : "") + (isBonus(r) ? " (bonus)" : ""));
       for (let i = r.lo; i <= r.hi; i++) discs.add(st.stack[i]);
       if (has("maw") && r.word.length >= 5 && r.lo > 0) { discs.add(st.stack[r.lo - 1]); glowRune("maw", HILITE_MS); }
       if (r.word.length >= 6) glowRune("long", HILITE_MS);
@@ -2115,7 +2138,7 @@ if (typeof document !== "undefined") {
     if ([...discs].some(d => d.locked || d.cursed)) gainCharge();
     const pre = mult > 1 ? `Chain x${mult}! ` : "";
     if (mult > 1) glowRune("pact", HILITE_MS);
-    const met = !st.roundDone && st.roundGold >= quotaFor(st.round);
+    const met = !st.tut && !st.roundDone && st.roundGold >= quotaFor(st.round);
     if (met) st.roundDone = true;
     // each offered letter lifts off its disc and drifts into the mouth, top of the column first
     const cr = cv.getBoundingClientRect();
@@ -2132,14 +2155,16 @@ if (typeof document !== "undefined") {
       veil = performance.now();
       say(`${pre}The skull accepts ${parts.join(", ")}.  +${total} gold${met ? ". Quota met." : ""}`);
     }, HILITE_MS);
-    st.pending = { discs, t: now };
+    const marks = [];
+    found.forEach(r => r.offs.forEach((o, j) => { const d = st.stack[r.hi - j]; if (d) marks.push({ d, o, bonus: isBonus(r) }); }));
+    st.pending = { discs, t: now, marks };
     hud();
   }
   function crumblePending(now) {
     const p = st.pending; st.pending = null;
     for (const d of p.discs) st.crumble.push({ d, y: d.y, t: now });
     st.stack = st.stack.filter(d => !p.discs.has(d));
-    if (!st.stack.length && !st.roundDone) st.boardClear = true;
+    if (!st.stack.length && !st.roundDone && !st.tut) st.boardClear = true;
     st.checkChain = true; // discs above will fall; check for words that form on their own
     hud();
   }
@@ -2170,7 +2195,7 @@ if (typeof document !== "undefined") {
     spinFlung(dt, now);
     for (const d of st.stack) if (!d.fling) d.rot += (d.target - d.rot) * Math.min(1, dt * 18);
     if (st.falling || st.rain.length) {
-      const sp = speedFor(st.round + Math.floor(st.spawnedRound / 8)) * (has("slow") ? 0.75 : 1) * ROWS / BASE_ROWS;
+      const sp = st.tut ? (st.tut.free ? 3 + st.spawnedRound * 0.15 : 10) : speedFor(st.round + Math.floor(st.spawnedRound / 8)) * (has("slow") ? 0.75 : 1) * ROWS / BASE_ROWS;
       // lowest first, so each disc lands on the one below it
       const air = [...(st.falling ? [st.falling] : []), ...st.rain].sort((a, b) => a.y - b.y);
       for (const f of air) {
@@ -2180,19 +2205,20 @@ if (typeof document !== "undefined") {
         if (f.y <= floor) {
           f.y = floor; f.rot = f.target; st.stack.push(f); sfx.land();
           if (f === st.falling) st.falling = null; else st.rain = st.rain.filter(r => r !== f);
-          st.spawnAt = now + 650;
+          st.spawnAt = now + (st.tut && !st.tut.free ? 150 : 650);
           st.stack.filter(d => d.cursed && d !== f && --d.curse <= 0).forEach(curse);
           spreadCurse();
           hud();
           if (st.stack.length >= ROWS) say("Stack is full. Score a word now or pay the skull in blood.");
         }
       }
-    } else if (now >= st.spawnAt && now >= st.tripleAt && !st.pending && !st.checkChain && !st.roundDone) {
+    } else if (now >= st.spawnAt && now >= st.tripleAt && !st.pending && !st.checkChain && !st.roundDone && (st.queue.length || st.stack.length >= ROWS)) {
       if (st.stack.length >= ROWS && now < st.spawnAt + 1500) {/* last chance window */}
       else if (st.tripleAt) { st.tripleAt = 0; spawnTriple(now); }
       else spawn(now);
     }
     st.crumble = st.crumble.filter(c => now - c.t < 500);
+    if (st.tut) tutTick(now);
   }
 
   // a capsule with stepped (pixel) end caps
@@ -2222,6 +2248,19 @@ if (typeof document !== "undefined") {
     ctx.fillText(t, cx, top + Math.max(0, Math.floor((faceRows - rows) / 2)) * P + snap(asc));
   }
   // Discs are slices of old bone: ivory in the middle, yellowing to the ends, pitted and cracked.
+  // Boxes around every letter the skull is taking: gold for main words, blue for bonus words.
+  function drawMarks(marks, now) {
+    const P = PX, x0 = wellX + P, x1 = wellX + wellW - P, cx = snap((x0 + x1) / 2), R = (x1 - x0) / 2, ex = 3 * P;
+    const bw = snap(R * 0.36 / P) * P, on = Math.floor(now / 160) % 2 === 0;
+    for (const m of marks) {
+      const y = snap(rowY(m.d.y)), top = y + P, h = cellH - 2 * P;
+      const lx = snap(cx + m.o * Math.sin(Math.PI / 3) * (R - ex) * 0.92);
+      const inset = m.bonus ? 2 * P : 0;
+      const bx = lx - bw / 2 + inset, by = top + inset, w = bw - 2 * inset, hh = h - 2 * inset;
+      ctx.fillStyle = m.bonus ? (on ? C.bonus : C.k) : (on ? C.gold : C.gold1);
+      ctx.fillRect(bx, by, w, P); ctx.fillRect(bx, by + hh - P, w, P); ctx.fillRect(bx, by, P, hh); ctx.fillRect(bx + w - P, by, P, hh);
+    }
+  }
   function drawDisc(d, y, alpha = 1, broken = 0, hl = false) {
     const P = PX, now = performance.now();
     y = snap(y);
@@ -2289,8 +2328,13 @@ if (typeof document !== "undefined") {
     if (d.cursed) {
       const max = d.curseMax || CURSE_DROPS;
       shadeIn(1 - d.curse / max);
-      ctx.fillStyle = C.purple2; ctx.font = `${8 * P}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(String(d.curse), wellX + wellW + 9 * P, ty);
+      // its worth beside the column: one coin per drop left, the stack shrinking as the curse ripens
+      const coinH = Math.max(2 * P, snap((h + 2 * P) / Math.max(max, 1) / P) * P), cxL = wellX + wellW + 5 * P;
+      for (let k = 0; k < Math.max(0, d.curse); k++) {
+        const cy = top + h + P - (k + 1) * coinH;
+        ctx.fillStyle = C.gold1; ctx.fillRect(cxL, cy, 7 * P, coinH - (coinH > 2 * P ? P : 0));
+        ctx.fillStyle = C.gold; ctx.fillRect(cxL + P, cy, 5 * P, Math.max(P, coinH - 2 * P));
+      }
     }
     ctx.restore();
   }
@@ -2314,6 +2358,7 @@ if (typeof document !== "undefined") {
     ctx.save();
     ctx.beginPath(); ctx.rect(0, wellTop - P, W, H); ctx.clip();
     for (const d of st.stack) drawDisc(d, rowY(d.y), 1, 0, !!(st.pending && st.pending.discs.has(d)));
+    if (st.pending && st.pending.marks) drawMarks(st.pending.marks, now);
     if (st.falling) drawDisc(st.falling, rowY(st.falling.y));
     for (const r of st.rain) drawDisc(r, rowY(r.y));
     ctx.restore();
@@ -2351,6 +2396,7 @@ if (typeof document !== "undefined") {
     const r = cv.getBoundingClientRect();
     const d = stackedDiscAt(e.clientX - r.left, e.clientY - r.top);
     if (!d) return;
+    if (tutNoTouch()) return;
     if (d.locked || d.dark) { tapHeavy(d); return; }
     if (d.fling) { d.fling = 0; d.target = d.rot; }
     drag = { d, tapped: d, x: e.clientX, y: e.clientY, start: d.target, axis: null, trail: [{ t: performance.now(), rot: d.rot }] };
@@ -2372,7 +2418,7 @@ if (typeof document !== "undefined") {
       st.crumble.push({ d, y: d.y, t: now });
       st.stack = st.stack.filter(x => x !== d);
       st.checkChain = true;
-      say(`${what} smashed. -${cost} gold`); sfx.smash();
+      say(`${what} smashed. -${cost} gold`); sfx.smash(); tutEvent("smash");
       glowRune("mercy");
       hud();
     } else {
@@ -2400,7 +2446,7 @@ if (typeof document !== "undefined") {
     if (drag.axis === "x" && drag.d) {
       const d = drag.d, a = drag.trail[0], t = performance.now(), dt = (t - a.t) / 1000;
       const v = dt > 0.008 && t - drag.trail[drag.trail.length - 1].t < 80 ? (d.rot - a.rot) / dt : 0; // faces per second
-      if (Math.abs(v) >= FLING_MIN) { d.fling = Math.sign(v) * Math.min(FLING_MAX, Math.abs(v) * FLING_BOOST); d.target = d.rot; }
+      if (Math.abs(v) >= FLING_MIN) { d.fling = Math.sign(v) * Math.min(FLING_MAX, Math.abs(v) * FLING_BOOST); d.target = d.rot; tutEvent("fling"); }
       else d.target = Math.round(d.rot);
     }
     else if (!drag.axis && drag.tapped) { drag.tapped.target = Math.round(drag.tapped.target) + 1; sfx.turn(); }
@@ -2600,6 +2646,87 @@ if (typeof document !== "undefined") {
     requestAnimationFrame(loop);
   }
 
+  // ---------- tutorial: a scripted first level that stops to explain each step ----------
+  // Words read top to bottom, and the first disc listed in `drop` lands first, at the bottom.
+  const TD = (faces, o = {}) => ({ faces, rot: 0, target: 0, ...o });
+  const TUT = [
+    { say: "Discs of <b>bone</b> fall into my well, each with six letters around its rim. Watch.",
+      drop: () => [TD(["O", "T", "E", "M", "L", "U"]), TD(["A", "R", "I", "N", "S", "E"]), TD(["C", "H", "B", "D", "P", "W"])], noTouch: true, wait: "landed" },
+    { say: "Words read <b>down</b> the column. <b>Tap</b> a disc to turn it one step, or <b>swipe</b> it to spin. Turn the bottom disc to spell a word.", wait: "word" },
+    { say: "A word! Now <b>tap me</b> to offer it.", wait: "offer" },
+    { say: "Gold, and it counts toward my <b>quota</b>. Longer words pay more, and rare letters like <b>Q</b> and <b>Z</b> pay extra.", next: "Next" },
+    { say: "Now <b>swipe hard</b> across a disc and let go. It keeps spinning on its own, then slows to a stop.",
+      drop: () => [0, 1, 2].map(() => { const d = makeDisc(Math.random, false); delete d.cursed; return d; }), wait: "fling" },
+    { say: "Good. Spin fast, stop on the letter you need.", next: "Next" },
+    { clear: true, say: "The <b>side letters</b> count too, reading down, and so do words crossing in an <b>X</b>. They're <b>bonus</b> words at half gold. There's one down the right side. <b>Tap me.</b>",
+      drop: () => [TD(["X", "N", "Q", "Z", "V", "K"]), TD(["J", "U", "V", "X", "Z", "Q"]), TD(["Q", "S", "Z", "J", "X", "V"])], wait: "offer" },
+    { clear: true, say: "Gray discs are <b>locked</b>. They can't turn, but words through them pay <b>triple</b>. Make a word with the Z and offer it.",
+      drop: () => [TD(["P", "O", "L", "M", "B", "D"]), TD(["E", "A", "I", "O", "U", "Y"]), TD(["Z"], { locked: true })], wait: "offer" },
+    { clear: true, say: "<b>Purple</b> discs are cursed. The coins beside one show its worth, and they drain with every drop. Watch what happens if you wait.", noTouch: true, wait: "curse",
+      drop: () => [TD(["R", "O", "S", "T", "A", "N"]), TD(["I", "M", "E", "T", "A", "O"], { cursed: true, curse: 2, curseMax: CURSE_DROPS }), TD(["L", "Q", "B", "H", "U", "G"]), TD(["F", "W", "J", "V", "Y", "D"])] },
+    { say: "Too slow. Now it's <b>fully cursed</b>: it can't turn, words through it pay <b>nothing</b>, and it curses every disc it touches. <b>Tap it twice</b> to smash it. The first smash costs 10 gold, then 20, then 30.", wait: "smash", gold: 10 },
+    { say: "One last thing. When the column fills, I take <b>blood</b>: half a heart for every disc I clear. When your blood runs out, so do you. Let's see how long you last.", next: "Go" },
+    { free: true, wait: "death" },
+    { say: "Dead. They always are, in the end. But I'm not finished with you. <b>Rise</b>, and this time it counts.", next: "Rise", end: true },
+  ];
+  const coachEl = $("coach");
+  function tutNoTouch() { return !!(st && st.tut && !st.tut.free && TUT[st.tut.i] && TUT[st.tut.i].noTouch); }
+  function startTutorial() {
+    st.tut = { i: -1, free: false, adv: false };
+    st.stack = []; st.queue = []; st.falling = null; st.rain = [];
+    say("Tutorial. Learn the skull's game.");
+    tutStep(0);
+  }
+  function tutStep(i) {
+    const L = TUT[i], now = performance.now();
+    st.tut.i = i; st.tut.adv = false;
+    if (L.clear && st.stack.length) { st.stack.forEach(d => st.crumble.push({ d, y: d.y, t: now })); st.stack = []; }
+    if (L.drop) { st.queue = L.drop(); st.spawnAt = now + 500; }
+    if (L.gold && st.gold < L.gold) { st.gold = L.gold; st.shown = Math.max(st.shown, st.gold); }
+    if (L.free) { st.tut.free = true; st.halves = 2; st.spawnedRound = 0; refillQueue(); st.spawnAt = now + 600; }
+    coachEl.hidden = !L.say;
+    if (L.say) {
+      $("coachText").innerHTML = L.say;
+      $("coachNext").hidden = !L.next; $("coachNext").textContent = L.next || "";
+      $("coachSkip").hidden = !!L.end;
+      babble(L.say.replace(/<[^>]+>/g, ""));
+      skullClass("open", 500);
+      reskin();
+    }
+    hud();
+  }
+  function tutAdvance(delay = 0) {
+    if (!st.tut || st.tut.adv) return;
+    st.tut.adv = true;
+    const i = st.tut.i, s = st;
+    setTimeout(() => { if (st === s && st.tut && st.tut.i === i) tutStep(i + 1); }, delay);
+  }
+  function tutEvent(name) {
+    if (!st || !st.tut) return;
+    const L = TUT[st.tut.i];
+    if (L && L.wait === "word" && name === "offer" && !st.tut.adv) { st.tut.i++; return tutAdvance(HILITE_MS + 700); } // offered before we said so
+    if (!L || L.wait !== name) return;
+    tutAdvance({ offer: HILITE_MS + 700, curse: 900, smash: 600, fling: 1600, death: 1600 }[name] || 0);
+  }
+  function tutTick(now) {
+    const L = TUT[st.tut.i];
+    if (!L || st.tut.adv) return;
+    if (L.wait === "landed" && !st.queue.length && !st.falling && !st.rain.length && st.stack.every((d, i) => d.y === i)) tutAdvance(400);
+    if (L.wait === "word" && !drag && st.stack.every(d => !d.fling) && findWords(st.stack, true).length) tutAdvance(200);
+  }
+  function endTutorial() {
+    try { localStorage.setItem(INTRO_KEY, "1"); } catch (_) {}
+    coachEl.hidden = true;
+    newGame(/[?&]daily\b/.test(location.search));
+  }
+  $("coachNext").addEventListener("click", () => {
+    if (!st.tut) return;
+    const L = TUT[st.tut.i];
+    if (L.end) { laugh("The skull laughs. Rise!"); return endTutorial(); }
+    tutAdvance(0);
+  });
+  $("coachSkip").addEventListener("click", () => { if (st.tut) endTutorial(); });
+
   // ---------- opening: the game's name, the skull on its pedestal, how to play ----------
   const GAME_NAME = "BONEPILE"; // working title: change it here and the opening follows
   const INTRO_KEY = "bonepile-intro-seen";
@@ -2608,7 +2735,7 @@ if (typeof document !== "undefined") {
     "Discs of <b>bone</b> fall into my well. Each one carries <b>six letters</b> around its rim.",
     "Once a disc lands, <b>swipe</b> it to spin it, or <b>tap</b> it to turn one step. Swipe hard and it spins on its own.",
     "Line up letters <b>reading down</b> the column to spell a word, three letters or more. Words down the <b>side letters</b>, or crossing in an <b>X</b>, count too.",
-    "Then <b>tap me</b> to offer your words. Longer words pay more gold, and rare letters like <b>Q</b> and <b>Z</b> pay extra.",
+    "Then <b>tap me</b> to offer your words. Longer words pay more gold, and rare letters like <b>Q</b> and <b>Z</b> pay extra. Side and X words are <b>bonus</b> words at half gold.",
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
     "Gray discs are <b>locked</b> but pay triple. <b>Purple</b> discs are cursed: use them fast, or the curse hides their sides, makes words worthless and creeps into every disc touching them.",
     "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",
@@ -2621,7 +2748,8 @@ if (typeof document !== "undefined") {
   function seenIntro() { try { return localStorage.getItem(INTRO_KEY) === "1"; } catch (_) { return false; } }
   function introButtons() {
     const back = $("introBack"), next = $("introNext");
-    if (introI < 0) { back.hidden = !seenIntro(); back.textContent = "How to play"; next.textContent = seenIntro() ? "Play" : "Begin"; reskin(); return; }
+    if (introI < 0) { back.hidden = !seenIntro(); back.textContent = "Tutorial"; next.textContent = seenIntro() ? "Play" : "Begin"; $("introSkip").hidden = seenIntro(); $("introSkip").textContent = "Skip the tutorial"; reskin(); return; }
+    $("introSkip").hidden = false;
     back.hidden = false; back.textContent = "Back";
     next.textContent = introI === STEPS.length - 1 ? (introMode === "help" ? "Done" : "Play") : "Next";
     $("introSkip").textContent = introMode === "help" ? "Close" : "Skip to the game";
@@ -2631,13 +2759,14 @@ if (typeof document !== "undefined") {
   function introSay(i) {
     introI = i; introButtons();
     $("speechStep").textContent = i < 0 ? "" : `${i + 1} / ${STEPS.length}`;
-    const html = i < 0 ? (seenIntro() ? "Back again? My well is waiting." : "Tap Begin, and I will teach you my game.") : STEPS[i];
+    const html = i < 0 ? (seenIntro() ? "Back again? My well is waiting." : "Welcome, mortal. I am the keeper of this temple, and I am <b>hungry</b>. Come, I will teach you my game.") : STEPS[i];
     const box = $("speechText"), plain = html.replace(/<[^>]+>/g, "");
     clearInterval(typeT); typed = false;
     if (i >= 0) { babble(plain); iSkull.classList.add("talk"); }
     let n = 0; box.textContent = "";
     const done = () => { clearInterval(typeT); typed = true; box.innerHTML = html; iSkull.classList.remove("talk"); };
-    if (i < 0) return done();
+    if (i < 0 && seenIntro()) return done();
+    if (i < 0) { babble(plain); iSkull.classList.add("talk"); }
     typeT = setInterval(() => { n += 2; if (n >= plain.length) done(); else box.textContent = plain.slice(0, n); }, 28);
   }
   function introLaugh() {
@@ -2649,24 +2778,25 @@ if (typeof document !== "undefined") {
     introMode = mode; introOpen = true; introEl.hidden = false;
     if (mode === "help") { $("paused").hidden = true; introSay(0); } else introSay(-1);
   }
-  function closeIntro() {
+  function closeIntro(tutorial = false) {
     clearInterval(typeT); iSkull.classList.remove("talk");
-    try { localStorage.setItem(INTRO_KEY, "1"); } catch (_) {}
+    if (!tutorial) try { localStorage.setItem(INTRO_KEY, "1"); } catch (_) {}
     introEl.hidden = true; introOpen = false;
     if (introMode === "help") { $("paused").hidden = false; return; }
     newGame(/[?&]daily\b/.test(location.search)); // a fresh run starts the moment you leave
+    if (tutorial) startTutorial();
   }
   $("introNext").addEventListener("click", () => {
-    if (!typed) { clearInterval(typeT); typed = true; $("speechText").innerHTML = STEPS[introI]; iSkull.classList.remove("talk"); return; } // first tap finishes the line
-    if (introI < 0 && seenIntro()) return closeIntro();
+    if (!typed && introI >= 0) { clearInterval(typeT); typed = true; $("speechText").innerHTML = STEPS[introI]; iSkull.classList.remove("talk"); return; } // first tap finishes the line
+    if (introI < 0) { introLaugh(); return closeIntro(!seenIntro()); } // first time: Begin starts the tutorial
     if (introI >= STEPS.length - 1) { introLaugh(); return closeIntro(); }
     introSay(introI + 1);
   });
   $("introBack").addEventListener("click", () => {
-    if (introI < 0) return introSay(0);
+    if (introI < 0) { introLaugh(); return closeIntro(true); } // Tutorial
     introSay(introI - 1);
   });
-  $("introSkip").addEventListener("click", closeIntro);
+  $("introSkip").addEventListener("click", () => closeIntro(false));
   $("pHelp").addEventListener("click", () => openIntro("help"));
   resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
   if (/[?&]cursedemo\b/.test(location.search)) { // test page: the three stages of the curse

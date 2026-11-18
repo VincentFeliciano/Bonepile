@@ -316,7 +316,7 @@ function canGrow(q) {
 }
 function bestSpin(stack) {
   let best = null;
-  const score = (len, locked) => goldFor(len) * (locked ? LOCKED_MULT : 1);
+  const score = (w, locked) => wordGold(w) * (locked ? LOCKED_MULT : 1);
   function dfs(hi, i, word, picks, locked) {
     const d = stack[i];
     if (!d || d.dark) return;
@@ -326,7 +326,7 @@ function bestSpin(stack) {
       if (w.length > 11 || !canGrow(w)) continue;
       const p = [...picks, [i, k]], lk = locked || !!d.locked;
       // the Oracle only reveals list words and their plurals, never loose guesses like coraling
-      if (w.length >= 3 && isWord(w) && (WORDS.has(w) || /s$/.test(w)) && (!best || score(w.length, lk) > best.score)) best = { hi, lo: i, word: w.toUpperCase(), picks: p, score: score(w.length, lk) };
+      if (w.length >= 3 && isWord(w) && (WORDS.has(w) || /s$/.test(w)) && (!best || score(w, lk) > best.score)) best = { hi, lo: i, word: w.toUpperCase(), picks: p, score: score(w, lk) };
       if (i > 0) dfs(hi, i - 1, w, p, lk);
     }
   }
@@ -460,11 +460,15 @@ function findWords(stack, all = false) {
 
 const GOLD = [0, 0, 0, 5, 12, 30, 70, 160, 350, 750, 1500, 3000];
 function goldFor(len) { return GOLD[Math.min(len, GOLD.length - 1)]; }
+// Scrabble-style letter values, paid on top of the gold for the word's length
+const LETTER_PTS = { A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8, K: 5, L: 1, M: 3, N: 1, O: 1, P: 3, Q: 10, R: 1, S: 1, T: 1, U: 1, V: 4, W: 4, X: 8, Y: 4, Z: 10 };
+function letterPts(word) { let p = 0; for (const c of word.toUpperCase()) p += LETTER_PTS[c] || 0; return p; }
+function wordGold(word) { return goldFor(word.length) + letterPts(word); }
 // mods: { vowels: bool, long: bool, chain: multiplier }
 function runGold(stack, r, mods = {}) {
   let locked = false;
   for (let i = r.lo; i <= r.hi; i++) if (stack[i].locked) locked = true;
-  let g = goldFor(r.word.length) * (locked ? LOCKED_MULT : 1);
+  let g = wordGold(r.word) * (locked ? LOCKED_MULT : 1);
   if (mods.long && r.word.length >= 6) g *= 2;
   if (mods.vowels) g += 2 * (r.word.match(/[AEIOU]/g) || []).length;
   return Math.round(g * (mods.chain || 1));
@@ -472,7 +476,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { letterPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {
@@ -2071,7 +2075,7 @@ if (typeof document !== "undefined") {
       st.gold += g; st.earned += g; total += g;
       if (!st.best || r.word.length > st.best.length) st.best = r.word;
       const locked = st.stack.slice(r.lo, r.hi + 1).some(d => d.locked);
-      parts.push(r.word + (locked ? ` (x${LOCKED_MULT})` : ""));
+      parts.push(`${r.word} ${g}` + (locked ? ` (x${LOCKED_MULT})` : ""));
       for (let i = r.lo; i <= r.hi; i++) discs.add(st.stack[i]);
       if (has("maw") && r.word.length >= 5 && r.lo > 0) { discs.add(st.stack[r.lo - 1]); glowRune("maw", HILITE_MS); }
       if (r.word.length >= 6) glowRune("long", HILITE_MS);
@@ -2547,7 +2551,7 @@ if (typeof document !== "undefined") {
     "Discs of <b>bone</b> fall into my well. Each one carries <b>six letters</b> around its rim.",
     "Once a disc lands, <b>swipe</b> it to spin it, or <b>tap</b> it to turn one step. Swipe hard and it spins on its own.",
     "Line up letters <b>reading down</b> the column to spell a word, three letters or more. Words down the <b>side letters</b>, or crossing in an <b>X</b>, count too.",
-    "Then <b>tap me</b> to offer your words. Longer words pay more gold.",
+    "Then <b>tap me</b> to offer your words. Longer words pay more gold, and rare letters like <b>Q</b> and <b>Z</b> pay extra.",
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
     "Gray discs are <b>locked</b> but pay triple. <b>Cursed</b> discs darken their neighbors if you wait too long.",
     "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",

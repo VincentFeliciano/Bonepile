@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Bonepile</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,9 @@
 <style>
 /* Retro pixel look: black screen, pixel fonts, chunky borders. The well itself is drawn on a low-res canvas. */
 :root { --bg: #000; --fg: #e8e8e8; --muted: #7a7a7a; --line: #b0b0b0; --stone: #484848; --panel: #0c1a1c; --gold: #e0a030; --glow: #7ee05a; --blood: #c83030; color-scheme: dark; }
-html, body { height: 100%; margin: 0; overflow: hidden; }
+html, body { height: 100%; margin: 0; overflow: hidden; touch-action: none; }
+button, canvas, #app { touch-action: manipulation; }
+canvas { touch-action: none; }
 [hidden] { display: none !important; }
 body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospace, Menlo, Consolas, monospace; font-size: 20px; overscroll-behavior: none; touch-action: none; user-select: none; -webkit-user-select: none; }
 #app { height: 100%; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px; box-sizing: border-box; gap: 6px; }
@@ -2519,6 +2521,18 @@ if (typeof document !== "undefined") {
     pixelate(fctx, true);
   }
 
+  // Phones zoom in on a quick double tap (smashing a disc takes two). Stop that zoom and pinch zoom.
+  let lastTouchEnd = 0;
+  if (document.addEventListener) {
+  document.addEventListener("touchend", e => {
+    const t = performance.now();
+    if (t - lastTouchEnd < 400 && !e.target.closest("button, a, input, select")) e.preventDefault();
+    lastTouchEnd = t;
+  }, { passive: false });
+  document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
+  for (const g of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(g, e => e.preventDefault(), { passive: false });
+  document.addEventListener("touchmove", e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  }
   $("skull").addEventListener("click", submit);
   $("power").addEventListener("click", usePower);
   $("mute").addEventListener("click", () => setMuted(!muted));

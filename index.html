@@ -259,10 +259,14 @@ const LOCKED_LETTERS = ["J", "K", "QU", "V", "X", "Z", "W", "Y", "H", "B"];
 const LOCKED_MULT = 3;
 const SMASH_COST = 15;
 
-// Cursed discs: an ordinary disc with a countdown. Use it in a word within CURSE_DROPS landings,
-// or it darkens the discs touching it (dark discs read as nothing until smashed).
+// Cursed discs: a purple disc with a countdown. Halfway down, shading hides its side letters.
+// At zero it is fully cursed (d.dark): it can't spin, words through it pay nothing, and it curses
+// one disc above or below it, which counts down in turn. Smashing a fully cursed disc costs
+// CURSE_SMASH gold, then twice that, three times, and so on through the game.
 const CURSE_CHANCE = 1 / 25;
 const CURSE_DROPS = 4;
+const CURSE_SMASH = 10;
+function curseShaded(d) { return !!(d && (d.dark || (d.cursed && d.curse <= (d.curseMax || CURSE_DROPS) / 2))); }
 
 // Rounds: earn the quota before the column fills. Quota climbs each round.
 function quotaFor(round) { return 20 + 20 * round; } // 40, 60, 80, 100, 120...
@@ -409,13 +413,14 @@ function makeDisc(rand = Math.random, allowLocked = true) {
   return { faces, rot: 0, target: 0 };
 }
 
-function front(d) { if (d.dark) return "#"; const n = d.faces.length; return d.faces[((Math.round(d.target) % n) + n) % n]; }
+function front(d) { const n = d.faces.length; return d.faces[((Math.round(d.target) % n) + n) % n]; }
 
 // The letter a disc shows in a column: 0 is the front, -1 the letter to its left, +1 to its right.
 // Locked discs have one letter, on the front only. Dark discs read as nothing.
 function faceAt(d, off = 0) {
-  if (!d || d.dark) return null;
+  if (!d) return null;
   if (d.locked) return off ? null : d.faces[0];
+  if (off && curseShaded(d)) return null;
   const n = d.faces.length, k = Math.round(d.target) + off;
   return d.faces[((k % n) + n) % n];
 }
@@ -479,7 +484,7 @@ function wordGold(word, pts = letterPts(word)) { return goldFor(word.length) + p
 // mods: { vowels: bool, long: bool, chain: multiplier }
 function runGold(stack, r, mods = {}) {
   let locked = false;
-  for (let i = r.lo; i <= r.hi; i++) if (stack[i].locked) locked = true;
+  for (let i = r.lo; i <= r.hi; i++) { if (stack[i].dark) return 0; if (stack[i].locked) locked = true; }
   let g = wordGold(r.word, runPts(stack, r)) * (locked ? LOCKED_MULT : 1);
   if (mods.long && r.word.length >= 6) g *= 2;
   if (mods.vowels) g += 2 * (r.word.match(/[AEIOU]/g) || []).length;
@@ -488,7 +493,7 @@ function runGold(stack, r, mods = {}) {
 function speedFor(level) { return Math.min(0.7 + 0.2 * (level - 1), 5); } // rows per second
 function levelFor(spawned) { return 1 + Math.floor(spawned / 8); }
 
-if (typeof module !== "undefined") module.exports = { letterPts, facePts, runPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
+if (typeof module !== "undefined") module.exports = { curseShaded, letterPts, facePts, runPts, wordGold, faceAt, bestSpin, isWord, makeDisc, bestRun, findWords, runGold, quotaFor, RELICS, front, goldFor, speedFor, levelFor, WORDS };
 
 // ---------- UI ----------
 if (typeof document !== "undefined") {
@@ -500,7 +505,7 @@ if (typeof document !== "undefined") {
 
   function newGame(daily = false) {
     if (typeof daily !== "boolean") daily = false;
-    st = { daily: daily ? todayKey() : "", earned: 0, gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
+    st = { daily: daily ? todayKey() : "", earned: 0, gold: 0, shown: 0, best: "", over: false, relics: new Set(), round: 0, crumble: [], charges: 0, curseSmashes: 0, halves: START_HEARTS * 2, hearts: START_HEARTS, sac: false };
     $("sac").hidden = true; $("menu").hidden = true; $("paused").hidden = true;
     coins = []; offerings = []; laughs = [];
     $("over").hidden = true;
@@ -1711,6 +1716,7 @@ if (typeof document !== "undefined") {
     d: "#484848", m: "#7a7a7a", l: "#b0b0b0", w: "#e8e8e8",
     bone: "#e9dcb8", bone1: "#b8a47c", bone2: "#7a6a4c",
     gold: "#e0a030", gold1: "#8a5a1c", glow: "#7ee05a", blood: "#c83030",
+    purple0: "#2a1438", purple1: "#5c2e7a", purple2: "#9a6cc4", purple3: "#c8acea",
   };
   const FONT = '"Press Start 2P", ui-monospace, monospace';
   const PAL = Object.values(C).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
@@ -1875,7 +1881,7 @@ if (typeof document !== "undefined") {
     const r1 = R(), r2 = R(), r3 = R();
     if (boss === "warden" && !d.locked && lockedNow < 2 && r1 < 3 * LOCKED_CHANCE) d = { faces: [LOCKED_LETTERS[Math.floor(r2 * LOCKED_LETTERS.length)]], rot: 0, target: 0, locked: true };
     const cursedNow = all.filter(x => x.cursed).length;
-    if (!d.locked && cursedNow < (boss === "rot" ? 2 : 1) && r3 < CURSE_CHANCE * (boss === "rot" ? 4 : 1)) { d.cursed = true; d.curse = CURSE_DROPS + (has("ward") ? 3 : 0); }
+    if (!d.locked && cursedNow < (boss === "rot" ? 2 : 1) && r3 < CURSE_CHANCE * (boss === "rot" ? 4 : 1)) { d.cursed = true; d.curse = d.curseMax = CURSE_DROPS + (has("ward") ? 3 : 0); }
     return d;
   }
   function refillQueue() { while (st.queue.length < 3) st.queue.push(nextDisc()); }
@@ -1988,14 +1994,16 @@ if (typeof document !== "undefined") {
     st.paused = false; $("paused").hidden = true; musicStart();
   }
 
-  // A cursed disc's time ran out: the discs touching it go dark.
+  // A cursed disc's time ran out: it is fully cursed, and the curse creeps to one disc above or below.
   function curse(d) {
     const i = st.stack.indexOf(d);
-    for (const j of [i - 1, i + 1]) { const n = st.stack[j]; if (n && !n.locked) n.dark = true; }
-    d.cursed = false; sfx.curse();
+    d.cursed = false; d.dark = true; d.target = Math.round(d.target); d.rot = d.target; d.fling = 0; sfx.curse();
+    const near = [st.stack[i - 1], st.stack[i + 1]].filter(n => n && !n.locked && !n.cursed && !n.dark);
+    const n = near.length ? near[Math.floor(Math.random() * near.length)] : null;
+    if (n) { n.cursed = true; n.curse = n.curseMax = CURSE_DROPS + (has("ward") ? 3 : 0); }
     flash = performance.now();
     skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
-    say(`The curse spreads. Dark discs read as nothing. Tap one twice to smash it (${smashCost()} gold).`);
+    say(`${n ? "The curse creeps to the next disc. " : ""}Words through a dark purple disc pay nothing. Tap it twice to smash it (${smashCost(d)} gold).`);
   }
 
   // ---------- between rounds: the relic shop ----------
@@ -2087,7 +2095,8 @@ if (typeof document !== "undefined") {
       st.gold += g; st.earned += g; total += g;
       if (!st.best || r.word.length > st.best.length) st.best = r.word;
       const locked = st.stack.slice(r.lo, r.hi + 1).some(d => d.locked);
-      parts.push(`${r.word} ${g}` + (locked ? ` (x${LOCKED_MULT})` : ""));
+      const cursed = st.stack.slice(r.lo, r.hi + 1).some(d => d.dark);
+      parts.push(`${r.word} ${g}` + (cursed ? " (cursed)" : locked ? ` (x${LOCKED_MULT})` : ""));
       for (let i = r.lo; i <= r.hi; i++) discs.add(st.stack[i]);
       if (has("maw") && r.word.length >= 5 && r.lo > 0) { discs.add(st.stack[r.lo - 1]); glowRune("maw", HILITE_MS); }
       if (r.word.length >= 6) glowRune("long", HILITE_MS);
@@ -2163,7 +2172,7 @@ if (typeof document !== "undefined") {
           f.y = floor; f.rot = f.target; st.stack.push(f); sfx.land();
           if (f === st.falling) st.falling = null; else st.rain = st.rain.filter(r => r !== f);
           st.spawnAt = now + 650;
-          for (const d of st.stack) if (d.cursed && d !== f && --d.curse <= 0) curse(d);
+          st.stack.filter(d => d.cursed && d !== f && --d.curse <= 0).forEach(curse);
           hud();
           if (st.stack.length >= ROWS) say("Stack is full. Score a word now or pay the skull in blood.");
         }
@@ -2209,11 +2218,11 @@ if (typeof document !== "undefined") {
     const x0 = wellX + P, x1 = wellX + wellW - P, top = y + P, h = cellH - 2 * P;
     const cx = snap((x0 + x1) / 2), R = (x1 - x0) / 2, ry = h / 2, ex = 3 * P;
     const armed = (d.locked || d.dark) && d.armed && now - d.armed < 2000;
-    const [c0, c1, c2] = hl ? [C.gold1, C.gold, C.bone] : d.dark ? [C.k, C.teal1, C.d] : d.locked ? [C.d, C.m, C.l] : [C.bone2, C.bone1, C.bone];
+    const [c0, c1, c2] = hl ? [C.gold1, C.gold, C.bone] : d.dark ? [C.purple0, C.purple1, C.purple1] : d.locked ? [C.d, C.m, C.l] : d.cursed ? [C.purple1, C.purple2, C.purple3] : [C.bone2, C.bone1, C.bone];
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(0, snap(broken * 20));
-    ctx.fillStyle = armed && Math.floor(now / 200) % 2 ? C.glow : C.k;
+    ctx.fillStyle = armed && Math.floor(now / 200) % 2 ? C.blood : C.k;
     capsule(x0 - P, top - P, x1 + P, top + h + P, ex + P);
     const gr = ctx.createLinearGradient && ctx.createLinearGradient(x0, 0, x1, 0);
     if (gr && gr.addColorStop) { [[0, c0], [0.16, c1], [0.4, c2], [0.62, c2], [0.9, c1], [1, c0]].forEach(([o, c]) => gr.addColorStop(o, c)); ctx.fillStyle = gr; }
@@ -2229,20 +2238,24 @@ if (typeof document !== "undefined") {
     const fs = h / P >= 20 ? 16 * P : 8 * P, faceRows = Math.round(h / P) - 1;
     ctx.font = `${fs}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const ty = top + snap(ry) + P;
+    // the curse: pixel shading creeping in from both ends, solid at the rim, dithered toward the middle
+    const shadeIn = s => {
+      const band = snap(R * 0.5 * Math.min(1, s * 2) / P) * P, rows = Math.round(h / P);
+      ctx.fillStyle = C.purple0;
+      for (let t = 0; t < band; t += P) {
+        const solid = t < band * 0.55, gap = t < band * 0.8 ? 2 : 3;
+        for (let j = 0; j < rows; j++) {
+          if (!solid && (j + t / P) % gap) continue;
+          if ((j < 2 || j >= rows - 2) && t < ex) continue;
+          ctx.fillRect(x0 + t, top + j * P, P, P); ctx.fillRect(x1 - P - t, top + j * P, P, P);
+        }
+      }
+    };
     if (d.locked || d.dark) {
-      ctx.fillStyle = C.w;
-      if (armed) { ctx.font = `${8 * P}px ${FONT}`; ctx.fillText(`SMASH -${smashCost()}`, cx, ty); }
-      else if (d.locked) discText(d.faces[0], cx, top, faceRows, true);
+      if (d.locked) { ctx.fillStyle = C.w; discText(d.faces[0], cx, top, faceRows, true); }
+      else { shadeIn(1); ctx.fillStyle = C.purple3; discText(front(d), cx, top, faceRows, true); }
       ctx.restore();
       return;
-    }
-    if (d.cursed) {
-      // green rot creeping in from both ends, and the drops left, beside the column
-      ctx.fillStyle = C.glow;
-      for (let k = 0; k < 3; k++) for (let j = 0; j < h / P - 2; j += 2) { ctx.fillRect(x0 + ex + k * 2 * P + (j % 4 ? P : 0), top + P + j * P, P, P); ctx.fillRect(x1 - ex - (k * 2 + 1) * P - (j % 4 ? P : 0), top + P + j * P, P, P); }
-      ctx.font = `${8 * P}px ${FONT}`;
-      ctx.fillText(String(d.curse), wellX + wellW + 9 * P, ty);
-      ctx.font = `${fs}px ${FONT}`;
     }
     if (broken) { // crack lines
       ctx.fillStyle = C.k;
@@ -2257,11 +2270,17 @@ if (typeof document !== "undefined") {
       const face = d.faces[((k % n) + n) % n];
       // pixel letters don't squash well, so the turning-away faces just fade to a carved outline colour
       if (c > 0.45) {
-        ctx.fillStyle = c > 0.8 ? C.k : d.locked ? C.d : C.teal1;
+        ctx.fillStyle = c > 0.8 ? C.k : d.locked ? C.d : d.cursed ? C.purple1 : C.teal1;
         discText(face, lx, top, faceRows, true);
       }
       const ad = a + step / 2, cd = Math.cos(ad);
       if (cd > 0.05) { ctx.fillStyle = c1; ctx.fillRect(snap(cx + Math.sin(ad) * (R - ex) * 0.92), top + 2 * P, P, h - 4 * P); }
+    }
+    if (d.cursed) {
+      const max = d.curseMax || CURSE_DROPS;
+      shadeIn(1 - d.curse / max);
+      ctx.fillStyle = C.purple2; ctx.font = `${8 * P}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(String(d.curse), wellX + wellW + 9 * P, ty);
     }
     ctx.restore();
   }
@@ -2328,14 +2347,18 @@ if (typeof document !== "undefined") {
     try { app.setPointerCapture(e.pointerId); } catch (_) {}
   });
   // Locked or dark disc: first tap asks, second tap within 2s smashes it for gold.
-  function smashCost() { return has("mercy") ? Math.ceil(SMASH_COST / 2) : SMASH_COST; }
+  function smashCost(d) {
+    const base = d && d.dark ? CURSE_SMASH * ((st.curseSmashes || 0) + 1) : SMASH_COST;
+    return has("mercy") ? Math.ceil(base / 2) : base;
+  }
   function tapHeavy(d) {
     if (st.pending || st.checkChain) return;
-    const now = performance.now(), cost = smashCost(), what = d.dark ? "Dark disc" : "Locked disc";
+    const now = performance.now(), cost = smashCost(d), what = d.dark ? "Cursed disc" : "Locked disc";
     if (d.armed && now - d.armed < 2000) {
       d.armed = 0;
       if (st.gold < cost) { say(`Smashing costs ${cost} gold. You have ${st.gold}.`); return; }
       st.gold -= cost; st.shown = Math.max(0, st.shown - cost);
+      if (d.dark) st.curseSmashes = (st.curseSmashes || 0) + 1;
       st.crumble.push({ d, y: d.y, t: now });
       st.stack = st.stack.filter(x => x !== d);
       st.checkChain = true;
@@ -2344,7 +2367,7 @@ if (typeof document !== "undefined") {
       hud();
     } else {
       d.armed = now;
-      if (d.dark) say(st.gold >= cost ? `Dark disc. Tap again to smash it for ${cost} gold.` : `Dark disc. Smashing needs ${cost} gold.`);
+      if (d.dark) say(st.gold >= cost ? `Cursed disc. Tap again to smash it for ${cost} gold.` : `Cursed disc. Smashing it needs ${cost} gold.`);
       else say(st.gold >= cost ? `Locked disc. Tap again to smash it for ${cost} gold, or use it for ${LOCKED_MULT}x gold.` : `Locked disc. Use it in a word for ${LOCKED_MULT}x gold. Smashing needs ${cost} gold.`);
     }
   }
@@ -2577,7 +2600,7 @@ if (typeof document !== "undefined") {
     "Line up letters <b>reading down</b> the column to spell a word, three letters or more. Words down the <b>side letters</b>, or crossing in an <b>X</b>, count too.",
     "Then <b>tap me</b> to offer your words. Longer words pay more gold, and rare letters like <b>Q</b> and <b>Z</b> pay extra.",
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
-    "Gray discs are <b>locked</b> but pay triple. <b>Cursed</b> discs darken their neighbors if you wait too long.",
+    "Gray discs are <b>locked</b> but pay triple. <b>Purple</b> discs are cursed: use them fast, or the curse hides their sides, makes words worthless and creeps to the next disc.",
     "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",
   ];
   let introOpen = true, introMode = "launch", introI = -1, typeT = null, typed = true;
@@ -2635,7 +2658,13 @@ if (typeof document !== "undefined") {
   });
   $("introSkip").addEventListener("click", closeIntro);
   $("pHelp").addEventListener("click", () => openIntro("help"));
-  resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
+  resize(); newGame(/[?&]daily\b/.test(location.search)); if (/[?&]cursedemo\b/.test(location.search)) { // test page: the three stages of the curse
+    const ds = [makeDisc(Math.random), makeDisc(Math.random), makeDisc(Math.random), makeDisc(Math.random)];
+    ds.forEach((d, i) => { d.locked = false; d.faces = d.faces.length > 1 ? d.faces : ["A", "B", "C", "D", "E", "F"]; d.y = i; });
+    Object.assign(ds[1], { cursed: true, curse: 4, curseMax: 4 }); Object.assign(ds[2], { cursed: true, curse: 2, curseMax: 4 }); ds[3].dark = true;
+    st.stack = ds; st.gold = 100;
+  }
+  requestAnimationFrame(loop);
   if (/[?&]nointro\b/.test(location.search)) { introOpen = false; introEl.hidden = true; } else { openIntro("launch"); try { musicStop(); } catch (_) {} }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(reskin);
 }

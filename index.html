@@ -2240,10 +2240,10 @@ if (typeof document !== "undefined") {
     const ty = top + snap(ry) + P;
     // the curse: pixel shading creeping in from both ends, solid at the rim, dithered toward the middle
     const shadeIn = s => {
-      const band = snap(R * 0.5 * Math.min(1, s * 2) / P) * P, rows = Math.round(h / P);
+      const band = snap(R * 0.6 * Math.min(1, s * 2) / P) * P, rows = Math.round(h / P);
       ctx.fillStyle = C.purple0;
       for (let t = 0; t < band; t += P) {
-        const solid = t < band * 0.55, gap = t < band * 0.8 ? 2 : 3;
+        const solid = t < band * 0.72, gap = t < band * 0.8 ? 2 : 3;
         for (let j = 0; j < rows; j++) {
           if (!solid && (j + t / P) % gap) continue;
           if ((j < 2 || j >= rows - 2) && t < ex) continue;

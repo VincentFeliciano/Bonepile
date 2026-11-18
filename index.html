@@ -1995,16 +1995,23 @@ if (typeof document !== "undefined") {
     st.paused = false; $("paused").hidden = true; musicStart();
   }
 
-  // A cursed disc's time ran out: it is fully cursed, and the curse creeps to one disc above or below.
+  // A cursed disc's time ran out: it is fully cursed, and it curses every disc touching it.
   function curse(d) {
-    const i = st.stack.indexOf(d);
     d.cursed = false; d.dark = true; d.target = Math.round(d.target); d.rot = d.target; d.fling = 0; sfx.curse();
-    const near = [st.stack[i - 1], st.stack[i + 1]].filter(n => n && !n.locked && !n.cursed && !n.dark);
-    const n = near.length ? near[Math.floor(Math.random() * near.length)] : null;
-    if (n) { n.cursed = true; n.curse = n.curseMax = SPREAD_DROPS + (has("ward") ? 3 : 0); }
+    const n = spreadCurse();
     flash = performance.now();
     skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
-    say(`${n ? "The curse creeps to the next disc. " : ""}Words through a dark purple disc pay nothing. Tap it twice to smash it (${smashCost(d)} gold).`);
+    say(`${n ? "The curse creeps into the discs it touches. " : ""}Words through a dark purple disc pay nothing. Tap it twice to smash it (${smashCost(d)} gold).`);
+  }
+  // A fully cursed disc curses any disc touching it, above or below, that isn't cursed yet.
+  // Locked discs resist. Each new curse takes SPREAD_DROPS landings to ripen.
+  function spreadCurse() {
+    let n = 0;
+    st.stack.forEach((d, i) => {
+      if (!d.dark) return;
+      for (const x of [st.stack[i - 1], st.stack[i + 1]]) if (x && !x.locked && !x.cursed && !x.dark) { x.cursed = true; x.curse = x.curseMax = SPREAD_DROPS + (has("ward") ? 3 : 0); n++; }
+    });
+    return n;
   }
 
   // ---------- between rounds: the relic shop ----------
@@ -2152,6 +2159,7 @@ if (typeof document !== "undefined") {
     // chain: once the column has settled after a clear, any word that formed pays a growing multiplier
     if (st.checkChain && !st.pending && st.stack.every((d, i) => d.y === i)) {
       st.checkChain = false;
+      spreadCurse(); // discs that slid down onto a fully cursed disc
       const found = findWords(st.stack);
       if (found.length) { st.chain++; offer(found, 1 + st.chain * (has("pact") ? 1 : CHAIN_STEP)); }
       else st.chain = 0;
@@ -2174,6 +2182,7 @@ if (typeof document !== "undefined") {
           if (f === st.falling) st.falling = null; else st.rain = st.rain.filter(r => r !== f);
           st.spawnAt = now + 650;
           st.stack.filter(d => d.cursed && d !== f && --d.curse <= 0).forEach(curse);
+          spreadCurse();
           hud();
           if (st.stack.length >= ROWS) say("Stack is full. Score a word now or pay the skull in blood.");
         }
@@ -2601,7 +2610,7 @@ if (typeof document !== "undefined") {
     "Line up letters <b>reading down</b> the column to spell a word, three letters or more. Words down the <b>side letters</b>, or crossing in an <b>X</b>, count too.",
     "Then <b>tap me</b> to offer your words. Longer words pay more gold, and rare letters like <b>Q</b> and <b>Z</b> pay extra.",
     "Pay my <b>gold quota</b> to clear the round, then choose a relic to keep.",
-    "Gray discs are <b>locked</b> but pay triple. <b>Purple</b> discs are cursed: use them fast, or the curse hides their sides, makes words worthless and creeps to the next disc.",
+    "Gray discs are <b>locked</b> but pay triple. <b>Purple</b> discs are cursed: use them fast, or the curse hides their sides, makes words worthless and creeps into every disc touching them.",
     "If the column fills, I take <b>blood</b>: half a heart for every disc I clear.",
   ];
   let introOpen = true, introMode = "launch", introI = -1, typeT = null, typed = true;

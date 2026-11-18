@@ -2658,13 +2658,13 @@ if (typeof document !== "undefined") {
   });
   $("introSkip").addEventListener("click", closeIntro);
   $("pHelp").addEventListener("click", () => openIntro("help"));
-  resize(); newGame(/[?&]daily\b/.test(location.search)); if (/[?&]cursedemo\b/.test(location.search)) { // test page: the three stages of the curse
+  resize(); newGame(/[?&]daily\b/.test(location.search)); requestAnimationFrame(loop);
+  if (/[?&]cursedemo\b/.test(location.search)) { // test page: the three stages of the curse
     const ds = [makeDisc(Math.random), makeDisc(Math.random), makeDisc(Math.random), makeDisc(Math.random)];
     ds.forEach((d, i) => { d.locked = false; d.faces = d.faces.length > 1 ? d.faces : ["A", "B", "C", "D", "E", "F"]; d.y = i; });
     Object.assign(ds[1], { cursed: true, curse: 4, curseMax: 4 }); Object.assign(ds[2], { cursed: true, curse: 2, curseMax: 4 }); ds[3].dark = true;
     st.stack = ds; st.gold = 100;
   }
-  requestAnimationFrame(loop);
   if (/[?&]nointro\b/.test(location.search)) { introOpen = false; introEl.hidden = true; } else { openIntro("launch"); try { musicStop(); } catch (_) {} }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(reskin);
 }

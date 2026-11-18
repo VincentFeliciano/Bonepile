@@ -11,11 +11,11 @@
 <style>
 /* Retro pixel look: black screen, pixel fonts, chunky borders. The well itself is drawn on a low-res canvas. */
 :root { --bg: #000; --fg: #e8e8e8; --muted: #7a7a7a; --line: #b0b0b0; --stone: #484848; --panel: #0c1a1c; --gold: #e0a030; --glow: #7ee05a; --blood: #c83030; color-scheme: dark; }
-html, body { height: 100%; margin: 0; overflow: hidden; touch-action: none; }
-button, canvas, #app { touch-action: manipulation; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+*, *::before, *::after { touch-action: manipulation; }
 canvas { touch-action: none; }
 [hidden] { display: none !important; }
-body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospace, Menlo, Consolas, monospace; font-size: 20px; overscroll-behavior: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospace, Menlo, Consolas, monospace; font-size: 20px; overscroll-behavior: none; user-select: none; -webkit-user-select: none; }
 #app { height: 100%; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px; box-sizing: border-box; gap: 6px; }
 #stats { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 7px; color: var(--muted); }
 #stats b { display: block; margin-top: 5px; font-size: 11px; color: var(--fg); font-weight: normal; }
@@ -35,7 +35,7 @@ body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospa
 #cv { position: absolute; left: 0; top: 0; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
 #bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 /* pixel buttons: square, chunky, notched corners, pressed shading */
-button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 9px; line-height: 1.4; color: #000; background: #e9dcb8 no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid #000; border-radius: 0; padding: 10px 12px; cursor: pointer;
+button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 10px; line-height: 1.4; color: #000; background: #e9dcb8 no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid #000; border-radius: 0; padding: 10px 12px; cursor: pointer;
   clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
 button { text-shadow: 1px 0 0 currentColor, 0 1px 0 rgba(0,0,0,.35); }
 button:active { transform: translateY(2px); }
@@ -106,13 +106,14 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #sacCost svg { width: 21px; height: 18px; }
 #sacYes { border-color: var(--blood); color: var(--blood); min-width: 12em; }
 #next { min-height: 10px; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; text-align: center; color: var(--muted); letter-spacing: 0.1em; }
-#shop { align-items: stretch; z-index: 2; }
-#shop p { margin: 0; }
+#shop { align-items: stretch; z-index: 2; overflow-y: auto; justify-content: safe center; }
+#shop p { margin: 0; font-size: 24px; line-height: 1.05; }
+#shop h2 { font-size: 16px; }
 #relicList { display: flex; flex-direction: column; gap: 8px; }
 .relic { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
-.relic b { font-size: 9px; font-weight: normal; color: #000; text-shadow: 1px 0 0 #000; }
-.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 19px; line-height: 1; color: #120c06; text-shadow: 0.6px 0 0 #120c06; grid-column: 1; }
-.relic i { font-style: normal; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #5a3008; text-shadow: 1px 0 0 #5a3008; }
+.relic b { font-size: 12px; font-weight: normal; color: #000; text-shadow: 1px 0 0 #000; }
+.relic span { font-family: "VT323", ui-monospace, monospace; font-size: 24px; line-height: 1; color: #120c06; text-shadow: 0.6px 0 0 #120c06; grid-column: 1; }
+.relic i { font-style: normal; font-size: 12px; grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #5a3008; text-shadow: 1px 0 0 #5a3008; }
 .relic:disabled { opacity: 0.4; cursor: default; }
 
 /* ---- opening: the game's name, the skull on its pedestal, and how to play ---- */
@@ -141,12 +142,12 @@ button:focus-visible { outline: none; border-color: var(--glow); }
 #introBtns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
 #introBtns button { flex: 1; min-height: 50px; }
 #coach { position: absolute; left: 10px; right: 10px; top: 10px; background: #e9dcb8; color: #0c0804; border: 3px solid #000; box-shadow: 0 0 0 2px #7a6a4c; padding: 10px 12px 8px; pointer-events: none; }
-#coachText { font-size: 21px; line-height: 1.05; text-shadow: 0.6px 0 0 #0c0804; }
+#coachText { font-size: 26px; line-height: 1.05; text-shadow: 0.6px 0 0 #0c0804; }
 #coachText b { font-weight: normal; color: #7a1010; text-shadow: 0.6px 0 0 #7a1010; }
 #coachBtns { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
 #coachBtns button { pointer-events: auto; }
-#coachNext { min-height: 40px; min-width: 110px; }
-#coachSkip { background: none !important; border: none; box-shadow: none; clip-path: none; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 7px; color: #5a3008; padding: 8px 0; }
+#coachNext { min-height: 44px; min-width: 120px; font-size: 12px; }
+#coachSkip { background: none !important; border: none; box-shadow: none; clip-path: none; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 10px; color: #5a3008; padding: 10px 0; }
 #introSkip { background-image: none !important; text-shadow: none; font-family: "Press Start 2P", ui-monospace, monospace; font-size: 8px; color: var(--muted); background: none; border: none; box-shadow: none; clip-path: none; padding: 8px; }
 #pHelp { min-width: 14em; }
 @media (max-height: 600px) { #introTag { display: none; } #speech { min-height: 0; } #speechText { min-height: 0; } }
@@ -694,8 +695,8 @@ if (typeof document !== "undefined") {
   // a chip voice: plays notes (MIDI) one after another, `step` seconds each, with an optional
   // pitch slide, arpeggio (flips up `arp` semitones `arpHz` times a second) and vibrato
   function chip({ at = 0, wave = "square", notes = [60], step = 0.06, vol = 0.15, dur = 0, bend = 0,
-                  atk = 0, curve = 1.3, arp = 0, arpHz = 30, vib = 0, vibHz = 8, out = null } = {}) {
-    if (hiFi()) return chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out });
+                  atk = 0, curve = 1.3, arp = 0, arpHz = 30, vib = 0, vibHz = 8, out = null, lite = false } = {}) {
+    if (hiFi()) return chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out, lite });
     const a = audio(); if (!a) return 0;
     const t0 = a.currentTime + at, total = dur || notes.length * step, len = atk + total, o = a.createOscillator(), g = a.createGain();
     if (wave === "triangle") o.type = "triangle"; else o.setPeriodicWave(pulseWave(a, DUTY[wave] || 0.5));
@@ -743,7 +744,7 @@ if (typeof document !== "undefined") {
   // the 16-bit voice: the same wave, doubled with a slightly detuned copy for width, through a
   // filter that starts bright and mellows, with smooth pitch glides
   const BRIGHT = { triangle: 2600, square: 5200, pulse25: 6000, pulse12: 7500 };
-  function chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out }) {
+  function chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out, lite }) {
     const a = audio(); if (!a) return 0;
     const t0 = a.currentTime + at, total = dur || notes.length * step, len = Math.max(0.004, atk) + total;
     const g = a.createGain(), lp = a.createBiquadFilter(), br = BRIGHT[wave] || 5200;
@@ -758,9 +759,9 @@ if (typeof document !== "undefined") {
       return hz(m);
     };
     const low = hz(notes[0]) < 520; // low notes get a soft sub an octave down for body
-    const voices = wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.65, wave], [8, 0.38, wave], [-8, 0.38, wave]];
-    if (low) voices.push([-1200, wave === "triangle" ? 0.3 : 0.22, "sine"]);
-    const sh = warmth(a);
+    const voices = lite ? [[0, wave === "triangle" ? 1.2 : 1, wave]] : wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.65, wave], [8, 0.38, wave], [-8, 0.38, wave]];
+    if (low && !lite) voices.push([-1200, wave === "triangle" ? 0.3 : 0.22, "sine"]);
+    const sh = lite ? null : warmth(a);
     for (const [det, gv, wv] of voices) {
       const o = a.createOscillator(), og = a.createGain();
       if (wv === "triangle" || wv === "sine") o.type = wv; else o.setPeriodicWave(pulseWave(a, DUTY[wv] || 0.5));
@@ -1647,7 +1648,7 @@ if (typeof document !== "undefined") {
   const mus = { on: false, level: 0, boss: false, timer: 0, step: 0, next: 0, gain: null, vol: -1 };
   function musicStep(n, at, sd) {
     const S = mus.boss ? SONGS.boss : SONGS.crypt, lv = mus.boss ? 4 : mus.level, bar = Math.floor(n / 16) % 4, s = n % 16;
-    const r = S.roots[bar], ch = S.chords[bar], o = { out: mus.gain };
+    const r = S.roots[bar], ch = S.chords[bar], o = { out: mus.gain, lite: true };
     // bass
     if (mus.boss) chip({ ...o, at, wave: "triangle", notes: [s % 4 === 3 ? r + 12 : r], dur: sd * 0.9, vol: 0.32 });
     else if (lv >= 4) chip({ ...o, at, wave: "triangle", notes: [s % 2 ? r + 12 : r], dur: sd * 0.9, vol: 0.3 });
@@ -1660,7 +1661,7 @@ if (typeof document !== "undefined") {
     if (lv >= 2 && (s === 0 || s === 8 || (lv >= 4 && (s === 10 || (mus.boss && s % 4 === 0)))))
       chip({ ...o, at, wave: "triangle", notes: [36], bend: -14, dur: 0.09, vol: 0.4 });
     if (lv >= 3 && (s === 4 || s === 12)) crunch({ ...o, at, rate: 1.2, to: 0.6, dur: 0.08, vol: 0.12, short: mus.boss });
-    if (lv >= 2 && (lv >= 4 || s % 4 === 2)) crunch({ ...o, at, rate: 3.5, dur: 0.02, vol: 0.035 });
+    if (lv >= 2 && (lv >= 4 ? s % 2 === 0 : s % 4 === 2)) crunch({ ...o, at, rate: 3.5, dur: 0.02, vol: 0.035 });
     // melody
     if (lv >= 3) for (const [st, m, len] of S.lead[bar]) if (st === s) {
       chip({ ...o, at, wave: "pulse25", notes: [m], dur: sd * len * 0.92, vol: 0.05 });
@@ -2653,7 +2654,12 @@ if (typeof document !== "undefined") {
   if (document.addEventListener) {
   document.addEventListener("touchend", e => {
     const t = performance.now();
-    if (t - lastTouchEnd < 400 && !e.target.closest("button, a, input, select")) e.preventDefault();
+    if (t - lastTouchEnd < 450 && e.cancelable) {
+      // a quick second tap: stop the zoom, and press the button ourselves since the browser won't
+      e.preventDefault();
+      const b = e.target && e.target.closest ? e.target.closest("button") : null;
+      if (b && !b.disabled) b.click();
+    }
     lastTouchEnd = t;
   }, { passive: false });
   document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });

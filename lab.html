@@ -196,8 +196,8 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   // a chip voice: plays notes (MIDI) one after another, `step` seconds each, with an optional
   // pitch slide, arpeggio (flips up `arp` semitones `arpHz` times a second) and vibrato
   function chip({ at = 0, wave = "square", notes = [60], step = 0.06, vol = 0.15, dur = 0, bend = 0,
-                  atk = 0, curve = 1.3, arp = 0, arpHz = 30, vib = 0, vibHz = 8, out = null } = {}) {
-    if (hiFi()) return chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out });
+                  atk = 0, curve = 1.3, arp = 0, arpHz = 30, vib = 0, vibHz = 8, out = null, lite = false } = {}) {
+    if (hiFi()) return chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out, lite });
     const a = audio(); if (!a) return 0;
     const t0 = a.currentTime + at, total = dur || notes.length * step, len = atk + total, o = a.createOscillator(), g = a.createGain();
     if (wave === "triangle") o.type = "triangle"; else o.setPeriodicWave(pulseWave(a, DUTY[wave] || 0.5));
@@ -245,7 +245,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   // the 16-bit voice: the same wave, doubled with a slightly detuned copy for width, through a
   // filter that starts bright and mellows, with smooth pitch glides
   const BRIGHT = { triangle: 2600, square: 5200, pulse25: 6000, pulse12: 7500 };
-  function chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out }) {
+  function chip16({ at, wave, notes, step, vol, dur, bend, atk, curve, arp, arpHz, vib, vibHz, out, lite }) {
     const a = audio(); if (!a) return 0;
     const t0 = a.currentTime + at, total = dur || notes.length * step, len = Math.max(0.004, atk) + total;
     const g = a.createGain(), lp = a.createBiquadFilter(), br = BRIGHT[wave] || 5200;
@@ -260,9 +260,9 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       return hz(m);
     };
     const low = hz(notes[0]) < 520; // low notes get a soft sub an octave down for body
-    const voices = wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.65, wave], [8, 0.38, wave], [-8, 0.38, wave]];
-    if (low) voices.push([-1200, wave === "triangle" ? 0.3 : 0.22, "sine"]);
-    const sh = warmth(a);
+    const voices = lite ? [[0, wave === "triangle" ? 1.2 : 1, wave]] : wave === "triangle" ? [[0, 1, "triangle"], [0, 0.5, "sine"]] : [[0, 0.65, wave], [8, 0.38, wave], [-8, 0.38, wave]];
+    if (low && !lite) voices.push([-1200, wave === "triangle" ? 0.3 : 0.22, "sine"]);
+    const sh = lite ? null : warmth(a);
     for (const [det, gv, wv] of voices) {
       const o = a.createOscillator(), og = a.createGain();
       if (wv === "triangle" || wv === "sine") o.type = wv; else o.setPeriodicWave(pulseWave(a, DUTY[wv] || 0.5));
@@ -1149,7 +1149,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   const mus = { on: false, level: 0, boss: false, timer: 0, step: 0, next: 0, gain: null, vol: -1 };
   function musicStep(n, at, sd) {
     const S = mus.boss ? SONGS.boss : SONGS.crypt, lv = mus.boss ? 4 : mus.level, bar = Math.floor(n / 16) % 4, s = n % 16;
-    const r = S.roots[bar], ch = S.chords[bar], o = { out: mus.gain };
+    const r = S.roots[bar], ch = S.chords[bar], o = { out: mus.gain, lite: true };
     // bass
     if (mus.boss) chip({ ...o, at, wave: "triangle", notes: [s % 4 === 3 ? r + 12 : r], dur: sd * 0.9, vol: 0.32 });
     else if (lv >= 4) chip({ ...o, at, wave: "triangle", notes: [s % 2 ? r + 12 : r], dur: sd * 0.9, vol: 0.3 });
@@ -1162,7 +1162,7 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     if (lv >= 2 && (s === 0 || s === 8 || (lv >= 4 && (s === 10 || (mus.boss && s % 4 === 0)))))
       chip({ ...o, at, wave: "triangle", notes: [36], bend: -14, dur: 0.09, vol: 0.4 });
     if (lv >= 3 && (s === 4 || s === 12)) crunch({ ...o, at, rate: 1.2, to: 0.6, dur: 0.08, vol: 0.12, short: mus.boss });
-    if (lv >= 2 && (lv >= 4 || s % 4 === 2)) crunch({ ...o, at, rate: 3.5, dur: 0.02, vol: 0.035 });
+    if (lv >= 2 && (lv >= 4 ? s % 2 === 0 : s % 4 === 2)) crunch({ ...o, at, rate: 3.5, dur: 0.02, vol: 0.035 });
     // melody
     if (lv >= 3) for (const [st, m, len] of S.lead[bar]) if (st === s) {
       chip({ ...o, at, wave: "pulse25", notes: [m], dur: sd * len * 0.92, vol: 0.05 });

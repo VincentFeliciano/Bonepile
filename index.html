@@ -263,8 +263,9 @@ const SMASH_COST = 15;
 // At zero it is fully cursed (d.dark): it can't spin, words through it pay nothing, and it curses
 // one disc above or below it, which counts down in turn. Smashing a fully cursed disc costs
 // CURSE_SMASH gold, then twice that, three times, and so on through the game.
-const CURSE_CHANCE = 1 / 25;
-const CURSE_DROPS = 4;
+const CURSE_CHANCE = 1 / 45;
+const CURSE_DROPS = 6;
+const SPREAD_DROPS = 9; // a curse passed on to a neighbor takes longer to ripen
 const CURSE_SMASH = 10;
 function curseShaded(d) { return !!(d && (d.dark || (d.cursed && d.curse <= (d.curseMax || CURSE_DROPS) / 2))); }
 
@@ -2000,7 +2001,7 @@ if (typeof document !== "undefined") {
     d.cursed = false; d.dark = true; d.target = Math.round(d.target); d.rot = d.target; d.fling = 0; sfx.curse();
     const near = [st.stack[i - 1], st.stack[i + 1]].filter(n => n && !n.locked && !n.cursed && !n.dark);
     const n = near.length ? near[Math.floor(Math.random() * near.length)] : null;
-    if (n) { n.cursed = true; n.curse = n.curseMax = CURSE_DROPS + (has("ward") ? 3 : 0); }
+    if (n) { n.cursed = true; n.curse = n.curseMax = SPREAD_DROPS + (has("ward") ? 3 : 0); }
     flash = performance.now();
     skullBtn.classList.remove("refuse"); void skullBtn.offsetWidth; skullClass("refuse", 600);
     say(`${n ? "The curse creeps to the next disc. " : ""}Words through a dark purple disc pay nothing. Tap it twice to smash it (${smashCost(d)} gold).`);

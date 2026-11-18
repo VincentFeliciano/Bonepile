@@ -263,9 +263,9 @@ const SMASH_COST = 15;
 // At zero it is fully cursed (d.dark): it can't spin, words through it pay nothing, and it curses
 // one disc above or below it, which counts down in turn. Smashing a fully cursed disc costs
 // CURSE_SMASH gold, then twice that, three times, and so on through the game.
-const CURSE_CHANCE = 1 / 45;
-const CURSE_DROPS = 6;
-const SPREAD_DROPS = 9; // a curse passed on to a neighbor takes longer to ripen
+const CURSE_CHANCE = 1 / 30;
+const CURSE_DROPS = 4;
+const SPREAD_DROPS = 5; // a curse passed on to a neighbor takes longer to ripen
 const CURSE_SMASH = 10;
 function curseShaded(d) { return !!(d && (d.dark || (d.cursed && d.curse <= (d.curseMax || CURSE_DROPS) / 2))); }
 

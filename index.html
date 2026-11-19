@@ -33,7 +33,10 @@ body { background: var(--bg); color: var(--fg); font-family: "VT323", ui-monospa
 #msg { min-height: 20px; line-height: 1; text-align: center; }
 #wrap { flex: 1; min-height: 0; position: relative; }
 #cv { position: absolute; left: 0; top: 0; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
-#bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+#bar > #left { grid-column: 1; justify-self: start; }
+#bar > #skull { grid-column: 2; }
+#bar > #help, #bar > #runes { grid-column: 3; grid-row: 1; justify-self: end; }
 /* pixel buttons: square, chunky, notched corners, pressed shading */
 button { font-family: "Press Start 2P", ui-monospace, monospace; font-size: 10px; line-height: 1.4; color: #000; background: #e9dcb8 no-repeat 0 0; background-origin: border-box; image-rendering: pixelated; border: 3px solid #000; border-radius: 0; padding: 10px 12px; cursor: pointer;
   clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
@@ -2397,13 +2400,6 @@ if (typeof document !== "undefined") {
     // the line the column must not cross
     ctx.fillStyle = C.blood;
     for (let x = wellX; x < wellX + wellW; x += 4 * P) ctx.fillRect(x, wellTop - P, 2 * P, P);
-    // reading arrow on the left: top to bottom
-    if (wellX > 10 * P) {
-      const ax = wellX - 7 * P, yb = wellTop + ROWS * cellH - 4 * P;
-      ctx.fillStyle = C.gold;
-      for (let y = wellTop + 4 * P; y < yb; y += 3 * P) ctx.fillRect(ax, y, P, 2 * P);
-      for (let i = 0; i < 3; i++) { ctx.fillRect(ax - i * P, yb - i * P, P, P); ctx.fillRect(ax + i * P, yb - i * P, P, P); }
-    }
     ctx.save();
     ctx.beginPath(); ctx.rect(0, wellTop - P, W, H); ctx.clip();
     for (const d of st.stack) drawDisc(d, rowY(d.y), 1, 0, !!(st.pending && st.pending.discs.has(d)));

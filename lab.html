@@ -546,6 +546,38 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
       { k: "throat", vowel: "a", size: 1.15, base: 45, syl: 8, sylDur: 0.11, gap: 0.06, h: 1, hLen: 0.05, contour: -3, drift: -6, accel: -0.2, accent: "odd", accentSt: 2, swing: 0.15, growl: 0.15, breath: 0.25, inhale: 1, vol: 0.2 }] },
     realSkull: { name: "Hollow skull laugh", cat: "Real laughs", knobs: { room: 0.6, roomSize: 2.5 }, layers: [
       { k: "throat", vowel: "o", size: 1.35, base: 41, syl: 6, sylDur: 0.14, gap: 0.1, h: 0.6, contour: -2, drift: -4, growl: 0.5, vib: 0.3, vibHz: 5, breath: 0.2, tail: 2, vol: 0.2 }] },
+    // monster voices: a big, deep mouth (size), a sub-octave growl and a torn rasp
+    monDemon: { name: "Demon laugh", cat: "Monster laughs", knobs: { room: 0.5, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "a", from: "u", size: 1.6, base: 36, syl: 5, sylDur: 0.2, first: 2.4, gap: 0.12, h: 0.7, hLen: 0.07, contour: -2, drift: -4, growl: 1.2, rasp: 0.5, accent: "first", accentSt: 3, tail: 2.2, breath: 0.15, vol: 0.21 }] },
+    monGiant: { name: "Giant belly laugh", cat: "Monster laughs", knobs: { room: 0.3, roomSize: 2 }, layers: [
+      { k: "throat", vowel: "a", size: 1.8, base: 33, syl: 7, sylDur: 0.15, gap: 0.08, h: 1, hLen: 0.06, contour: -3, drift: -5, accel: -0.2, accent: "odd", accentSt: 2, growl: 0.9, rasp: 0.3, breath: 0.2, inhale: 0.8, vol: 0.21 }] },
+    monOgre: { name: "Ogre chuckle", cat: "Monster laughs", knobs: { room: 0.2 }, layers: [
+      { k: "throat", vowel: "uh", size: 1.7, base: 35, syl: 4, sylDur: 0.12, gap: 0.1, h: 0.8, hLen: 0.05, contour: -2, step: -0.5, growl: 1, rasp: 0.6, breath: 0.25, fade: 0.3, vol: 0.21 }] },
+    monCackle: { name: "Beast cackle", cat: "Monster laughs", knobs: { room: 0.25 }, layers: [
+      { k: "throat", vowel: "e", size: 1.5, base: 40, syl: 9, sylDur: 0.08, gap: 0.05, h: 0.7, hLen: 0.035, contour: -4, drift: -6, jitter: 1, growl: 0.8, rasp: 1, breath: 0.25, fade: 0.2, vol: 0.2 }] },
+    monDoom: { name: "Slow doom laugh", cat: "Monster laughs", knobs: { room: 0.7, roomSize: 3 }, layers: [
+      { k: "throat", vowel: "o", from: "u", size: 1.9, base: 31, syl: 3, sylDur: 0.36, gap: 0.25, h: 0.6, hLen: 0.08, contour: -2, drift: -3, growl: 1.4, rasp: 0.4, tail: 2.5, breath: 0.15, vol: 0.22 }] },
+    monRoar: { name: "Monster roar", cat: "Monster screams", knobs: { room: 0.4, roomSize: 2 }, layers: [
+      { k: "throat", vowel: "a", vpath: ["o", "a", "a", "o"], size: 1.7, base: 38, sylDur: 1.6, path: [0, 5, 6, 4, -6], hold: true, atk: 0.08, growl: 1.5, rasp: 1.4, breath: 0.35, vol: 0.22 }] },
+    monShriek: { name: "Demon shriek", cat: "Monster screams", knobs: { room: 0.45, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "i", vpath: ["e", "i", "i"], size: 0.9, base: 72, sylDur: 1.3, path: [0, 4, 3, -7], hold: true, rasp: 1.2, breath: 0.3, vol: 0.15 },
+      { k: "throat", vowel: "a", vpath: ["o", "a", "a"], size: 1.7, base: 34, sylDur: 1.3, path: [0, 4, 3, -7], hold: true, growl: 1.2, rasp: 1, vol: 0.17 }] },
+    monBellow: { name: "Beast bellow", cat: "Monster screams", knobs: { room: 0.5, roomSize: 2.5 }, layers: [
+      { k: "throat", vowel: "o", vpath: ["u", "o", "o", "u"], size: 1.9, base: 33, sylDur: 2, path: [0, 3, 4, 2, -3], hold: true, atk: 0.12, vib: 0.3, vibHz: 5, growl: 1.6, rasp: 0.6, breath: 0.25, vol: 0.22 }] },
+    monScreech: { name: "Ghoul screech", cat: "Monster screams", knobs: { room: 0.3 }, layers: [
+      { k: "throat", vowel: "e", vpath: ["e", "i", "e"], size: 1.2, base: 60, sylDur: 1.1, path: [0, 6, 4, -8], hold: true, rasp: 1.6, growl: 0.6, breath: 0.4, vol: 0.17 }] },
+    monDeath: { name: "Dying monster", cat: "Monster screams", knobs: { room: 0.4, roomSize: 2 }, layers: [
+      { k: "throat", vowel: "a", vpath: ["a", "o", "uh"], size: 1.7, base: 36, syl: 2, sylDur: 1.2, gap: 0.3, path: [0, 2, -3, -12], hold: true, growl: 1.2, rasp: 1, breath: 0.3, fade: 0.3, inhale: 0.4, vol: 0.21 }] },
+    monLowGrowl: { name: "Low growl", cat: "Growls", knobs: { room: 0.2 }, layers: [
+      { k: "throat", vowel: "uh", size: 1.8, base: 30, sylDur: 1.8, path: [0, 1, 0, -1], hold: true, atk: 0.2, growl: 1.6, rasp: 1.2, breath: 0.2, vol: 0.22 }] },
+    monSnarl: { name: "Snarl", cat: "Growls", knobs: { room: 0.15 }, layers: [
+      { k: "throat", vowel: "a", vpath: ["uh", "a", "e"], size: 1.4, base: 40, sylDur: 0.9, path: [0, 3, 2, 0], hold: true, atk: 0.05, growl: 1, rasp: 1.8, breath: 0.4, vol: 0.2 }] },
+    monRumble: { name: "Rumbling growl", cat: "Growls", knobs: { room: 0.25 }, layers: [
+      { k: "throat", vowel: "o", size: 1.8, base: 31, syl: 6, sylDur: 0.22, gap: 0.03, contour: -1, jitter: 0.6, growl: 1.4, rasp: 1.5, breath: 0.2, vol: 0.22 }] },
+    monHungry: { name: "Hungry growl", cat: "Growls", knobs: { room: 0.3 }, layers: [
+      { k: "throat", vowel: "uh", vpath: ["uh", "o", "uh"], size: 1.7, base: 33, sylDur: 2.4, path: [0, -1, 2, 1, -2], hold: true, atk: 0.15, vib: 0.4, vibHz: 4, growl: 1.4, rasp: 1, breath: 0.25, vol: 0.22 }] },
+    monWarning: { name: "Warning growl", cat: "Growls", knobs: { room: 0.2 }, layers: [
+      { k: "throat", vowel: "uh", vpath: ["uh", "a"], size: 1.7, base: 32, syl: 2, sylDur: 0.9, gap: 0.15, step: 2, path: [0, 2, 1], hold: true, atk: 0.1, growl: 1.3, rasp: 1.3, breath: 0.3, vol: 0.22 }] },
     // "ha ha ha": an h of breath then an "ah", with a cadence you can shape
     haSteady: { name: "Ha ha ha", cat: "Ha ha", knobs: { bits: 5, down: 2 }, layers: [
       { k: "vox", wave: "pulse25", base: 57, syl: 6, sylDur: 0.1, gap: 0.09, h: 0.9, hLen: 0.04, harm: 12, harmVol: 0.25, contour: -2, accent: "first", jitter: 0.3, curve: 0.9, vol: 0.13 }] },

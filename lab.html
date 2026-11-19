@@ -121,6 +121,9 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
   // bass and an LFSR noise channel. Pitches step and volume steps down at 60 Hz.
   let actx = null, master = null, muted = false;
   const waves = {}, noiseBufs = {};
+  // ask iOS for "playback" before any audio context exists, so the context is born on the
+  // loud, ignore-the-ring-switch route instead of starting quiet or silent
+  try { if (typeof navigator !== "undefined" && navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
   function audio() {
     if (muted) return null;
     if (!actx) {
@@ -159,7 +162,8 @@ textarea { width: 100%; height: 140px; font: 15px ui-monospace, monospace; backg
     const evs = ["touchend", "pointerup", "click", "keydown"];
     const go = () => {
       unlockAudio();
-      if (actx && actx.state === "running") { armed = false; evs.forEach(e => window.removeEventListener(e, go, true)); }
+      // stay armed until both are really going: the context, and the silent tag that holds iOS in playback
+      if (actx && actx.state === "running" && silent && !silent.paused) { armed = false; evs.forEach(e => window.removeEventListener(e, go, true)); }
     };
     evs.forEach(e => window.addEventListener(e, go, true));
   }
